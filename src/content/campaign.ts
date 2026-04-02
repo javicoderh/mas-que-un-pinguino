@@ -2,9 +2,9 @@ const externalLinks = {
   letterPdf: "LETTER_PDF_URL",
   form: "FORM_URL",
   linktree: "LINKTREE_URL",
-  instagram: "INSTAGRAM_URL",
-  tiktok: "TIKTOK_URL",
-  youtube: "YOUTUBE_URL"
+  instagram: "https://www.instagram.com/esmasqueunpinguino/",
+  tiktok: "https://www.tiktok.com/@esmasqueunpinguino",
+  youtube: "https://www.youtube.com/Esmasqueunpinguino"
 } as const;
 
 export const campaignConfig = {
@@ -174,7 +174,8 @@ export const campaignConfig = {
     { href: "/", label: "Inicio" },
     { href: "/carta", label: "Carta" },
     { href: "/firma", label: "Firma" },
-    { href: "/transparencia", label: "Transparencia" }
+    { href: "/transparencia", label: "Transparencia" },
+    { href: "/contacto", label: "Contacto" }
   ],
   socialLinks: [
     { href: externalLinks.instagram, label: "Instagram" },

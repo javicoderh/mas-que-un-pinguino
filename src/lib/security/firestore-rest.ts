@@ -21,6 +21,8 @@ let cachedToken: { value: string; expiresAt: number } | null = null;
 
 const firestoreBaseUrl = () =>
   `https://firestore.googleapis.com/v1/projects/${securityConfig.firestore.projectId}/databases/(default)`;
+const firestoreDocumentRoot = () =>
+  `projects/${securityConfig.firestore.projectId}/databases/(default)/documents`;
 
 const oauthAudience = "https://oauth2.googleapis.com/token";
 const firestoreScope = "https://www.googleapis.com/auth/datastore";
@@ -149,15 +151,26 @@ async function firestoreFetch(path: string, init: RequestInit = {}) {
 
 async function parseStreamingJson<T>(response: Response): Promise<T[]> {
   const text = await response.text();
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => JSON.parse(line) as T);
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) ? (parsed as T[]) : [parsed as T];
+  } catch {
+    return trimmed
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as T);
+  }
 }
 
 export const documentPath = (relativePath: string) =>
-  `${firestoreBaseUrl()}/documents/${relativePath}`;
+  `${firestoreDocumentRoot()}/${relativePath}`;
 
 export async function getDocument<T = Record<string, unknown>>(relativePath: string): Promise<T | null> {
   const response = await firestoreFetch(`/documents/${relativePath}`, { method: "GET" });

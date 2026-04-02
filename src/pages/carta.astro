@@ -3,7 +3,8 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ButtonLink from "../components/ui/ButtonLink.astro";
-import letterPdfUrl from "../assets/Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf?url";
+
+const letterPdfUrl = "/carta-abierta-pdf";
 ---
 
 <MainLayout
@@ -28,9 +29,8 @@ import letterPdfUrl from "../assets/Carta abierta de la comunidad científica so
             class="w-full justify-center text-center md:w-auto"
           />
           <ButtonLink
-            href={letterPdfUrl}
+            href={`${letterPdfUrl}?download=1`}
             label="Descargar PDF"
-            download={true}
             variant="ghost"
             class="w-full justify-center md:w-auto"
           />
