@@ -3,9 +3,10 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ButtonLink from "../components/ui/ButtonLink.astro";
+import letterPdfUrl from "../assets/Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf?url";
 import { campaignConfig } from "../content/campaign";
 
-const { transparency, links, futureRoutes } = campaignConfig;
+const { transparency, futureRoutes } = campaignConfig;
 ---
 
 <MainLayout
@@ -34,7 +35,7 @@ const { transparency, links, futureRoutes } = campaignConfig;
         </ul>
 
         <div class="mt-8 flex flex-wrap gap-4">
-          <ButtonLink href={links.letterPdf} label="Abrir carta científica" target="_blank" />
+          <ButtonLink href={letterPdfUrl} label="Abrir carta científica" target="_blank" />
           <ButtonLink href="/firma" label="Firmar la carta" variant="pink" />
         </div>
       </article>

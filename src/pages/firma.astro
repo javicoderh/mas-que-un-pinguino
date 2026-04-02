@@ -6,6 +6,8 @@ import ButtonLink from "../components/ui/ButtonLink.astro";
 import SignatureForm from "../components/ui/SignatureForm.astro";
 import { campaignConfig } from "../content/campaign";
 
+export const prerender = false;
+
 const { dates, signatureForm } = campaignConfig;
 ---
 
@@ -47,7 +49,7 @@ const { dates, signatureForm } = campaignConfig;
         </div>
       </div>
 
-      <div>
+      <div id="formulario-firma">
         <SignatureForm />
       </div>
     </div>

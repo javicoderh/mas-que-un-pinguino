@@ -1,0 +1,49 @@
+import { defineMiddleware } from "astro:middleware";
+import { securityConfig, isSecurityConfigured, isServerStorageConfigured } from "./lib/security/config";
+import { enforceRateLimit } from "./lib/security/rate-limit";
+import { hashWithSecret } from "./lib/security/hash";
+import { logSecurityEvent } from "./lib/security/logging";
+import { securityMessages } from "./lib/security/messages";
+import { getClientIp } from "./lib/security/request";
+
+const html429 = (message: string) =>
+  `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Intenta nuevamente</title></head><body style="font-family:system-ui,sans-serif;background:#05070B;color:#fff;padding:2rem;line-height:1.6"><main style="max-width:36rem;margin:10vh auto"><h1 style="font-size:1.75rem;margin-bottom:1rem">Estamos recibiendo mucho tráfico</h1><p>${message}</p></main></body></html>`;
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  if (
+    context.url.pathname !== "/firma" ||
+    context.request.method !== "GET" ||
+    !isSecurityConfigured ||
+    !isServerStorageConfigured
+  ) {
+    return next();
+  }
+
+  const ip = getClientIp(context.request.headers);
+  const ipHash = await hashWithSecret(securityConfig.hashSecret, "ip", ip);
+  const result = await enforceRateLimit("signature_form_get", ipHash, securityConfig.rateLimits.formGet, {
+    route: context.url.pathname,
+    action: "signature_form_get"
+  });
+
+  if (result.allowed) {
+    return next();
+  }
+
+  logSecurityEvent({
+    route: context.url.pathname,
+    action: "signature_form_get",
+    decision: "block",
+    reasonCodes: ["rate_limited"],
+    hashedIp: ipHash,
+    metadata: result.counts
+  });
+
+  return new Response(html429(securityMessages.rateLimited), {
+    status: 429,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "retry-after": String(result.retryAfterSeconds)
+    }
+  });
+});

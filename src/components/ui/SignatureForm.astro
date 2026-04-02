@@ -1,17 +1,11 @@
 ---
 import { campaignConfig } from "../../content/campaign";
+import { createFormToken } from "../../lib/security/form-token";
+import { isSecurityConfigured, isServerStorageConfigured, securityConfig } from "../../lib/security/config";
 
 const { signatureForm } = campaignConfig;
-const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
-  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
-};
-const isConfigured = Object.values(firebaseConfig).every(Boolean);
-const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || "campaign_signatures";
+const isConfigured = isSecurityConfigured && isServerStorageConfigured;
+const formToken = isConfigured ? await createFormToken("signature_submit") : null;
 ---
 
 <div class="surface-panel rounded-[2rem] p-7 md:p-8">
@@ -25,7 +19,6 @@ const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || 
     class="grid gap-5"
     data-signature-form
     data-form-configured={String(isConfigured)}
-    data-collection-name={collectionName}
     novalidate
   >
     <div class="grid gap-5 md:grid-cols-2">
@@ -164,13 +157,27 @@ const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || 
       </label>
     </div>
 
-    <input type="text" name="company" class="hidden" tabindex="-1" autocomplete="off" />
+    <div class="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+      <label>
+        No completar
+        <input type="text" name="company" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+    <input type="hidden" name="issued_at_ms" value={formToken?.issuedAtMs ?? ""} />
+    <input type="hidden" name="form_nonce" value={formToken?.nonce ?? ""} />
+    <input type="hidden" name="form_token" value={formToken?.signature ?? ""} />
+    <input type="hidden" name="captcha_token" value="" data-captcha-token />
 
     <div class="grid gap-4 border-t border-white/10 pt-5">
       <p class="text-sm leading-6 text-campaign-text-muted">{signatureForm.privacyNote}</p>
       {!isConfigured && (
         <p class="rounded-2xl border border-campaign-pink/25 bg-campaign-pink/8 px-4 py-3 text-sm text-campaign-blush">
-          {signatureForm.configuredNote}
+          Configura `SECURITY_HASH_SECRET` y las credenciales server-side de Firestore para habilitar el registro seguro de firmas.
+        </p>
+      )}
+      {securityConfig.captcha.enabled && securityConfig.captcha.siteKey && (
+        <p class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-sm text-campaign-text-muted">
+          La protección reforzada está activa. Si aparece un desafío adicional, será solo para confirmar que eres una persona.
         </p>
       )}
 
@@ -184,16 +191,14 @@ const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || 
 
       <p class="text-sm text-campaign-text-muted" data-signature-status>
         {isConfigured
-          ? "Al enviar, tu firma se guardará en Firestore."
-          : "Configura Firestore para habilitar la firma efectiva."}
+          ? "Tus datos se validarán y protegerán antes de registrar la firma."
+          : "Falta configurar la capa server-side para habilitar la firma efectiva."}
       </p>
     </div>
   </form>
 </div>
 
 <script>
-  import { submitSignature } from "../../lib/signatures";
-
   const form = document.querySelector("[data-signature-form]");
   const status = document.querySelector("[data-signature-status]");
   const submitButton = document.querySelector("[data-signature-submit]");
@@ -290,12 +295,11 @@ const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || 
       event.preventDefault();
 
       const isConfigured = form.dataset.formConfigured === "true";
-      const collectionName = form.dataset.collectionName || "campaign_signatures";
       const honeypot = form.elements.namedItem("company");
 
       if (!isConfigured) {
         status.textContent =
-          "El formulario ya está maquetado y validado. Falta configurar Firestore para registrar firmas.";
+          "El formulario está listo, pero falta completar la configuración server-side para registrar firmas.";
         return;
       }
 
@@ -442,26 +446,40 @@ const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || 
       status.textContent = "Guardando tu firma...";
 
       try {
-        await submitSignature(collectionName, {
-          firstName: getValue("first_name"),
-          lastName: getValue("last_name"),
-          rut: normalizeRut(rutValue),
-          email: getValue("email").toLowerCase(),
-          region: getValue("region"),
-          commune: getValue("commune"),
-          affiliation: getValue("affiliation"),
-          message: getValue("message"),
-          updates: getChecked("updates"),
-          consent: getChecked("consent")
+        const response = await fetch("/api/signatures", {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            accept: "application/json"
+          }
         });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          if (payload.fieldErrors && typeof payload.fieldErrors === "object") {
+            Object.entries(payload.fieldErrors).forEach(([name, messages]) => {
+              const message = Array.isArray(messages) ? messages[0] : "";
+              if (message) showError(name.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`), message);
+            });
+          }
+
+          status.textContent =
+            typeof payload.message === "string"
+              ? payload.message
+              : "No pudimos procesar tu firma. Inténtalo nuevamente en un momento.";
+          return;
+        }
 
         form.reset();
-        status.textContent = "Tu firma fue registrada. Gracias por sumarte.";
+        status.textContent =
+          typeof payload.message === "string"
+            ? payload.message
+            : "Tu firma fue registrada. Gracias por sumarte.";
         window.dispatchEvent(new CustomEvent("signature:created"));
       } catch (error) {
         console.error(error);
         status.textContent =
-          "No se pudo registrar tu firma. Revisa la configuración de Firestore o intenta de nuevo.";
+          "No se pudo registrar tu firma. Inténtalo nuevamente en un momento.";
       } finally {
         if (submitButton instanceof HTMLButtonElement) {
           submitButton.disabled = false;
@@ -475,10 +493,10 @@ const collectionName = import.meta.env.PUBLIC_FIREBASE_SIGNATURES_COLLECTION || 
         const field = getField(name);
         if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
           field.addEventListener("input", () => {
-            if (name === "rut" && field instanceof HTMLInputElement) {
-              const clean = normalizeRut(field.value).slice(0, 9);
-              field.value = formatRut(clean);
-            }
+          if (name === "rut" && field instanceof HTMLInputElement) {
+            const clean = normalizeRut(field.value).slice(0, 9);
+            field.value = formatRut(clean);
+          }
 
             validateField(name);
           });

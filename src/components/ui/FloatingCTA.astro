@@ -5,12 +5,13 @@ interface Props {
 }
 
 const { href, label } = Astro.props;
+const normalizedHref = href === "/firma" ? "/firma#formulario-firma" : href;
 ---
 
 <div class="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-50 px-4 md:hidden">
   <div class="mx-auto max-w-md">
     <a
-      href={href}
+      href={normalizedHref}
       class="focus-ring pointer-events-auto flex min-h-14 items-center justify-center rounded-full bg-campaign-pink px-6 py-4 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-black shadow-[0_20px_70px_rgba(255,162,209,0.35)] transition hover:-translate-y-0.5 hover:bg-campaign-warm"
     >
       {label}
@@ -24,7 +25,7 @@ const { href, label } = Astro.props;
 >
   <div class="mx-auto max-w-md">
     <a
-      href={href}
+      href={normalizedHref}
       class="focus-ring pointer-events-auto flex min-h-12 items-center justify-center rounded-full bg-campaign-pink px-5 py-3 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-black shadow-[0_20px_70px_rgba(255,162,209,0.35)] transition hover:-translate-y-0.5 hover:bg-campaign-warm"
     >
       {label}

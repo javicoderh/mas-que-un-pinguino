@@ -5,6 +5,7 @@ interface Props {
   variant?: "primary" | "secondary" | "ghost" | "pink";
   target?: "_self" | "_blank";
   rel?: string;
+  download?: boolean | string;
   class?: string;
 }
 
@@ -14,6 +15,7 @@ const {
   variant = "primary",
   target = "_self",
   rel,
+  download,
   class: className = ""
 } = Astro.props;
 
@@ -33,6 +35,7 @@ const variants = {
   href={href}
   target={target}
   rel={rel ?? (target === "_blank" ? "noreferrer noopener" : undefined)}
+  download={download}
   class:list={[
     "focus-ring inline-flex min-h-12 items-center justify-center rounded-full border px-6 py-3 text-[0.95rem] font-extrabold tracking-[0.08em] uppercase transition duration-200",
     variants,

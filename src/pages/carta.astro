@@ -3,9 +3,7 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ButtonLink from "../components/ui/ButtonLink.astro";
-import { campaignConfig } from "../content/campaign";
-
-const { links } = campaignConfig;
+import letterPdfUrl from "../assets/Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf?url";
 ---
 
 <MainLayout
@@ -22,9 +20,26 @@ const { links } = campaignConfig;
           body="Este documento resume la urgencia ecológica, científica y ciudadana detrás de la campaña. Úsalo para informarte, compartirlo y respaldar la solicitud antes del 25 de abril."
         />
 
-        <div class="mt-8 flex flex-wrap gap-4">
-          <ButtonLink href={links.letterPdf} label="Abrir PDF en nueva pestaña" target="_blank" />
-          <ButtonLink href="/firma" label="Ir a firmar" variant="secondary" />
+        <div class="mt-8 grid gap-4 md:flex md:flex-wrap md:items-start">
+          <ButtonLink
+            href={letterPdfUrl}
+            label="Abrir PDF en nueva pestaña"
+            target="_blank"
+            class="w-full justify-center text-center md:w-auto"
+          />
+          <ButtonLink
+            href={letterPdfUrl}
+            label="Descargar PDF"
+            download={true}
+            variant="ghost"
+            class="w-full justify-center md:w-auto"
+          />
+          <ButtonLink
+            href="/firma#formulario-firma"
+            label="Ir a firmar"
+            variant="secondary"
+            class="w-full justify-center md:w-auto"
+          />
         </div>
       </div>
     </div>

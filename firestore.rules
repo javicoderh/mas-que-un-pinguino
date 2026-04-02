@@ -2,45 +2,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /campaign_signatures/{document=**} {
-      allow read: if false;
-      allow create: if
-        request.resource.data.keys().hasOnly([
-          'firstName',
-          'lastName',
-          'rut',
-          'email',
-          'region',
-          'commune',
-          'affiliation',
-          'message',
-          'updates',
-          'consent',
-          'createdAt',
-          'source'
-        ]) &&
-        request.resource.data.firstName is string &&
-        request.resource.data.lastName is string &&
-        request.resource.data.rut is string &&
-        request.resource.data.email is string &&
-        request.resource.data.region is string &&
-        request.resource.data.commune is string &&
-        request.resource.data.affiliation is string &&
-        request.resource.data.message is string &&
-        request.resource.data.updates is bool &&
-        request.resource.data.consent == true &&
-        request.resource.data.source == 'campaign-site';
+      allow read, write: if false;
+    }
+
+    match /signature_dedupe_email/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /signature_dedupe_identity/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /signature_dedupe_rut/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /security_rate_limits/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /security_events/{document=**} {
+      allow read, write: if false;
     }
 
     match /public_stats/signatures_counter {
       allow read: if true;
-      allow create: if
-        request.resource.data.keys().hasOnly(['count', 'updatedAt']) &&
-        request.resource.data.count is int &&
-        request.resource.data.count == 1;
-      allow update: if
-        request.resource.data.keys().hasOnly(['count', 'updatedAt']) &&
-        request.resource.data.count is int &&
-        request.resource.data.count == resource.data.count + 1;
+      allow write: if false;
     }
   }
 }
