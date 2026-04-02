@@ -6,7 +6,7 @@ import vercel from "@astrojs/vercel/serverless";
 export default defineConfig({
   site: "https://esmasqueunpinguino.cl",
   output: "server",
-  adapter: vercel(),
+  adapter: vercel({}),
   integrations: [vue()],
   vite: {
     plugins: [tailwindcss()]
