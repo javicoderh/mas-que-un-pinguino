@@ -1,33 +1,49 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import dsc05278 from "../../assets/DSC05278.jpg";
-import dsc05293 from "../../assets/DSC05293.jpg";
-import dsc05345 from "../../assets/DSC05345.jpg";
-import dsc05810 from "../../assets/DSC05810.jpg";
-import dsc05812 from "../../assets/DSC05812.jpg";
-import dsc05923 from "../../assets/DSC05923.jpg";
-import dsc06074 from "../../assets/DSC06074.jpg";
-import dsc06391 from "../../assets/DSC06391.jpg";
-import dsc06418 from "../../assets/DSC06418.jpg";
-import dsc06460 from "../../assets/DSC06460.jpg";
-import dsc06464 from "../../assets/DSC06464.jpg";
+import dsc05278Thumb from "../../assets/gallery/thumb/DSC05278.webp";
+import dsc05293Thumb from "../../assets/gallery/thumb/DSC05293.webp";
+import dsc05345Thumb from "../../assets/gallery/thumb/DSC05345.webp";
+import dsc05810Thumb from "../../assets/gallery/thumb/DSC05810.webp";
+import dsc05812Thumb from "../../assets/gallery/thumb/DSC05812.webp";
+import dsc05923Thumb from "../../assets/gallery/thumb/DSC05923.webp";
+import dsc06074Thumb from "../../assets/gallery/thumb/DSC06074.webp";
+import dsc06391Thumb from "../../assets/gallery/thumb/DSC06391.webp";
+import dsc06418Thumb from "../../assets/gallery/thumb/DSC06418.webp";
+import dsc06460Thumb from "../../assets/gallery/thumb/DSC06460.webp";
+import dsc06464Thumb from "../../assets/gallery/thumb/DSC06464.webp";
+import dsc05278Large from "../../assets/gallery/large/DSC05278.webp";
+import dsc05293Large from "../../assets/gallery/large/DSC05293.webp";
+import dsc05345Large from "../../assets/gallery/large/DSC05345.webp";
+import dsc05810Large from "../../assets/gallery/large/DSC05810.webp";
+import dsc05812Large from "../../assets/gallery/large/DSC05812.webp";
+import dsc05923Large from "../../assets/gallery/large/DSC05923.webp";
+import dsc06074Large from "../../assets/gallery/large/DSC06074.webp";
+import dsc06391Large from "../../assets/gallery/large/DSC06391.webp";
+import dsc06418Large from "../../assets/gallery/large/DSC06418.webp";
+import dsc06460Large from "../../assets/gallery/large/DSC06460.webp";
+import dsc06464Large from "../../assets/gallery/large/DSC06464.webp";
 
 const getAssetSrc = (asset) => (typeof asset === "string" ? asset : asset?.src || "");
+const toGalleryImage = (id, thumb, large) => ({
+  id,
+  thumb: getAssetSrc(thumb),
+  large: getAssetSrc(large)
+});
 
 const muralImages = [
-  getAssetSrc(dsc05278),
-  getAssetSrc(dsc05293),
-  getAssetSrc(dsc05345),
-  getAssetSrc(dsc05810),
-  getAssetSrc(dsc05812),
-  getAssetSrc(dsc05923),
-  getAssetSrc(dsc06074),
-  getAssetSrc(dsc06391),
-  getAssetSrc(dsc06418),
-  getAssetSrc(dsc06460),
-  getAssetSrc(dsc06464)
-].filter(Boolean);
-const initialPreloadCount = Math.min(6, muralImages.length);
+  toGalleryImage("dsc05278", dsc05278Thumb, dsc05278Large),
+  toGalleryImage("dsc05293", dsc05293Thumb, dsc05293Large),
+  toGalleryImage("dsc05345", dsc05345Thumb, dsc05345Large),
+  toGalleryImage("dsc05810", dsc05810Thumb, dsc05810Large),
+  toGalleryImage("dsc05812", dsc05812Thumb, dsc05812Large),
+  toGalleryImage("dsc05923", dsc05923Thumb, dsc05923Large),
+  toGalleryImage("dsc06074", dsc06074Thumb, dsc06074Large),
+  toGalleryImage("dsc06391", dsc06391Thumb, dsc06391Large),
+  toGalleryImage("dsc06418", dsc06418Thumb, dsc06418Large),
+  toGalleryImage("dsc06460", dsc06460Thumb, dsc06460Large),
+  toGalleryImage("dsc06464", dsc06464Thumb, dsc06464Large)
+].filter((image) => image.thumb && image.large);
+const initialPreloadCount = Math.min(5, muralImages.length);
 const visibleCardCount = Math.min(4, muralImages.length || 4);
 const currentIndex = ref(0);
 const loadedImages = ref([]);
@@ -58,16 +74,18 @@ const cards = computed(() => {
     const imageIndex = (currentIndex.value + index) % pool.length;
 
     return {
-      id: `penguin-smart-gallery-slot-${index + 1}`,
-      imageKey: `${imageIndex}-${pool[imageIndex]}`,
-      src: pool[imageIndex],
+      id: `penguin-smart-gallery-slot-${index + 1}-${pool[imageIndex].id}`,
+      imageKey: `${imageIndex}-${pool[imageIndex].id}`,
+      src: pool[imageIndex].thumb,
       alt: `Registro fotográfico de la campaña ${imageIndex + 1}`,
       className: `slot-${index + 1}`
     };
   });
 });
 
-const currentModalImage = computed(() => loadedImages.value[modalImageIndex.value] || "");
+const currentModalImage = computed(
+  () => loadedImages.value[modalImageIndex.value]?.large || ""
+);
 const shouldGhostRightSlot = computed(() => isModalOpen.value || isClosingModal.value);
 
 onMounted(() => {
@@ -140,11 +158,11 @@ function preloadImage(src) {
   });
 }
 
-function registerLoadedImage(src) {
-  if (loadedImageSet.has(src)) return;
+function registerLoadedImage(image) {
+  if (loadedImageSet.has(image.id)) return;
 
-  loadedImageSet.add(src);
-  loadedImages.value.push(src);
+  loadedImageSet.add(image.id);
+  loadedImages.value.push(image);
 
   if (!isGalleryReady.value && loadedImages.value.length >= initialPreloadCount) {
     revealGallery();
@@ -155,10 +173,12 @@ async function initializeGallery() {
   if (!muralImages.length) return;
 
   const initialBatch = muralImages.slice(0, initialPreloadCount);
-  const initialResults = await Promise.allSettled(initialBatch.map(preloadImage));
+  const initialResults = await Promise.allSettled(
+    initialBatch.map((image) => preloadImage(image.thumb))
+  );
 
-  initialResults.forEach((result) => {
-    if (result.status === "fulfilled") registerLoadedImage(result.value);
+  initialResults.forEach((result, index) => {
+    if (result.status === "fulfilled") registerLoadedImage(initialBatch[index]);
   });
 
   if (!isGalleryReady.value && loadedImages.value.length) revealGallery();
@@ -166,10 +186,10 @@ async function initializeGallery() {
 }
 
 async function preloadRemainingImages(startIndex) {
-  for (const src of muralImages.slice(startIndex)) {
+  for (const image of muralImages.slice(startIndex)) {
     try {
-      const loadedSrc = await preloadImage(src);
-      registerLoadedImage(loadedSrc);
+      await preloadImage(image.thumb);
+      registerLoadedImage(image);
     } catch {
       continue;
     }
@@ -293,7 +313,7 @@ function closeModal() {
   }
 
   animatedPreview.value = {
-    src: currentModalImage.value,
+    src: loadedImages.value[modalImageIndex.value]?.thumb || currentModalImage.value,
     start: {
       top: `${sourceRect.top}px`,
       left: `${sourceRect.left}px`,

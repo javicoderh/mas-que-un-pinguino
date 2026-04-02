@@ -2,6 +2,7 @@
 import { campaignConfig } from "../../content/campaign";
 import logo from "../../assets/logo_pinguino_humboldt_circulo.png";
 import pinguinosVideo from "../../assets/pinguinos.mp4";
+import pinguinosVideoMobile from "../../assets/pinguinos-mobile.mp4";
 import ButtonLink from "../ui/ButtonLink.astro";
 import PenguinSmartGallery from "../campaign/PenguinSmartGallery.vue";
 import Countdown from "../ui/Countdown.astro";
@@ -36,6 +37,7 @@ const { hero, dates, ecosystem } = campaignConfig;
       playsinline
       aria-hidden="true"
     >
+      <source src={pinguinosVideoMobile} type="video/mp4" media="(max-width: 767px)" />
       <source src={pinguinosVideo} type="video/mp4" />
     </video>
     <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,11,0.9)_0%,rgba(5,7,11,0.76)_42%,rgba(5,7,11,0.84)_100%)]"></div>
