@@ -1,0 +1,21 @@
+---
+interface Props {
+  id?: string;
+  class?: string;
+  size?: "default" | "hero" | "compact";
+}
+
+const { id, class: className = "", size = "default" } = Astro.props;
+
+const sizeClass = {
+  hero: "pt-4 pb-12 md:pt-6 md:pb-18",
+  default: "py-16 md:py-24",
+  compact: "py-12 md:py-16"
+}[size];
+---
+
+<section id={id} class:list={["relative", sizeClass, className]}>
+  <div class="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
+    <slot />
+  </div>
+</section>

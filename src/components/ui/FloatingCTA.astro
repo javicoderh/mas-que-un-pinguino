@@ -1,0 +1,50 @@
+---
+interface Props {
+  href: string;
+  label: string;
+}
+
+const { href, label } = Astro.props;
+---
+
+<div class="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-50 px-4 md:hidden">
+  <div class="mx-auto max-w-md">
+    <a
+      href={href}
+      class="focus-ring pointer-events-auto flex min-h-14 items-center justify-center rounded-full bg-campaign-pink px-6 py-4 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-black shadow-[0_20px_70px_rgba(255,162,209,0.35)] transition hover:-translate-y-0.5 hover:bg-campaign-warm"
+    >
+      {label}
+    </a>
+  </div>
+</div>
+
+<div
+  class="pointer-events-none fixed inset-x-0 bottom-6 z-50 hidden px-4 opacity-0 translate-y-6 transition duration-300 md:block"
+  data-floating-cta-desktop
+>
+  <div class="mx-auto max-w-md">
+    <a
+      href={href}
+      class="focus-ring pointer-events-auto flex min-h-12 items-center justify-center rounded-full bg-campaign-pink px-5 py-3 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-black shadow-[0_20px_70px_rgba(255,162,209,0.35)] transition hover:-translate-y-0.5 hover:bg-campaign-warm"
+    >
+      {label}
+    </a>
+  </div>
+</div>
+
+<script>
+  const desktopCta = document.querySelector("[data-floating-cta-desktop]");
+
+  if (desktopCta instanceof HTMLElement) {
+    const toggle = () => {
+      const visible = window.scrollY > 12;
+      desktopCta.classList.toggle("opacity-0", !visible);
+      desktopCta.classList.toggle("translate-y-6", !visible);
+      desktopCta.classList.toggle("opacity-100", visible);
+      desktopCta.classList.toggle("translate-y-0", visible);
+    };
+
+    toggle();
+    window.addEventListener("scroll", toggle, { passive: true });
+  }
+</script>

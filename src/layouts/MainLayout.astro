@@ -1,0 +1,78 @@
+---
+import FooterBlock from "../components/ui/FooterBlock.astro";
+import SiteHeader from "../components/layout/SiteHeader.astro";
+import FloatingCTA from "../components/ui/FloatingCTA.astro";
+import FloatingSignatureCounter from "../components/ui/FloatingSignatureCounter.astro";
+import { campaignConfig } from "../content/campaign";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  path?: string;
+  hideFloatingCta?: boolean;
+}
+
+const {
+  title = campaignConfig.site.title,
+  description = campaignConfig.site.description,
+  path = "/",
+  hideFloatingCta = false
+} = Astro.props;
+
+const canonical = new URL(path, campaignConfig.site.siteUrl).toString();
+const theme = campaignConfig.theme.colors;
+---
+
+<!doctype html>
+<html
+  lang="es-CL"
+  style={`
+    --campaign-bg: ${theme.bg};
+    --campaign-surface: ${theme.surface};
+    --campaign-surface-strong: ${theme.surfaceStrong};
+    --campaign-text: ${theme.text};
+    --campaign-text-muted: ${theme.textMuted};
+    --campaign-border: ${theme.border};
+    --campaign-sky: ${theme.sky};
+    --campaign-ocean: ${theme.ocean};
+    --campaign-warm: ${theme.warm};
+    --campaign-pink: ${theme.pink};
+    --campaign-blush: ${theme.blush};
+  `}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={campaignConfig.assets.favicon} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={campaignConfig.site.name} />
+    <meta property="og:locale" content={campaignConfig.site.locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString()} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString()} />
+  </head>
+  <body>
+    <a href="#contenido" class="focus-ring sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-campaign-warm focus:px-4 focus:py-2 focus:text-black">
+      Saltar al contenido
+    </a>
+    <SiteHeader />
+    <main id="contenido">
+      <slot />
+    </main>
+    <FooterBlock />
+    {!hideFloatingCta && <FloatingCTA href="/firma" label={campaignConfig.hero.buttons.floating} />}
+    <FloatingSignatureCounter />
+  </body>
+</html>

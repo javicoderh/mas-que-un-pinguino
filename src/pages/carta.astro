@@ -1,0 +1,32 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ButtonLink from "../components/ui/ButtonLink.astro";
+import { campaignConfig } from "../content/campaign";
+
+const { links } = campaignConfig;
+---
+
+<MainLayout
+  path="/carta"
+  title="Carta abierta | Es más que un pingüino"
+  description="Lee la carta abierta de la campaña y revisa el llamado ciudadano para restituir la protección del pingüino de Humboldt."
+>
+  <Section size="hero">
+    <div class="mx-auto max-w-4xl">
+      <div class="surface-panel rounded-[2rem] p-8 md:p-12">
+        <SectionHeading
+          eyebrow="Carta abierta"
+          title="Lee la carta y compártela"
+          body="Este documento resume la urgencia ecológica, científica y ciudadana detrás de la campaña. Úsalo para informarte, compartirlo y respaldar la solicitud antes del 25 de abril."
+        />
+
+        <div class="mt-8 flex flex-wrap gap-4">
+          <ButtonLink href={links.letterPdf} label="Abrir PDF en nueva pestaña" target="_blank" />
+          <ButtonLink href="/firma" label="Ir a firmar" variant="secondary" />
+        </div>
+      </div>
+    </div>
+  </Section>
+</MainLayout>

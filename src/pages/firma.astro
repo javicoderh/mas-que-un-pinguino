@@ -1,0 +1,55 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ButtonLink from "../components/ui/ButtonLink.astro";
+import SignatureForm from "../components/ui/SignatureForm.astro";
+import { campaignConfig } from "../content/campaign";
+
+const { dates, signatureForm } = campaignConfig;
+---
+
+<MainLayout
+  path="/firma"
+  title="Firma la carta | Es más que un pingüino"
+  description="Firma la carta ciudadana para exigir la restitución del decreto de Monumento Natural del pingüino de Humboldt."
+  hideFloatingCta={true}
+>
+  <Section size="hero">
+    <div class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <div class="space-y-6">
+        <div class="surface-panel rounded-[2rem] p-8 md:p-10">
+          <SectionHeading
+            eyebrow="Firma"
+            title={signatureForm.title}
+            body={`La meta de esta fase es reunir respaldo antes del ${dates.signatureDeadlineLabel}. ${signatureForm.intro}`}
+          />
+
+          <div class="mt-8 grid gap-3">
+            {signatureForm.trustPoints.map((item) => (
+              <div class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-sm font-medium text-white">
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="surface-panel rounded-[2rem] p-8">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Apoyo informado</p>
+          <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+            Antes de firmar, puedes revisar nuevamente la carta abierta y su marco de transparencia.
+          </p>
+
+          <div class="mt-6 flex flex-wrap gap-4">
+            <ButtonLink href="/carta" label="Leer la carta" variant="secondary" />
+            <ButtonLink href="/transparencia" label="Ver transparencia" variant="ghost" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <SignatureForm />
+      </div>
+    </div>
+  </Section>
+</MainLayout>

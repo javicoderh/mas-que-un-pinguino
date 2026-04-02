@@ -1,0 +1,46 @@
+---
+import { campaignConfig } from "../../content/campaign";
+import Section from "../ui/Section.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import ButtonLink from "../ui/ButtonLink.astro";
+import SocialLinksRow from "../ui/SocialLinksRow.astro";
+
+const { conversion, socialLinks } = campaignConfig;
+---
+
+<Section id="accion">
+  <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+    <div>
+      <SectionHeading eyebrow="Acción" title={conversion.title} body={conversion.reminder} />
+    </div>
+
+    <div class="grid gap-6">
+      <article class="surface-panel rounded-[2rem] p-8">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-pink">Paso principal</p>
+        <h3 class="mt-4 text-3xl font-bold text-white">{conversion.cardTitle}</h3>
+        <p class="mt-4 max-w-2xl text-base leading-7 text-campaign-text-muted">{conversion.cardText}</p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <ButtonLink href="/firma" label="Ir a firmar" />
+          <ButtonLink href="/carta" label="Volver a leer la carta" variant="secondary" />
+        </div>
+      </article>
+
+      <article class="surface-panel rounded-[2rem] p-8">
+        <h3 class="text-2xl font-bold text-white">{conversion.shareTitle}</h3>
+        <p class="mt-4 text-base leading-7 text-campaign-text-muted">{conversion.shareText}</p>
+
+        <div class="mt-6">
+          <SocialLinksRow links={socialLinks} />
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-2">
+          {conversion.hashtags.map((hashtag) => (
+            <span class="rounded-full border border-black/40 bg-campaign-warm px-4 py-2 text-sm font-black text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+              {hashtag}
+            </span>
+          ))}
+        </div>
+      </article>
+    </div>
+  </div>
+</Section>

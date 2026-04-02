@@ -1,0 +1,61 @@
+---
+import { campaignConfig } from "../../content/campaign";
+
+const { hero } = campaignConfig;
+---
+
+<aside
+  class="fixed right-2 top-[7.25rem] z-50 w-[11.25rem] max-w-[calc(100vw-1rem)] origin-top-right scale-90 md:bottom-6 md:right-4 md:top-auto md:w-[calc(100vw-2rem)] md:max-w-xs md:scale-100"
+  aria-label="Contador de firmas"
+>
+  <div
+    class="surface-panel flex w-full items-start gap-3 rounded-[1.4rem] border border-white/14 px-3 py-3 text-left shadow-[0_24px_70px_rgba(0,0,0,0.42)] md:rounded-[1.6rem] md:px-5 md:py-4"
+  >
+    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/6 text-campaign-sky">
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-current">
+        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 5v4.59l3.3 3.3-1.42 1.41L11 12.41V7Z"></path>
+      </svg>
+    </div>
+
+    <div class="min-w-0">
+      <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-campaign-sky">
+        {hero.signaturesCounter.label}
+      </p>
+      <p class="mt-1.5 text-2xl font-black leading-none text-white md:mt-2 md:text-3xl" data-signature-counter-value>
+        {hero.signaturesCounter.value}
+      </p>
+      <p class="mt-1.5 text-[11px] leading-4 text-campaign-text-muted md:mt-2 md:text-xs md:leading-5" data-signature-counter-note>
+        Contador publico actualizado
+      </p>
+    </div>
+  </div>
+</aside>
+
+<script>
+  import { getSignatureCount } from "../../lib/signatures";
+
+  const valueNode = document.querySelector("[data-signature-counter-value]");
+  const noteNode = document.querySelector("[data-signature-counter-note]");
+
+  const formatCount = (value) => new Intl.NumberFormat("es-CL").format(value);
+
+  const refreshCounter = async () => {
+    if (!(valueNode instanceof HTMLElement)) return;
+
+    try {
+      const count = await getSignatureCount();
+      valueNode.textContent = formatCount(count);
+      if (noteNode instanceof HTMLElement) {
+        noteNode.textContent = "Contador publico actualizado";
+      }
+    } catch (error) {
+      console.error(error);
+      if (noteNode instanceof HTMLElement) {
+        noteNode.textContent = "No se pudo cargar el contador público.";
+      }
+    }
+  };
+
+  refreshCounter();
+  window.addEventListener("signature:created", refreshCounter);
+</script>

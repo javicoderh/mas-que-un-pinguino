@@ -1,0 +1,91 @@
+---
+interface Props {
+  targetIso: string;
+  expiredMessage: string;
+}
+
+const { targetIso, expiredMessage } = Astro.props;
+---
+
+<div
+  class="surface-panel rounded-3xl p-5"
+  data-countdown
+  data-target={targetIso}
+  data-expired-message={expiredMessage}
+>
+  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-campaign-pink">Tiempo para firmar</p>
+  <div class="mt-4 grid grid-cols-4 gap-3" aria-live="polite">
+    <div class="rounded-2xl bg-white/6 p-3 text-center">
+      <p class="text-2xl font-bold text-white" data-unit="days">--</p>
+      <p class="mt-1 text-[11px] uppercase tracking-[0.12em] text-campaign-text-muted">Días</p>
+    </div>
+    <div class="rounded-2xl bg-white/6 p-3 text-center">
+      <p class="text-2xl font-bold text-white" data-unit="hours">--</p>
+      <p class="mt-1 text-[11px] uppercase tracking-[0.12em] text-campaign-text-muted">Horas</p>
+    </div>
+    <div class="rounded-2xl bg-white/6 p-3 text-center">
+      <p class="text-2xl font-bold text-white" data-unit="minutes">--</p>
+      <p class="mt-1 text-[11px] uppercase tracking-[0.12em] text-campaign-text-muted">Min</p>
+    </div>
+    <div class="rounded-2xl bg-white/6 p-3 text-center">
+      <p class="text-2xl font-bold text-white" data-unit="seconds">--</p>
+      <p class="mt-1 text-[11px] uppercase tracking-[0.12em] text-campaign-text-muted">Seg</p>
+    </div>
+  </div>
+  <p class="mt-4 text-sm text-campaign-text-muted" data-countdown-message>
+    Cuenta regresiva hacia el cierre ciudadano del proceso.
+  </p>
+</div>
+
+<script>
+  const countdownNodes = document.querySelectorAll("[data-countdown]");
+
+  const formatUnit = (value) => String(Math.max(0, value)).padStart(2, "0");
+
+  for (const node of countdownNodes) {
+    const targetAttr = node.getAttribute("data-target");
+    const expiredMessage = node.getAttribute("data-expired-message") ?? "";
+    const message = node.querySelector("[data-countdown-message]");
+    const units = {
+      days: node.querySelector('[data-unit="days"]'),
+      hours: node.querySelector('[data-unit="hours"]'),
+      minutes: node.querySelector('[data-unit="minutes"]'),
+      seconds: node.querySelector('[data-unit="seconds"]')
+    };
+
+    if (!targetAttr) continue;
+
+    const target = new Date(targetAttr);
+
+    const tick = () => {
+      const diff = target.getTime() - Date.now();
+
+      if (diff <= 0) {
+        units.days && (units.days.textContent = "00");
+        units.hours && (units.hours.textContent = "00");
+        units.minutes && (units.minutes.textContent = "00");
+        units.seconds && (units.seconds.textContent = "00");
+        if (message) message.textContent = expiredMessage;
+        return false;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      units.days && (units.days.textContent = formatUnit(days));
+      units.hours && (units.hours.textContent = formatUnit(hours));
+      units.minutes && (units.minutes.textContent = formatUnit(minutes));
+      units.seconds && (units.seconds.textContent = formatUnit(seconds));
+      return true;
+    };
+
+    tick();
+    const interval = window.setInterval(() => {
+      const active = tick();
+      if (!active) window.clearInterval(interval);
+    }, 1000);
+  }
+</script>
