@@ -29,6 +29,9 @@ export const signatureSchema = z
     lastName: trimmedString(80),
     rut: trimmedString(16),
     email: trimmedString(120),
+    age: z.coerce.number().int().min(1).max(120),
+    country: trimmedString(80),
+    legalNature: trimmedString(40),
     region: trimmedString(80),
     commune: trimmedString(80),
     affiliation: optionalTrimmedString(120),
@@ -69,6 +72,30 @@ export const signatureSchema = z
         code: z.ZodIssueCode.custom,
         path: ["email"],
         message: "Ingresa un correo válido."
+      });
+    }
+
+    if (!Number.isInteger(value.age) || value.age < 1 || value.age > 120) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["age"],
+        message: "Ingresa una edad válida."
+      });
+    }
+
+    if (!placePattern.test(value.country) || looksMeaningless(value.country)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["country"],
+        message: "Ingresa un país válido."
+      });
+    }
+
+    if (!["Persona natural", "Persona jurídica"].includes(value.legalNature)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["legalNature"],
+        message: "Selecciona si firmas como persona natural o jurídica."
       });
     }
 
@@ -121,6 +148,9 @@ export interface NormalizedSignature {
   fullName: string;
   rut: string;
   email: string;
+  age: number;
+  country: string;
+  legalNature: string;
   region: string;
   commune: string;
   affiliation: string;
@@ -148,6 +178,9 @@ export function parseSignaturePayload(raw: Record<string, unknown>): NormalizedS
     fullName: `${normalizedFirstName} ${normalizedLastName}`.trim(),
     rut: normalizeRut(parsed.rut),
     email: normalizeEmail(parsed.email),
+    age: parsed.age,
+    country: normalizeText(parsed.country),
+    legalNature: normalizeText(parsed.legalNature),
     region: normalizeText(parsed.region),
     commune: normalizeText(parsed.commune),
     affiliation: normalizeText(parsed.affiliation ?? ""),

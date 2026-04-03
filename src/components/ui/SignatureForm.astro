@@ -85,6 +85,54 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
 
     <div class="grid gap-5 md:grid-cols-2">
       <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.age}</span>
+        <input
+          type="number"
+          name="age"
+          inputmode="numeric"
+          min="1"
+          max="120"
+          required
+          data-validate="age"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Ej. 34"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="age"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.country}</span>
+        <input
+          name="country"
+          autocomplete="country-name"
+          required
+          data-validate="country"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Ej. Chile"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="country"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.legalNature}</span>
+        <select
+          name="legal_nature"
+          required
+          data-validate="legal_nature"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-[#0f1822] px-4 py-3 text-white"
+        >
+          <option value="">Selecciona una opción</option>
+          <option value="Persona natural">Persona natural</option>
+          <option value="Persona jurídica">Persona jurídica</option>
+        </select>
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="legal_nature"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
         <span>{signatureForm.fields.region}</span>
         <input
           name="region"
@@ -257,6 +305,21 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
         regex: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
         message: "Ingresa un correo electrónico válido."
       },
+      age: {
+        required: true,
+        regex: /^(?:1[01][0-9]|120|[1-9][0-9]?|0?[1-9])$/,
+        message: "Ingresa una edad válida."
+      },
+      country: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'().,\-\s]{2,80}$/,
+        message: "Ingresa un país válido."
+      },
+      legal_nature: {
+        required: true,
+        regex: /^(Persona natural|Persona jurídica)$/,
+        message: "Selecciona si firmas como persona natural o jurídica."
+      },
       region: {
         required: true,
         regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'().,\-\s]{2,80}$/,
@@ -288,6 +351,8 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       const field = form.elements.namedItem(name);
       return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
         ? field.value.trim()
+        : field instanceof HTMLSelectElement
+          ? field.value.trim()
         : "";
     };
 
@@ -300,7 +365,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       const node = form.querySelector(`[data-error-for="${name}"]`);
       const field = getField(name);
 
-      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
         field.classList.add("border-red-400", "bg-red-950/20");
         field.classList.remove("border-white/14");
         field.setAttribute("aria-invalid", "true");
@@ -327,7 +392,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       const node = form.querySelector(`[data-error-for="${name}"]`);
       const field = getField(name);
 
-      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
         field.classList.remove("border-red-400", "bg-red-950/20");
         field.classList.add("border-white/14");
         field.removeAttribute("aria-invalid");
@@ -416,7 +481,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
         status.textContent = "Revisa los campos marcados en rojo antes de enviar.";
         const field = getField(firstInvalid.name);
 
-        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
           field.focus({ preventScroll: true });
           field.scrollIntoView({ behavior: "smooth", block: "center" });
         }
@@ -474,10 +539,10 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       }
     });
 
-    ["first_name", "last_name", "rut", "email", "region", "commune", "affiliation", "message"].forEach(
+    ["first_name", "last_name", "rut", "email", "age", "country", "legal_nature", "region", "commune", "affiliation", "message"].forEach(
       (name) => {
         const field = getField(name);
-        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
           field.addEventListener("input", () => {
           if (name === "rut" && field instanceof HTMLInputElement) {
             const clean = normalizeRut(field.value).slice(0, 9);
@@ -487,6 +552,9 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
             validateField(name);
           });
           field.addEventListener("blur", () => validateField(name));
+          if (field instanceof HTMLSelectElement) {
+            field.addEventListener("change", () => validateField(name));
+          }
         }
       }
     );
