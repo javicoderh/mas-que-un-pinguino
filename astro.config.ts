@@ -4,10 +4,13 @@ import vue from "@astrojs/vue";
 import vercel from "@astrojs/vercel/serverless";
 
 export default defineConfig({
-  site: "https://esmasqueunpinguino.cl",
+  site: "https://masqueunpinguino.cl",
   output: "server",
   adapter: vercel({}),
   integrations: [vue()],
+  security: {
+    checkOrigin: false
+  },
   vite: {
     plugins: [tailwindcss()]
   }

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://esmasqueunpinguino.cl/sitemap-index.xml
+Sitemap: https://masqueunpinguino.cl/sitemap-index.xml

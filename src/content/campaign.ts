@@ -10,7 +10,7 @@ const externalLinks = {
 export const campaignConfig = {
   site: {
     name: "Es más que un pingüino",
-    siteUrl: "https://esmasqueunpinguino.cl",
+    siteUrl: "https://masqueunpinguino.cl",
     locale: "es_CL",
     title: "Es más que un pingüino | Firma por su protección",
     description:
