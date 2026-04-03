@@ -157,12 +157,6 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       </label>
     </div>
 
-    <div class="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-      <label>
-        No completar
-        <input type="text" name="company" tabindex="-1" autocomplete="off" />
-      </label>
-    </div>
     <input type="hidden" name="issued_at_ms" value={formToken?.issuedAtMs ?? ""} />
     <input type="hidden" name="form_nonce" value={formToken?.nonce ?? ""} />
     <input type="hidden" name="form_token" value={formToken?.signature ?? ""} />
@@ -290,133 +284,125 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
     };
 
     const getField = (name) => form.elements.namedItem(name);
+    const getValue = (name) => {
+      const field = form.elements.namedItem(name);
+      return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
+        ? field.value.trim()
+        : "";
+    };
+
+    const getChecked = (name) => {
+      const field = form.elements.namedItem(name);
+      return field instanceof HTMLInputElement ? field.checked : false;
+    };
+
+    const showError = (name, message) => {
+      const node = form.querySelector(`[data-error-for="${name}"]`);
+      const field = getField(name);
+
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+        field.classList.add("border-red-400", "bg-red-950/20");
+        field.classList.remove("border-white/14");
+        field.setAttribute("aria-invalid", "true");
+      }
+
+      if (node instanceof HTMLElement) {
+        node.textContent = message;
+        node.classList.remove("opacity-0", "max-h-0");
+        node.classList.add("opacity-100", "max-h-16", "mt-1");
+
+        const previous = errorTimers.get(name);
+        if (previous) window.clearTimeout(previous);
+
+        const timer = window.setTimeout(() => {
+          node.classList.add("opacity-0", "max-h-0");
+          node.classList.remove("opacity-100", "max-h-16", "mt-1");
+        }, 5000);
+
+        errorTimers.set(name, timer);
+      }
+    };
+
+    const clearError = (name) => {
+      const node = form.querySelector(`[data-error-for="${name}"]`);
+      const field = getField(name);
+
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+        field.classList.remove("border-red-400", "bg-red-950/20");
+        field.classList.add("border-white/14");
+        field.removeAttribute("aria-invalid");
+      }
+
+      if (node instanceof HTMLElement) {
+        node.classList.add("opacity-0", "max-h-0");
+        node.classList.remove("opacity-100", "max-h-16", "mt-1");
+      }
+
+      const previous = errorTimers.get(name);
+      if (previous) window.clearTimeout(previous);
+    };
+
+    const validateField = (name) => {
+      const rule = validators[name];
+      if (!rule) return true;
+
+      const field = getField(name);
+
+      if (name === "consent") {
+        const checked = getChecked(name);
+        if (rule.required && !checked) {
+          showError(name, rule.message);
+          return false;
+        }
+        clearError(name);
+        return true;
+      }
+
+      const value = getValue(name);
+
+      if (rule.required && !value) {
+        showError(name, "Este campo es obligatorio.");
+        return false;
+      }
+
+      if (!value) {
+        clearError(name);
+        return true;
+      }
+
+      if (name === "rut") {
+        if (!isValidRut(value)) {
+          showError(name, rule.message);
+          return false;
+        }
+
+        if (field instanceof HTMLInputElement) {
+          field.value = formatRut(value);
+        }
+
+        clearError(name);
+        return true;
+      }
+
+      if (rule.regex && !rule.regex.test(value)) {
+        showError(name, rule.message);
+        return false;
+      }
+
+      clearError(name);
+      return true;
+    };
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const isConfigured = form.dataset.formConfigured === "true";
-      const honeypot = form.elements.namedItem("company");
 
       if (!isConfigured) {
         status.textContent =
           "El formulario está listo, pero falta completar la configuración server-side para registrar firmas.";
         return;
       }
-
-      if (honeypot instanceof HTMLInputElement && honeypot.value.trim() !== "") {
-        status.textContent = "No se pudo registrar la firma.";
-        return;
-      }
-
-      const getValue = (name) => {
-        const field = form.elements.namedItem(name);
-        return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
-          ? field.value.trim()
-          : "";
-      };
-
-      const getChecked = (name) => {
-        const field = form.elements.namedItem(name);
-        return field instanceof HTMLInputElement ? field.checked : false;
-      };
-
-      const rutValue = getValue("rut");
-      const showError = (name, message) => {
-        const node = form.querySelector(`[data-error-for="${name}"]`);
-        const field = getField(name);
-
-        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
-          field.classList.add("border-red-400", "bg-red-950/20");
-          field.classList.remove("border-white/14");
-          field.setAttribute("aria-invalid", "true");
-        }
-
-        if (node instanceof HTMLElement) {
-          node.textContent = message;
-          node.classList.remove("opacity-0", "max-h-0");
-          node.classList.add("opacity-100", "max-h-16", "mt-1");
-
-          const previous = errorTimers.get(name);
-          if (previous) window.clearTimeout(previous);
-
-          const timer = window.setTimeout(() => {
-            node.classList.add("opacity-0", "max-h-0");
-            node.classList.remove("opacity-100", "max-h-16", "mt-1");
-          }, 5000);
-
-          errorTimers.set(name, timer);
-        }
-      };
-
-      const clearError = (name) => {
-        const node = form.querySelector(`[data-error-for="${name}"]`);
-        const field = getField(name);
-
-        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
-          field.classList.remove("border-red-400", "bg-red-950/20");
-          field.classList.add("border-white/14");
-          field.removeAttribute("aria-invalid");
-        }
-
-        if (node instanceof HTMLElement) {
-          node.classList.add("opacity-0", "max-h-0");
-          node.classList.remove("opacity-100", "max-h-16", "mt-1");
-        }
-
-        const previous = errorTimers.get(name);
-        if (previous) window.clearTimeout(previous);
-      };
-
-      const validateField = (name) => {
-        const rule = validators[name];
-        if (!rule) return true;
-
-        const field = getField(name);
-
-        if (name === "consent") {
-          const checked = getChecked(name);
-          if (rule.required && !checked) {
-            showError(name, rule.message);
-            return false;
-          }
-          clearError(name);
-          return true;
-        }
-
-        const value = getValue(name);
-
-        if (rule.required && !value) {
-          showError(name, "Este campo es obligatorio.");
-          return false;
-        }
-
-        if (!value) {
-          clearError(name);
-          return true;
-        }
-
-        if (name === "rut") {
-          if (!isValidRut(value)) {
-            showError(name, rule.message);
-            return false;
-          }
-
-          if (field instanceof HTMLInputElement) {
-            field.value = formatRut(value);
-          }
-
-          clearError(name);
-          return true;
-        }
-
-        if (rule.regex && !rule.regex.test(value)) {
-          showError(name, rule.message);
-          return false;
-        }
-
-        clearError(name);
-        return true;
-      };
 
       const fieldsToValidate = Object.keys(validators);
       const validationResults = fieldsToValidate.map((name) => ({

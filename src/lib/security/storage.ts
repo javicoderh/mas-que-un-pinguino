@@ -32,17 +32,9 @@ export interface StoredSignatureInput {
   };
 }
 
-const counterPath = () =>
-  `${securityConfig.collections.counterCollection}/${securityConfig.collections.counterDoc}`;
-
 export async function getPublicSignatureCount() {
   if (!isServerStorageConfigured) {
     return getPublicCounterFromFirestore();
-  }
-
-  const counter = await getDocument<{ count?: number }>(counterPath());
-  if (counter?.count !== undefined) {
-    return Number(counter.count ?? 0);
   }
 
   return countCollectionDocuments(securityConfig.collections.signatures, [
