@@ -135,7 +135,7 @@ export const campaignConfig = {
     submitLabel: "Firmar la carta",
     rutHelp: "Ingresa tu RUT con puntos o sin puntos. El dígito verificador puede ser número o K.",
     privacyNote:
-      "Tus datos solo deben usarse para respaldar esta campaña y, si lo autorizas, para enviarte actualizaciones del proceso.",
+      "Tus datos se usan únicamente para gestionar tu firma, respaldar esta campaña y, si lo autorizas, enviarte actualizaciones del proceso. Para consultas sobre privacidad o tratamiento de datos, escríbenos a pinguinohumboldtmn@gmail.com.",
     configuredNote:
       "El formulario está listo para conectarse a un endpoint o proveedor externo desde `src/content/campaign.ts`.",
     trustPoints: [
@@ -155,7 +155,8 @@ export const campaignConfig = {
       commune: "Comuna",
       affiliation: "Organización o vínculo con el territorio",
       message: "¿Por qué firmas?",
-      consent: "Acepto respaldar esta carta y el uso de mis datos para esta campaña.",
+      adultDeclaration: "Declaro ser mayor de 18 años.",
+      consent: "Acepto respaldar esta carta y el uso de mis datos para esta campaña, y acepto la",
       updates: "Quiero recibir actualizaciones de la campaña."
     }
   },

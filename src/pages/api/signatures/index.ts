@@ -139,6 +139,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       commune: formData.get("commune"),
       affiliation: formData.get("affiliation"),
       message: formData.get("message"),
+      adultDeclaration: formData.get("adult_declaration") === "on",
       consent: formData.get("consent") === "on",
       updates: formData.get("updates") === "on"
     });

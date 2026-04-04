@@ -90,7 +90,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
           type="number"
           name="age"
           inputmode="numeric"
-          min="1"
+          min="18"
           max="120"
           required
           data-validate="age"
@@ -186,12 +186,30 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       <label class="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/5 p-4 text-sm text-campaign-text-muted">
         <input
           type="checkbox"
+          name="adult_declaration"
+          required
+          data-validate="adult_declaration"
+          class="mt-1 h-4 w-4 rounded border-white/20 bg-black text-campaign-warm"
+        />
+        <span>{signatureForm.fields.adultDeclaration}</span>
+      </label>
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="adult_declaration"></span>
+
+      <label class="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/5 p-4 text-sm text-campaign-text-muted">
+        <input
+          type="checkbox"
           name="consent"
           required
           data-validate="consent"
           class="mt-1 h-4 w-4 rounded border-white/20 bg-black text-campaign-warm"
         />
-        <span>{signatureForm.fields.consent}</span>
+        <span>
+          {signatureForm.fields.consent}{" "}
+          <a href="/privacidad" class="font-semibold text-campaign-warm underline underline-offset-4 hover:text-[#FFF1A8]">
+            política de privacidad
+          </a>
+          .
+        </span>
       </label>
       <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="consent"></span>
 
@@ -307,8 +325,8 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       },
       age: {
         required: true,
-        regex: /^(?:1[01][0-9]|120|[1-9][0-9]?|0?[1-9])$/,
-        message: "Ingresa una edad válida."
+        regex: /^(?:1[89]|[2-9][0-9]|1[01][0-9]|120)$/,
+        message: "Debes tener 18 años o más para firmar."
       },
       country: {
         required: true,
@@ -319,6 +337,10 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
         required: true,
         regex: /^(Persona natural|Persona jurídica)$/,
         message: "Selecciona si firmas como persona natural o jurídica."
+      },
+      adult_declaration: {
+        required: true,
+        message: "Debes declarar que eres mayor de 18 años."
       },
       region: {
         required: true,
@@ -413,7 +435,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
 
       const field = getField(name);
 
-      if (name === "consent") {
+      if (name === "consent" || name === "adult_declaration") {
         const checked = getChecked(name);
         if (rule.required && !checked) {
           showError(name, rule.message);
@@ -562,6 +584,11 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
     const consentField = getField("consent");
     if (consentField instanceof HTMLInputElement) {
       consentField.addEventListener("change", () => validateField("consent"));
+    }
+
+    const adultDeclarationField = getField("adult_declaration");
+    if (adultDeclarationField instanceof HTMLInputElement) {
+      adultDeclarationField.addEventListener("change", () => validateField("adult_declaration"));
     }
   }
 </script>

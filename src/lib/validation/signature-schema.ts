@@ -29,13 +29,14 @@ export const signatureSchema = z
     lastName: trimmedString(80),
     rut: trimmedString(16),
     email: trimmedString(120),
-    age: z.coerce.number().int().min(1).max(120),
+    age: z.coerce.number().int().min(18).max(120),
     country: trimmedString(80),
     legalNature: trimmedString(40),
     region: trimmedString(80),
     commune: trimmedString(80),
     affiliation: optionalTrimmedString(120),
     message: optionalTrimmedString(500),
+    adultDeclaration: z.boolean(),
     consent: z.boolean(),
     updates: z.boolean()
   })
@@ -75,11 +76,11 @@ export const signatureSchema = z
       });
     }
 
-    if (!Number.isInteger(value.age) || value.age < 1 || value.age > 120) {
+    if (!Number.isInteger(value.age) || value.age < 18 || value.age > 120) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["age"],
-        message: "Ingresa una edad válida."
+        message: "Debes tener 18 años o más para firmar."
       });
     }
 
@@ -131,6 +132,14 @@ export const signatureSchema = z
       });
     }
 
+    if (!value.adultDeclaration) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["adultDeclaration"],
+        message: "Debes declarar que eres mayor de 18 años."
+      });
+    }
+
     if (!value.consent) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -155,6 +164,7 @@ export interface NormalizedSignature {
   commune: string;
   affiliation: string;
   message: string;
+  adultDeclaration: boolean;
   consent: boolean;
   updates: boolean;
   normalized: {
@@ -185,6 +195,7 @@ export function parseSignaturePayload(raw: Record<string, unknown>): NormalizedS
     commune: normalizeText(parsed.commune),
     affiliation: normalizeText(parsed.affiliation ?? ""),
     message: normalizeText(parsed.message ?? ""),
+    adultDeclaration: parsed.adultDeclaration,
     consent: parsed.consent,
     updates: parsed.updates,
     normalized: {
