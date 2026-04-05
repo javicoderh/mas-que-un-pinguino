@@ -25,6 +25,9 @@ const { navigation, site } = campaignConfig;
           <li>
             <a
               href={item.href}
+              data-analytics-event="navigation_click"
+              data-analytics-label={item.label}
+              data-analytics-context="site_header_desktop"
               class="focus-ring text-sm font-semibold text-white/88 transition hover:text-campaign-warm"
             >
               {item.label}
@@ -36,6 +39,9 @@ const { navigation, site } = campaignConfig;
 
     <a
       href="/firma"
+      data-analytics-event="cta_click"
+      data-analytics-label="Firmar"
+      data-analytics-context="site_header_desktop"
       class="focus-ring hidden rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:border-black/55 hover:bg-[#FFF1A8] md:inline-flex"
     >
       Firmar
@@ -58,6 +64,9 @@ const { navigation, site } = campaignConfig;
               <li>
                 <a
                   href={item.href}
+                  data-analytics-event="navigation_click"
+                  data-analytics-label={item.label}
+                  data-analytics-context="site_header_mobile"
                   class="focus-ring block rounded-2xl border border-transparent px-4 py-3 text-sm font-semibold text-white transition hover:border-white/10 hover:bg-white/6 hover:text-campaign-warm"
                 >
                   {item.label}
@@ -69,6 +78,9 @@ const { navigation, site } = campaignConfig;
 
         <a
           href="/firma"
+          data-analytics-event="cta_click"
+          data-analytics-label="Firmar ahora"
+          data-analytics-context="site_header_mobile"
           class="focus-ring mt-4 flex min-h-12 items-center justify-center rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
         >
           Firmar ahora

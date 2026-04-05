@@ -295,6 +295,12 @@ PUBLIC_FIREBASE_COUNTER_COLLECTION=public_stats
 PUBLIC_FIREBASE_COUNTER_DOC=signatures_counter
 ```
 
+Para analytics con Google Analytics 4:
+
+```bash
+PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
 Otras variables útiles ya soportadas:
 
 - límites de rate limiting
@@ -401,6 +407,31 @@ Si usas NIC Chile con Vercel DNS:
 
 - `ns1.vercel-dns.com`
 - `ns2.vercel-dns.com`
+
+## Analytics
+
+El sitio soporta integración con Google Analytics 4 de forma condicional.
+
+### Qué hace
+
+- carga `gtag.js` solo si existe `PUBLIC_GA_MEASUREMENT_ID`
+- mantiene page views automáticos
+- registra eventos de:
+  - navegación principal
+  - CTAs
+  - apertura y descarga de documentos
+  - clics sociales
+  - envío exitoso y fallido del formulario de firmas
+
+### Eventos instrumentados
+
+- `cta_click`
+- `navigation_click`
+- `social_click`
+- `document_open`
+- `file_download`
+- `signature_submit_success`
+- `signature_submit_error`
 
 ## Operación y debugging
 

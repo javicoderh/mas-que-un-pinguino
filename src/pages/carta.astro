@@ -32,18 +32,24 @@ const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
             href={letterPdfUrl}
             label="Abrir PDF en nueva pestaña"
             target="_blank"
+            analyticsEvent="document_open"
+            analyticsContext="letter_page"
             class="w-full justify-center text-center md:w-auto"
           />
           <ButtonLink
             href={letterPdfUrl}
             label="Descargar PDF"
             download={true}
+            analyticsEvent="file_download"
+            analyticsContext="letter_page"
             variant="ghost"
             class="w-full justify-center md:w-auto"
           />
           <ButtonLink
             href="/firma#formulario-firma"
             label="Ir a firmar"
+            analyticsEvent="cta_click"
+            analyticsContext="letter_page"
             variant="secondary"
             class="w-full justify-center md:w-auto"
           />

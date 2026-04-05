@@ -509,6 +509,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       if (!isConfigured) {
         status.textContent =
           "El formulario está listo, pero falta completar la configuración server-side para registrar firmas.";
+        window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "not_configured" } }));
         return;
       }
 
@@ -522,6 +523,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
 
       if (hasErrors) {
         status.textContent = "Revisa los campos marcados en rojo antes de enviar.";
+        window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "validation" } }));
         const field = firstInvalid ? getField(firstInvalid.name) : null;
 
         if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
@@ -561,6 +563,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
             typeof payload.message === "string"
               ? payload.message
               : "No pudimos procesar tu firma. Inténtalo nuevamente en un momento.";
+          window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "response_error" } }));
           return;
         }
 
@@ -574,6 +577,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
         console.error(error);
         status.textContent =
           "No se pudo registrar tu firma. Inténtalo nuevamente en un momento.";
+        window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "network" } }));
       } finally {
         if (submitButton instanceof HTMLButtonElement) {
           submitButton.disabled = false;

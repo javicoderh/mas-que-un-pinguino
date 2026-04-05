@@ -36,8 +36,8 @@ const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
         </ul>
 
         <div class="mt-8 flex flex-wrap gap-4">
-          <ButtonLink href={letterPdfUrl} label="Abrir carta científica" target="_blank" />
-          <ButtonLink href="/firma" label="Firmar la carta" variant="pink" />
+          <ButtonLink href={letterPdfUrl} label="Abrir carta científica" target="_blank" analyticsEvent="document_open" analyticsContext="transparency_page" />
+          <ButtonLink href="/firma" label="Firmar la carta" variant="pink" analyticsEvent="cta_click" analyticsContext="transparency_page" />
         </div>
       </article>
 
@@ -67,7 +67,7 @@ const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
       </p>
       <div class="mt-6 flex flex-wrap gap-3">
         {transparency.publicReadinessLinks.map((item) => (
-          <ButtonLink href={item.href} label={item.label} variant="ghost" />
+          <ButtonLink href={item.href} label={item.label} variant="ghost" analyticsEvent="navigation_click" analyticsContext="transparency_public_surface" />
         ))}
       </div>
     </div>

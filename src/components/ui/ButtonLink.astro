@@ -7,6 +7,8 @@ interface Props {
   rel?: string;
   download?: boolean | string;
   class?: string;
+  analyticsEvent?: string;
+  analyticsContext?: string;
 }
 
 const {
@@ -16,7 +18,9 @@ const {
   target = "_self",
   rel,
   download,
-  class: className = ""
+  class: className = "",
+  analyticsEvent,
+  analyticsContext
 } = Astro.props;
 
 const variants = {
@@ -36,6 +40,9 @@ const variants = {
   target={target}
   rel={rel ?? (target === "_blank" ? "noreferrer noopener" : undefined)}
   download={download}
+  data-analytics-event={analyticsEvent}
+  data-analytics-label={label}
+  data-analytics-context={analyticsContext}
   class:list={[
     "focus-ring inline-flex min-h-12 items-center justify-center rounded-full border px-6 py-3 text-[0.95rem] font-extrabold tracking-[0.08em] uppercase transition duration-200",
     variants,

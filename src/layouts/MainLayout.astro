@@ -4,6 +4,7 @@ import SiteHeader from "../components/layout/SiteHeader.astro";
 import FloatingCTA from "../components/ui/FloatingCTA.astro";
 import FloatingSignatureCounter from "../components/ui/FloatingSignatureCounter.astro";
 import { campaignConfig } from "../content/campaign";
+import { gaMeasurementId, isGaEnabled } from "../lib/analytics";
 import "../styles/global.css";
 
 interface Props {
@@ -93,6 +94,75 @@ const structuredData = [
     <meta name="twitter:image" content={socialImage} />
     <meta name="twitter:image:alt" content={`Imagen principal de ${campaignConfig.site.name}`} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    {isGaEnabled && (
+      <>
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
+        <script
+          is:inline
+          define:vars={{ gaMeasurementId, pageTitle: title }}
+        >{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag("js", new Date());
+          gtag("config", gaMeasurementId, {
+            page_title: pageTitle,
+            page_location: window.location.href,
+            page_path: window.location.pathname + window.location.search,
+            anonymize_ip: true,
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false,
+            send_page_view: true
+          });
+
+          window.trackGaEvent = (eventName, params = {}) => {
+            if (typeof window.gtag !== "function") return;
+            window.gtag("event", eventName, params);
+          };
+        `}</script>
+        <script is:inline>{`
+          const findTrackedElement = (target) =>
+            target instanceof Element ? target.closest("[data-analytics-event]") : null;
+
+          document.addEventListener("click", (event) => {
+            const tracked = findTrackedElement(event.target);
+            if (!tracked || typeof window.trackGaEvent !== "function") return;
+
+            const analyticsEvent = tracked.getAttribute("data-analytics-event");
+            if (!analyticsEvent) return;
+
+            const params = {
+              link_text: tracked.getAttribute("data-analytics-label") || tracked.textContent?.trim() || "",
+              link_url: tracked.getAttribute("href") || tracked.getAttribute("data-analytics-href") || "",
+              link_context: tracked.getAttribute("data-analytics-context") || "",
+              transport_type: "beacon"
+            };
+
+            window.trackGaEvent(analyticsEvent, params);
+          }, { passive: true });
+
+          window.addEventListener("signature:created", () => {
+            if (typeof window.trackGaEvent !== "function") return;
+            window.trackGaEvent("signature_submit_success", {
+              form_name: "campaign_signature_form",
+              page_path: window.location.pathname,
+              transport_type: "beacon"
+            });
+          });
+
+          window.addEventListener("signature:error", (event) => {
+            if (typeof window.trackGaEvent !== "function") return;
+            const detail = event instanceof CustomEvent ? event.detail || {} : {};
+            window.trackGaEvent("signature_submit_error", {
+              form_name: "campaign_signature_form",
+              page_path: window.location.pathname,
+              error_type: detail.errorType || "unknown",
+              transport_type: "beacon"
+            });
+          });
+        `}</script>
+      </>
+    )}
   </head>
   <body>
     <a href="#contenido" class="focus-ring sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-campaign-warm focus:px-4 focus:py-2 focus:text-black">
