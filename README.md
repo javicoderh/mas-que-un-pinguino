@@ -415,6 +415,8 @@ El sitio soporta integración con Google Analytics 4 de forma condicional.
 ### Qué hace
 
 - carga `gtag.js` solo si existe `PUBLIC_GA_MEASUREMENT_ID`
+- la carga ocurre solo en producción
+- si cambias `PUBLIC_GA_MEASUREMENT_ID` en Vercel, debes hacer redeploy para que el valor llegue al HTML público
 - mantiene page views automáticos
 - registra eventos de:
   - navegación principal
