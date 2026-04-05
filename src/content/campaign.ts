@@ -1,6 +1,6 @@
 const externalLinks = {
-  letterPdf: "",
-  form: "",
+  letterPdf: "/assets/carta-abierta-pinguino-humboldt.pdf",
+  form: "/firma",
   linktree: "",
   instagram: "https://www.instagram.com/esmasqueunpinguino/",
   tiktok: "https://www.tiktok.com/@esmasqueunpinguino",
@@ -38,7 +38,8 @@ export const campaignConfig = {
   assets: {
     logo: "/assets/logo-pinguino.png",
     ogImage: "/assets/og-cover.svg",
-    favicon: "/favicon.svg"
+    favicon: "/favicon.svg",
+    publicLetterPdf: "/assets/carta-abierta-pinguino-humboldt.pdf"
   },
   links: externalLinks,
   dates: {
@@ -166,6 +167,9 @@ export const campaignConfig = {
     title: "Transparencia, ciencia y acción colectiva",
     body:
       "Esta campaña es pacífica, ciudadana, colaborativa y ambientalmente responsable. Se apoya en evidencia científica, participación abierta y coordinación no violenta para proteger al pingüino de Humboldt y el ecosistema que sostiene.",
+    publicReadinessTitle: "Señales públicas y técnicas del sitio",
+    publicReadinessBody:
+      "Además de la campaña pública, el sitio expone documentos, rutas y señales técnicas mínimas para buscadores, validadores y scrapers legítimos.",
     principles: [
       "No violencia",
       "Empatía",
@@ -174,6 +178,13 @@ export const campaignConfig = {
       "Ciencia como base",
       "Responsabilidad ambiental",
       "Participación ciudadana"
+    ],
+    publicReadinessLinks: [
+      { href: "/robots.txt", label: "robots.txt" },
+      { href: "/sitemap.xml", label: "sitemap.xml" },
+      { href: "/.well-known/security.txt", label: "security.txt" },
+      { href: "/privacidad", label: "Política de privacidad" },
+      { href: "/contacto", label: "Contacto" }
     ]
   },
   navigation: [

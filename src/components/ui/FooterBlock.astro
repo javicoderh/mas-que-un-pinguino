@@ -1,10 +1,10 @@
 ---
 import { campaignConfig } from "../../content/campaign";
 import logo from "../../assets/logo_pinguino_humboldt_circulo.png";
-import letterPdfUrl from "../../assets/Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf?url";
 import ButtonLink from "./ButtonLink.astro";
 
 const { transparency, socialLinks, site } = campaignConfig;
+const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
 const publicSocialLinks = socialLinks.filter((item) => /^https?:\/\//.test(item.href));
 const socialIconPaths: Record<string, string> = {
   Instagram:
@@ -52,6 +52,18 @@ const socialIconPaths: Record<string, string> = {
           <ButtonLink href={letterPdfUrl} label="Abrir PDF" target="_blank" />
           <ButtonLink href="/transparencia" label="Ver transparencia" variant="secondary" />
           <ButtonLink href="/privacidad" label="Privacidad" variant="ghost" />
+        </div>
+      </div>
+
+      <div class="surface-panel rounded-3xl p-6">
+        <h2 class="text-xl font-semibold text-white">Superficie pública del sitio</h2>
+        <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
+          El sitio expone rutas públicas mínimas para indexación, validación y acceso responsable por herramientas automáticas legítimas.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <ButtonLink href="/robots.txt" label="robots.txt" variant="ghost" />
+          <ButtonLink href="/sitemap.xml" label="sitemap.xml" variant="ghost" />
+          <ButtonLink href="/.well-known/security.txt" label="security.txt" variant="ghost" />
         </div>
       </div>
 

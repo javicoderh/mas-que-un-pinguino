@@ -3,10 +3,10 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ButtonLink from "../components/ui/ButtonLink.astro";
-import letterPdfUrl from "../assets/Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf?url";
 import { campaignConfig } from "../content/campaign";
 
 const { transparency, futureRoutes } = campaignConfig;
+const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
 ---
 
 <MainLayout
@@ -56,6 +56,20 @@ const { transparency, futureRoutes } = campaignConfig;
           ))}
         </ul>
       </article>
+    </div>
+  </Section>
+
+  <Section class="pt-0">
+    <div class="surface-panel rounded-[2rem] p-8">
+      <h2 class="text-2xl font-bold text-white">{transparency.publicReadinessTitle}</h2>
+      <p class="mt-4 max-w-3xl text-base leading-7 text-campaign-text-muted">
+        {transparency.publicReadinessBody}
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        {transparency.publicReadinessLinks.map((item) => (
+          <ButtonLink href={item.href} label={item.label} variant="ghost" />
+        ))}
+      </div>
     </div>
   </Section>
 </MainLayout>

@@ -3,7 +3,9 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ButtonLink from "../components/ui/ButtonLink.astro";
-import letterPdfUrl from "../assets/Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf?url";
+import { campaignConfig } from "../content/campaign";
+
+const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
 ---
 
 <MainLayout
@@ -20,6 +22,10 @@ import letterPdfUrl from "../assets/Carta abierta de la comunidad científica so
           body="Este documento resume la urgencia ecológica, científica y ciudadana detrás de la campaña. Úsalo para informarte, compartirlo y respaldar la solicitud antes del 25 de abril."
           as="h1"
         />
+
+        <p class="mt-6 text-sm leading-6 text-campaign-text-muted">
+          Esta versión pública usa una URL estable para facilitar enlaces directos, archivado web y consumo por agentes automáticos legítimos.
+        </p>
 
         <div class="mt-8 grid gap-4 md:flex md:flex-wrap md:items-start">
           <ButtonLink
