@@ -1,31 +1,70 @@
 # Es más que un pingüino
 
-Seed de campaña en Astro para una primera fase de conversión enfocada en tres acciones: leer la carta abierta, firmar y seguir la campaña en redes.
+Sitio de campaña construido con Astro para movilización ciudadana en torno a la protección del pingüino de Humboldt. El proyecto resuelve tres frentes al mismo tiempo:
 
-## Propósito
+- comunicación pública clara
+- captación y conteo de firmas
+- operación segura en un entorno serverless
 
-Este proyecto está pensado como una base rápida, seria y escalable para una campaña ciudadana chilena por la protección del pingüino de Humboldt y la restitución del decreto de Monumento Natural. La primera fase es estática, accesible y liviana, pero deja puntos claros para crecer hacia noticias, materiales educativos y participación territorial.
+Hoy el sitio corre con SSR sobre Vercel, persiste firmas en Firestore y expone una interfaz enfocada en conversión: leer la carta, firmar y compartir.
+
+## Qué resuelve este proyecto
+
+- landing pública de campaña
+- lectura y descarga de carta abierta en PDF
+- formulario de firmas con validación cliente y server-side
+- deduplicación por RUT, email e identidad normalizada
+- mitigación básica de abuso y spam
+- contador público de firmas aceptadas
+- importación histórica de respuestas desde Google Forms
 
 ## Stack
 
-- Astro 5+
+- Astro 5
 - TypeScript
 - Tailwind CSS 4
-- HTML semántico
-- JavaScript mínimo solo para interacciones puntuales
-- API server-side + Firebase Firestore para guardar firmas
+- Vue 3
+- Firebase Firestore
+- Vercel Serverless
+
+## Dominio canónico
+
+El dominio canónico actual es:
+
+- `https://esmasqueunpinguino.cl`
+
+El backend acepta también estos origins para no romper redirecciones ni dominios alternativos:
+
+- `https://esmasqueunpinguino.cl`
+- `https://www.esmasqueunpinguino.cl`
+- `https://masqueunpinguino.cl`
+- `https://www.masqueunpinguino.cl`
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run check
+```
 
 ## Instalación
 
 ```bash
 npm install
+cp .env.example .env
 ```
 
-## Desarrollo
+## Desarrollo local
 
 ```bash
 npm run dev
 ```
+
+Servidor local esperado:
+
+- `http://localhost:4321`
 
 ## Build de producción
 
@@ -33,16 +72,20 @@ npm run dev
 npm run build
 ```
 
-## Estructura principal
+Nota:
+
+- localmente puedes estar en Node 23
+- Vercel ejecuta este proyecto con Node 22
+
+Conviene alinear tu entorno local a Node 22 cuando estés depurando diferencias de runtime.
+
+## Estructura del proyecto
 
 ```text
-public/
-  assets/
-    logo-pinguino.png
-  favicon.svg
-  robots.txt
 src/
+  assets/
   components/
+    campaign/
     layout/
     sections/
     ui/
@@ -50,199 +93,376 @@ src/
     campaign.ts
   layouts/
     MainLayout.astro
+  lib/
+    firebase.ts
+    signatures.ts
+    security/
+    validation/
   pages/
-    index.astro
+    api/
+      signatures/
     carta.astro
+    contacto.astro
     firma.astro
+    index.astro
     transparencia.astro
   styles/
-    global.css
+scripts/
+generated/
+public/
+  assets/
 astro.config.ts
-package.json
-tsconfig.json
+firestore.rules
 ```
 
-## Dónde editar enlaces y copy
+## Dónde editar qué
 
-Todo el contenido editable y los placeholders importantes están centralizados en:
+### Copy, enlaces y configuración editorial
 
-`src/content/campaign.ts`
+Archivo principal:
 
-Ahí puedes cambiar:
+- [campaign.ts](/home/javier/Documents/salvemos-humboldt/src/content/campaign.ts)
 
-- títulos y descripciones SEO
-- enlaces externos (`LETTER_PDF_URL`, `FORM_URL`, redes, Linktree)
-- fecha objetivo del countdown
-- copy del hero
-- cards del problema
-- bloques del ecosistema
-- hashtags
-- principios de transparencia
-- rutas futuras sugeridas
+Aquí se centraliza:
 
-## Dónde reemplazar assets
+- SEO y metadata base
+- labels del formulario
+- textos de secciones
+- links sociales
+- fechas de campaña
+- CTAs
+- assets referenciados por la app
 
-- Logo principal: `public/assets/logo-pinguino.png`
-- Imagen Open Graph placeholder: `public/assets/og-cover.svg`
-- Favicon placeholder: `public/favicon.svg`
+### Layout y metadata global
 
-Puedes reemplazar `og-cover.svg` por un JPG/PNG final más adelante y actualizar la ruta en `src/content/campaign.ts`.
+- [MainLayout.astro](/home/javier/Documents/salvemos-humboldt/src/layouts/MainLayout.astro)
 
-## Rutas incluidas
+### Hero y galería
 
-- `/` landing principal
-- `/carta` acceso a la carta abierta en PDF
-- `/firma` formulario de firma con validación server-side y anti-abuse
-- `/transparencia` principios, base pública y extensibilidad futura
+- [HeroSection.astro](/home/javier/Documents/salvemos-humboldt/src/components/sections/HeroSection.astro)
+- [PenguinSmartGallery.vue](/home/javier/Documents/salvemos-humboldt/src/components/campaign/PenguinSmartGallery.vue)
 
-## Componentes base del sistema
+### Formulario de firmas
 
-- `MainLayout`: metadata, estructura general, header, footer, CTA flotante
-- `Section`: contenedor reutilizable de secciones
-- `SectionHeading`: títulos consistentes
-- `ButtonLink`: botones CTA con variantes
-- `DataCard`: tarjetas de datos
-- `Countdown`: countdown aislado con JS mínimo
-- `SocialLinksRow`: fila reusable de redes
-- `FloatingCTA`: CTA móvil persistente al hacer scroll
-- `SignatureForm`: formulario de firmas con validación y envío a Firestore
-- `FooterBlock`: pie con transparencia y accesos clave
+- [SignatureForm.astro](/home/javier/Documents/salvemos-humboldt/src/components/ui/SignatureForm.astro)
 
-## Configurar Firestore server-side
+### API de firmas
 
-1. Crea un proyecto en Firebase y habilita Firestore.
-2. Copia `.env.example` a `.env`.
-3. Completa estas variables server-side y públicas:
+- [index.ts](/home/javier/Documents/salvemos-humboldt/src/pages/api/signatures/index.ts)
+- [count.ts](/home/javier/Documents/salvemos-humboldt/src/pages/api/signatures/count.ts)
+
+### Validación
+
+- [signature-schema.ts](/home/javier/Documents/salvemos-humboldt/src/lib/validation/signature-schema.ts)
+
+### Persistencia y dedupe
+
+- [storage.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/storage.ts)
+- [dedupe.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/dedupe.ts)
+- [firestore-rest.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/firestore-rest.ts)
+
+## Flujo de firmas
+
+### Formulario actual
+
+El formulario pide:
+
+- nombre
+- apellido
+- RUT
+- correo electrónico
+- edad
+- país
+- persona natural o jurídica
+- región
+- comuna
+- organización o vínculo con el territorio
+- mensaje opcional
+- consentimiento
+- actualizaciones opcionales
+
+### Flujo técnico
+
+1. El usuario abre `/firma`.
+2. Astro emite un token firmado de formulario.
+3. El frontend valida formato básico.
+4. El `POST /api/signatures` valida de nuevo en server-side.
+5. Se evalúa dedupe por hashes.
+6. Se aplica scoring de riesgo.
+7. Si pasa, se escribe en Firestore.
+8. El contador público se alimenta desde firmas `accepted`.
+
+## Modelo de datos de firmas
+
+Cada firma almacenada en Firestore contiene, como mínimo:
+
+- `firstName`
+- `lastName`
+- `fullName`
+- `rut`
+- `email`
+- `age`
+- `country`
+- `legalNature`
+- `region`
+- `commune`
+- `affiliation`
+- `message`
+- `consent`
+- `updates`
+- `status`
+- `riskDecision`
+- `riskReasons`
+- `riskScore`
+- `dedupe.*`
+- `source.*`
+- `security.*`
+- `createdAtMs`
+- `updatedAtMs`
+- `sourceName`
+
+Estados relevantes:
+
+- `accepted`
+- `flagged`
+- `rejected`
+- `pending`
+
+## Seguridad
+
+La seguridad está pensada para un sitio público con fricción baja y protección razonable.
+
+### Lo que ya hace
+
+- validación server-side con Zod
+- token firmado por formulario
+- rate limiting por IP y huella liviana
+- dedupe por:
+  - email
+  - RUT
+  - identidad normalizada
+- scoring de riesgo
+- verificación de origin permitidos
+- soporte opcional para CAPTCHA
+
+### Archivos clave
+
+- [config.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/config.ts)
+- [risk-score.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/risk-score.ts)
+- [messages.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/messages.ts)
+- [middleware.ts](/home/javier/Documents/salvemos-humboldt/src/middleware.ts)
+
+## Firestore
+
+### Colecciones usadas
+
+- `campaign_signatures`
+- `signature_dedupe_email`
+- `signature_dedupe_identity`
+- `signature_dedupe_rut`
+- `security_rate_limits`
+- `security_events`
+- `public_stats`
+
+### Contador público
+
+El contador de la UI se basa en firmas con:
+
+- `status = "accepted"`
+
+Hoy el código ya no depende del documento manual `public_stats/signatures_counter` como fuente principal de verdad para mostrar el conteo público. Aun así, ese documento puede existir y se usa en operaciones o reseteos auxiliares.
+
+## Variables de entorno
+
+Variables mínimas para firmar de verdad:
 
 ```bash
 SECURITY_HASH_SECRET=
-SECURITY_ALLOWED_ORIGINS=https://esmasqueunpinguino.cl,http://localhost:4321
-SECURITY_HIGH_PROTECTION_MODE=false
-SECURITY_CAPTCHA_ENABLED=false
-SECURITY_CAPTCHA_PROVIDER=turnstile
-TURNSTILE_SECRET_KEY=
-PUBLIC_TURNSTILE_SITE_KEY=
-SECURITY_MIN_SUBMIT_TIME_MS=2500
-SECURITY_ATTACK_MIN_SUBMIT_TIME_MS=4500
-SECURITY_MAX_PAYLOAD_BYTES=16384
-SECURITY_FORM_GET_BURST_LIMIT=45
-SECURITY_FORM_GET_WINDOW_LIMIT=180
-SECURITY_SIGNATURE_POST_IP_BURST_LIMIT=5
-SECURITY_SIGNATURE_POST_IP_WINDOW_LIMIT=12
-SECURITY_SIGNATURE_POST_FP_BURST_LIMIT=3
-SECURITY_SIGNATURE_POST_FP_WINDOW_LIMIT=4
+SECURITY_ALLOWED_ORIGINS=https://esmasqueunpinguino.cl,https://www.esmasqueunpinguino.cl,https://masqueunpinguino.cl,https://www.masqueunpinguino.cl,http://localhost:4321
+
 FIREBASE_SERVICE_ACCOUNT_PROJECT_ID=
 FIREBASE_SERVICE_ACCOUNT_CLIENT_EMAIL=
 FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY=
+
 FIREBASE_SIGNATURES_COLLECTION=campaign_signatures
 FIREBASE_SIGNATURES_DEDUPE_EMAIL_COLLECTION=signature_dedupe_email
 FIREBASE_SIGNATURES_DEDUPE_IDENTITY_COLLECTION=signature_dedupe_identity
 FIREBASE_SIGNATURES_DEDUPE_RUT_COLLECTION=signature_dedupe_rut
-FIREBASE_RATE_LIMIT_ROOT_COLLECTION=security_rate_limits
-FIREBASE_SECURITY_EVENTS_COLLECTION=security_events
-PUBLIC_FIREBASE_API_KEY=
-PUBLIC_FIREBASE_AUTH_DOMAIN=
+
 PUBLIC_FIREBASE_PROJECT_ID=
-PUBLIC_FIREBASE_STORAGE_BUCKET=
-PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-PUBLIC_FIREBASE_APP_ID=
-PUBLIC_FIREBASE_SIGNATURES_COLLECTION=campaign_signatures
+PUBLIC_FIREBASE_API_KEY=
 PUBLIC_FIREBASE_COUNTER_COLLECTION=public_stats
 PUBLIC_FIREBASE_COUNTER_DOC=signatures_counter
 ```
 
-4. Publica reglas de Firestore basadas en [firestore.rules](/home/javier/Documents/salvemos-humboldt/firestore.rules).
+Otras variables útiles ya soportadas:
 
-La integración segura ya no escribe firmas desde el navegador. El endpoint server-side firma el token del formulario, valida y deduplica, aplica rate limits persistentes y recién después escribe en Firestore con credenciales server-side.
+- límites de rate limiting
+- toggles de high protection mode
+- provider y llaves de CAPTCHA
+- nombres alternativos de colecciones
 
-El contador público de firmas usa un documento separado:
+Referencia:
 
-- colección: `public_stats`
-- documento: `signatures_counter`
+- [config.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/config.ts)
 
-Ese documento se crea automáticamente con la primera firma válida.
+## Reglas de Firestore
 
-## Extensión futura sugerida
+Publica reglas basadas en:
 
-### Fase 2
+- [firestore.rules](/home/javier/Documents/salvemos-humboldt/firestore.rules)
 
-Crear `/noticias` o `/material-educativo` usando la misma capa de layout y centralizando nuevos textos o colecciones en `src/content/`.
+El sitio no debe escribir firmas desde el navegador. La escritura efectiva ocurre server-side con credenciales de servicio.
 
-### Fase 3
+## Importación histórica desde Google Forms
 
-Agregar la sección restante con una navegación principal más amplia y componentes reutilizados.
+El proyecto ya incorpora tooling para transformar y cargar respuestas históricas.
 
-### Fase 4
+### Archivos
 
-Crear `/participa` para actividades ciudadanas con:
+- [transform_google_form_import.py](/home/javier/Documents/salvemos-humboldt/scripts/transform_google_form_import.py)
+- [import_google_form_signatures.mjs](/home/javier/Documents/salvemos-humboldt/scripts/import_google_form_signatures.mjs)
+- [reset_signature_collections.mjs](/home/javier/Documents/salvemos-humboldt/scripts/reset_signature_collections.mjs)
 
-- formulario externo o serverless
-- mapa de acciones
-- calendario público
-- moderación ligera
+### Flujo
 
-## Protección anti-abuse en firmas
+1. Colocar el Excel exportado desde Google Forms en el root.
+2. Ejecutar el transformador.
+3. Revisar `generated/`.
+4. Hacer dry-run del importador.
+5. Si el lote está correcto, importar con `--write`.
 
-- Rate limiting persistente:
-  `src/middleware.ts` limita GET de `/firma` por IP y `src/pages/api/signatures/index.ts` limita POST por IP y por huella liviana hash.
-- Fricción casi invisible:
-  honeypot, token firmado con `issued_at`, umbral mínimo de tiempo y validación de origin/referer.
-- Dedupe real en almacenamiento:
-  hashes por email, RUT e identidad normalizada (`nombre + región`) evitan duplicados incluso bajo carrera.
-- Validación server-side:
-  `src/lib/validation/signature-schema.ts` usa Zod para sanitizar y rechazar payloads vacíos, basura obvia o datos fuera de rango.
-- Riesgo y revisión:
-  `src/lib/security/risk-score.ts` decide `allow`, `flag` o `block` con reglas simples y editables.
-- Observabilidad:
-  `src/lib/security/logging.ts` emite logs estructurados y hooks de métricas con identificadores hasheados.
+### Comandos
 
-## Cómo ajustar umbrales
+```bash
+python3 scripts/transform_google_form_import.py
+node scripts/import_google_form_signatures.mjs
+node scripts/import_google_form_signatures.mjs --write
+```
 
-- Límites y toggles: [src/lib/security/config.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/config.ts)
-- Validación de payload: [src/lib/validation/signature-schema.ts](/home/javier/Documents/salvemos-humboldt/src/lib/validation/signature-schema.ts)
-- Reglas de riesgo: [src/lib/security/risk-score.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/risk-score.ts)
+### Reset de colecciones antes de reimportar
 
-## Modo normal vs modo de ataque
+```bash
+node scripts/reset_signature_collections.mjs
+```
 
-- Normal:
-  `SECURITY_HIGH_PROTECTION_MODE=false`
-- Ataque:
-  `SECURITY_HIGH_PROTECTION_MODE=true`
+Eso elimina:
 
-En modo de ataque el proyecto endurece los límites, sube el tiempo mínimo de envío y puede exigir CAPTCHA si está configurado.
+- firmas
+- colecciones de dedupe
 
-## Tradeoffs y tuning
+y deja el contador auxiliar en `0`.
 
-- Umbrales muy bajos aumentan falsos positivos en redes compartidas o equipos de prensa.
-- El estado `flagged` permite revisar casos sospechosos sin tratar a todas las personas como bots.
-- El rate limiting usa Firestore compartido y funciona en serverless, pero conviene complementar con CDN/WAF para absorber floods más grandes.
+### Qué completa sintéticamente el importador
 
-## Cómo probar spam y duplicados
+Cuando el Google Form histórico no trae todos los campos del sitio actual, se completan valores auditables:
 
-1. Envía una firma válida y verifica respuesta `200` y mensaje de éxito.
-2. Repite la misma firma con mismo email o RUT y verifica mensaje de duplicado.
-3. Rellena el honeypot manualmente desde DevTools y verifica rechazo genérico.
-4. Reenvía demasiado rápido con el mismo token y verifica bloqueo o revisión.
-5. Simula ráfagas de POST desde la misma IP y verifica `429` con `Retry-After`.
+- `email`
+- `region`
+- `commune`
+- `message`
+- y, si faltan en origen, también:
+  - `age`
+  - `country`
+  - `legalNature`
 
-## Qué sigue dependiendo de infraestructura
+Los RUT se limpian, rescatan y validan antes de generar el archivo listo para importar.
 
-- Un CDN/WAF delante del sitio sigue siendo recomendable para floods más grandes.
-- Firestore TTL para limpiar `security_rate_limits/*/events/*` debe habilitarse desde infraestructura si se quiere limpieza automática.
-- Si se despliega en Astro SSR, hay que usar un adapter compatible con la plataforma serverless elegida.
+## Assets principales
 
-## Puntos de extensión técnica
+- carta PDF fuente:
+  - [Carta abierta de la comunidad científica sobre el estado de conservación del pingüino de Humboldt en Chile VF.docx.pdf](/home/javier/Documents/salvemos-humboldt/src/assets/Carta%20abierta%20de%20la%20comunidad%20cient%C3%ADfica%20sobre%20el%20estado%20de%20conservaci%C3%B3n%20del%20ping%C3%BCino%20de%20Humboldt%20en%20Chile%20VF.docx.pdf)
+- asset público resumido:
+  - [carta-abierta-pinguino-humboldt.pdf](/home/javier/Documents/salvemos-humboldt/public/assets/carta-abierta-pinguino-humboldt.pdf)
+- logo:
+  - [logo-pinguino.png](/home/javier/Documents/salvemos-humboldt/public/assets/logo-pinguino.png)
+- og cover:
+  - [og-cover.svg](/home/javier/Documents/salvemos-humboldt/public/assets/og-cover.svg)
 
-- contador real de firmas
-- analytics
-- newsletter o voluntariado
-- sitemap con integración Astro
-- formularios o APIs serverless
-- módulo de mapa/calendario para participación territorial
-- captcha visible solo bajo ataque
-- confirmación por correo para firmas `flagged`
-- dashboard operativo para revisión y métricas
+## Despliegue en Vercel
 
-## Nota de implementación
+### Requisitos
 
-La base evita CMS, auth y backend tradicional en esta etapa. La prioridad es velocidad, claridad editorial, buen SEO, accesibilidad y facilidad de handoff.
+- proyecto Astro SSR
+- adapter de Vercel
+- variables de entorno de Firestore y seguridad cargadas en Vercel
+- Node runtime 22
+
+### Dominios
+
+El proyecto hoy está pensado para:
+
+- canónico: `esmasqueunpinguino.cl`
+- secundarios/redirección: `www.esmasqueunpinguino.cl`, `masqueunpinguino.cl`, `www.masqueunpinguino.cl`
+
+### DNS
+
+Si usas NIC Chile con Vercel DNS:
+
+- `ns1.vercel-dns.com`
+- `ns2.vercel-dns.com`
+
+## Operación y debugging
+
+### Si el formulario no manda `POST`
+
+Revisar:
+
+- validación cliente
+- `data-form-configured`
+- origin permitido
+- credenciales server-side
+
+### Si el backend responde `409`
+
+Interpretación:
+
+- firma duplicada
+- normalmente por RUT, email o identidad
+
+### Si el contador no cuadra
+
+Revisar:
+
+- documentos `campaign_signatures`
+- campo `status`
+- que el sitio esté mostrando solo `accepted`
+
+### Si Vercel y local difieren
+
+Revisar primero:
+
+- versión de Node
+- variables de entorno cargadas
+- runtime SSR
+
+## Convenciones de trabajo para este repo
+
+- no commitear `.astro/`
+- no commitear `.vercel/`
+- no commitear `dist/`
+- no commitear Excel temporales del root
+- los scripts de operación sí pueden vivir en `scripts/`
+- los archivos de `generated/` deben tratarse como derivados salvo que explícitamente se necesiten versionar
+
+## Próximos pasos razonables
+
+- dashboard operativo para revisión de `flagged`
+- exportación administrativa de firmas
+- mejor normalización territorial para región/comuna
+- analítica de conversión
+- observabilidad y alertas
+- hardening adicional ante campañas de abuso
+
+## Resumen ejecutivo
+
+Este no es solo un sitio. Es una pequeña plataforma de campaña con:
+
+- narrativa pública
+- formulario robusto
+- persistencia segura
+- dedupe operativo
+- importación histórica
+- despliegue serverless real
+
+La prioridad técnica del proyecto es simple: permitir que una campaña ciudadana opere rápido, sea mantenible y no se caiga al primer problema real de producción.
