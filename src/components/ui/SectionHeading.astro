@@ -1,13 +1,15 @@
 ---
-interface Props {
+export interface Props {
   eyebrow?: string;
   title: string;
   body?: string;
   align?: "left" | "center";
+  as?: "h1" | "h2";
 }
 
-const { eyebrow, title, body, align = "left" } = Astro.props;
+const { eyebrow, title, body, align = "left", as = "h2" } = Astro.props;
 const alignClass = align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-3xl";
+const HeadingTag = as;
 ---
 
 <div class={alignClass}>
@@ -16,6 +18,6 @@ const alignClass = align === "center" ? "mx-auto max-w-3xl text-center" : "max-w
       {eyebrow}
     </p>
   )}
-  <h2 class="text-3xl font-bold tracking-tight text-white md:text-5xl">{title}</h2>
+  <HeadingTag class="text-3xl font-bold tracking-tight text-white md:text-5xl">{title}</HeadingTag>
   {body && <p class="mt-5 text-base leading-7 text-campaign-text-muted md:text-lg">{body}</p>}
 </div>

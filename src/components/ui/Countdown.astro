@@ -40,7 +40,7 @@ const { targetIso, expiredMessage } = Astro.props;
 <script>
   const countdownNodes = document.querySelectorAll("[data-countdown]");
 
-  const formatUnit = (value) => String(Math.max(0, value)).padStart(2, "0");
+  const formatUnit = (value: number) => String(Math.max(0, value)).padStart(2, "0");
 
   for (const node of countdownNodes) {
     const targetAttr = node.getAttribute("data-target");

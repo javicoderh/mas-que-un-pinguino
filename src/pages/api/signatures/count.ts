@@ -14,10 +14,11 @@ export const GET: APIRoute = async () => {
     });
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ count: 0 }), {
-      status: 200,
+    return new Response(JSON.stringify({ ok: false, count: 0 }), {
+      status: 503,
       headers: {
-        "content-type": "application/json; charset=utf-8"
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "no-store"
       }
     });
   }

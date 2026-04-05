@@ -37,7 +37,7 @@ const { hero } = campaignConfig;
   const valueNode = document.querySelector("[data-signature-counter-value]");
   const noteNode = document.querySelector("[data-signature-counter-note]");
 
-  const formatCount = (value) => new Intl.NumberFormat("es-CL").format(value);
+  const formatCount = (value: number) => new Intl.NumberFormat("es-CL").format(value);
 
   const refreshCounter = async () => {
     if (!(valueNode instanceof HTMLElement)) return;

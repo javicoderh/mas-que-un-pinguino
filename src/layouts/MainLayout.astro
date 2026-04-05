@@ -11,17 +11,40 @@ interface Props {
   description?: string;
   path?: string;
   hideFloatingCta?: boolean;
+  robots?: string;
 }
 
 const {
   title = campaignConfig.site.title,
   description = campaignConfig.site.description,
   path = "/",
-  hideFloatingCta = false
+  hideFloatingCta = false,
+  robots = "index,follow"
 } = Astro.props;
 
 const canonical = new URL(path, campaignConfig.site.siteUrl).toString();
 const theme = campaignConfig.theme.colors;
+const socialImage = new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString();
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: campaignConfig.site.name,
+    url: campaignConfig.site.siteUrl,
+    logo: new URL(campaignConfig.assets.logo, campaignConfig.site.siteUrl).toString(),
+    email: campaignConfig.site.contactEmail,
+    sameAs: campaignConfig.socialLinks
+      .map((item) => item.href)
+      .filter((href) => /^https?:\/\//.test(href))
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: campaignConfig.site.name,
+    url: campaignConfig.site.siteUrl,
+    inLanguage: "es-CL"
+  }
+];
 ---
 
 <!doctype html>
@@ -46,7 +69,8 @@ const theme = campaignConfig.theme.colors;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index,follow" />
+    <meta name="robots" content={robots} />
+    <meta name="theme-color" content={campaignConfig.site.themeColor} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
@@ -56,12 +80,19 @@ const theme = campaignConfig.theme.colors;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString()} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:secure_url" content={socialImage} />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`Imagen principal de ${campaignConfig.site.name}`} />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString()} />
+    <meta name="twitter:image" content={socialImage} />
+    <meta name="twitter:image:alt" content={`Imagen principal de ${campaignConfig.site.name}`} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <a href="#contenido" class="focus-ring sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-campaign-warm focus:px-4 focus:py-2 focus:text-black">

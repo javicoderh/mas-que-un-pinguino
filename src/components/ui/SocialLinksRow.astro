@@ -5,14 +5,15 @@ interface SocialLink {
 }
 
 interface Props {
-  links: SocialLink[];
+  links: readonly SocialLink[];
 }
 
 const { links } = Astro.props;
+const publicLinks = links.filter((link) => /^https?:\/\//.test(link.href));
 ---
 
 <div class="flex flex-wrap gap-3">
-  {links.map((link) => (
+  {publicLinks.map((link) => (
     <a
       href={link.href}
       target="_blank"

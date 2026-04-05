@@ -6,6 +6,13 @@ import { logSecurityEvent } from "./lib/security/logging";
 import { securityMessages } from "./lib/security/messages";
 import { getClientIp } from "./lib/security/request";
 
+const publicSecurityHeaders = {
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+  "permissions-policy": "camera=(), microphone=(), geolocation=()"
+} as const;
+
 const html429 = (message: string) =>
   `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Intenta nuevamente</title></head><body style="font-family:system-ui,sans-serif;background:#05070B;color:#fff;padding:2rem;line-height:1.6"><main style="max-width:36rem;margin:10vh auto"><h1 style="font-size:1.75rem;margin-bottom:1rem">Estamos recibiendo mucho tráfico</h1><p>${message}</p></main></body></html>`;
 
@@ -16,7 +23,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
     !isSecurityConfigured ||
     !isServerStorageConfigured
   ) {
-    return next();
+    const response = await next();
+
+    Object.entries(publicSecurityHeaders).forEach(([key, value]) => {
+      if (!response.headers.has(key)) {
+        response.headers.set(key, value);
+      }
+    });
+
+    if (context.url.pathname.startsWith("/api/") && !response.headers.has("cache-control")) {
+      response.headers.set("cache-control", "no-store");
+    }
+
+    return response;
   }
 
   const ip = getClientIp(context.request.headers);
@@ -27,7 +46,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
   });
 
   if (result.allowed) {
-    return next();
+    const response = await next();
+
+    Object.entries(publicSecurityHeaders).forEach(([key, value]) => {
+      if (!response.headers.has(key)) {
+        response.headers.set(key, value);
+      }
+    });
+
+    if (context.url.pathname.startsWith("/api/") && !response.headers.has("cache-control")) {
+      response.headers.set("cache-control", "no-store");
+    }
+
+    return response;
   }
 
   logSecurityEvent({
@@ -43,7 +74,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     status: 429,
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "retry-after": String(result.retryAfterSeconds)
+      "retry-after": String(result.retryAfterSeconds),
+      ...publicSecurityHeaders
     }
   });
 });
