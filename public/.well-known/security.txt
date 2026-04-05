@@ -1,0 +1,4 @@
+Contact: mailto:pinguinohumboldtmn@gmail.com
+Canonical: https://esmasqueunpinguino.cl/.well-known/security.txt
+Preferred-Languages: es, en
+Expires: 2027-04-05T00:00:00Z

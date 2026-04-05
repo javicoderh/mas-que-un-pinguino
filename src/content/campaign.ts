@@ -1,7 +1,7 @@
 const externalLinks = {
-  letterPdf: "LETTER_PDF_URL",
-  form: "FORM_URL",
-  linktree: "LINKTREE_URL",
+  letterPdf: "",
+  form: "",
+  linktree: "",
   instagram: "https://www.instagram.com/esmasqueunpinguino/",
   tiktok: "https://www.tiktok.com/@esmasqueunpinguino",
   youtube: "https://www.youtube.com/Esmasqueunpinguino"
@@ -14,7 +14,9 @@ export const campaignConfig = {
     locale: "es_CL",
     title: "Es más que un pingüino | Firma por su protección",
     description:
-      "Campaña ciudadana para proteger al pingüino de Humboldt y exigir la restitución de su decreto como Monumento Natural. Lee la carta, firma y comparte."
+      "Campaña ciudadana para proteger al pingüino de Humboldt y exigir la restitución de su decreto como Monumento Natural. Lee la carta, firma y comparte.",
+    themeColor: "#05070B",
+    contactEmail: "pinguinohumboldtmn@gmail.com"
   },
   theme: {
     colors: {

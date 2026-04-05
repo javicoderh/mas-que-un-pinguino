@@ -17,10 +17,18 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
 
   <form
     class="grid gap-5"
+    method="post"
+    action="/api/signatures"
     data-signature-form
     data-form-configured={String(isConfigured)}
     novalidate
   >
+    <div class="hidden" aria-hidden="true">
+      <label>
+        Empresa
+        <input name="company" type="text" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
     <div class="grid gap-5 md:grid-cols-2">
       <label class="grid gap-2 text-sm font-medium text-white">
         <span>{signatureForm.fields.firstName}</span>
@@ -230,6 +238,11 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
 
     <div class="grid gap-4 border-t border-white/10 pt-5">
       <p class="text-sm leading-6 text-campaign-text-muted">{signatureForm.privacyNote}</p>
+      <noscript>
+        <p class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-sm text-campaign-text-muted">
+          JavaScript está desactivado. El formulario seguirá enviándose por POST estándar al endpoint seguro del sitio.
+        </p>
+      </noscript>
       {!isConfigured && (
         <p class="rounded-2xl border border-campaign-pink/25 bg-campaign-pink/8 px-4 py-3 text-sm text-campaign-blush">
           Configura `SECURITY_HASH_SECRET` y las credenciales server-side de Firestore para habilitar el registro seguro de firmas.
@@ -265,9 +278,9 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
   const errorTimers = new Map();
 
   if (form instanceof HTMLFormElement && status instanceof HTMLElement) {
-    const normalizeRut = (value) => value.replace(/\./g, "").replace(/-/g, "").trim().toUpperCase();
+    const normalizeRut = (value: string) => value.replace(/\./g, "").replace(/-/g, "").trim().toUpperCase();
 
-    const formatRut = (value) => {
+    const formatRut = (value: string) => {
       const clean = normalizeRut(value);
       if (clean.length < 2) return clean;
       const body = clean.slice(0, -1);
@@ -282,7 +295,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       return `${withDots.reverse().join(".")}-${dv}`;
     };
 
-    const isValidRut = (value) => {
+    const isValidRut = (value: string) => {
       const clean = normalizeRut(value);
       if (!/^\d{7,8}[0-9K]$/.test(clean)) return false;
 
@@ -303,7 +316,13 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       return dv === expectedDv;
     };
 
-    const validators = {
+    interface ValidationRule {
+      required: boolean;
+      message: string;
+      regex?: RegExp;
+    }
+
+    const validators: Record<string, ValidationRule> = {
       first_name: {
         required: true,
         regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'\-\s]{2,60}$/,
@@ -368,8 +387,10 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       }
     };
 
-    const getField = (name) => form.elements.namedItem(name);
-    const getValue = (name) => {
+    type FieldName = keyof typeof validators & string;
+
+    const getField = (name: string) => form.elements.namedItem(name);
+    const getValue = (name: string) => {
       const field = form.elements.namedItem(name);
       return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
         ? field.value.trim()
@@ -378,12 +399,12 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
         : "";
     };
 
-    const getChecked = (name) => {
+    const getChecked = (name: string) => {
       const field = form.elements.namedItem(name);
       return field instanceof HTMLInputElement ? field.checked : false;
     };
 
-    const showError = (name, message) => {
+    const showError = (name: string, message: string) => {
       const node = form.querySelector(`[data-error-for="${name}"]`);
       const field = getField(name);
 
@@ -410,7 +431,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       }
     };
 
-    const clearError = (name) => {
+    const clearError = (name: string) => {
       const node = form.querySelector(`[data-error-for="${name}"]`);
       const field = getField(name);
 
@@ -429,7 +450,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       if (previous) window.clearTimeout(previous);
     };
 
-    const validateField = (name) => {
+    const validateField = (name: FieldName) => {
       const rule = validators[name];
       if (!rule) return true;
 
@@ -491,7 +512,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
         return;
       }
 
-      const fieldsToValidate = Object.keys(validators);
+      const fieldsToValidate = Object.keys(validators) as FieldName[];
       const validationResults = fieldsToValidate.map((name) => ({
         name,
         valid: validateField(name)
@@ -501,7 +522,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
 
       if (hasErrors) {
         status.textContent = "Revisa los campos marcados en rojo antes de enviar.";
-        const field = getField(firstInvalid.name);
+        const field = firstInvalid ? getField(firstInvalid.name) : null;
 
         if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
           field.focus({ preventScroll: true });
@@ -561,7 +582,7 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
       }
     });
 
-    ["first_name", "last_name", "rut", "email", "age", "country", "legal_nature", "region", "commune", "affiliation", "message"].forEach(
+    (["first_name", "last_name", "rut", "email", "age", "country", "legal_nature", "region", "commune", "affiliation", "message"] as FieldName[]).forEach(
       (name) => {
         const field = getField(name);
         if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {

@@ -19,6 +19,7 @@ const contactLinks = [
     path: "M14 3c.26 2.08 1.42 3.78 3.6 4.07v2.77a6.3 6.3 0 0 1-3.57-1.17v5.14a5.81 5.81 0 1 1-5.02-5.75v2.86a2.94 2.94 0 1 0 2.17 2.84V3H14Z"
   }
 ];
+const publicContactLinks = contactLinks.filter((item) => /^https?:\/\//.test(item.href));
 ---
 
 <MainLayout
@@ -32,6 +33,7 @@ const contactLinks = [
       eyebrow="Contacto"
       title="Conversemos y mantengamos la campaña en movimiento"
       body="Si quieres difundir, coordinar, hacer una consulta o sumarte desde tu territorio, aquí tienes los canales directos de la campaña."
+      as="h1"
     />
   </Section>
 
@@ -39,13 +41,13 @@ const contactLinks = [
     <div class="mx-auto max-w-5xl">
       <div class="surface-panel rounded-[2rem] p-8 md:p-10">
         <div class="flex flex-wrap items-center justify-center gap-6 md:gap-8">
-          {contactLinks.map((item) => (
+          {publicContactLinks.map((item) => (
             <a
               href={item.href}
               target={item.href.startsWith("mailto:") ? "_self" : "_blank"}
               rel={item.href.startsWith("mailto:") ? undefined : "noreferrer noopener"}
-              aria-label={item.detail ? `${item.label}: ${item.detail}` : item.label}
-              title={item.detail ? `${item.label}: ${item.detail}` : item.label}
+              aria-label={item.label}
+              title={item.label}
               class="focus-ring inline-flex items-center justify-center text-center transition hover:-translate-y-0.5"
             >
               <svg

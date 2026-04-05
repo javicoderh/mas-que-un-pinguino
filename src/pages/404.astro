@@ -1,0 +1,22 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+---
+
+<MainLayout
+  path="/404"
+  title="Página no encontrada | Es más que un pingüino"
+  description="La página solicitada no existe o fue movida."
+  hideFloatingCta={true}
+  robots="noindex,noarchive"
+>
+  <Section size="compact">
+    <SectionHeading
+      eyebrow="404"
+      title="Esta página no existe"
+      body="Revisa la URL o vuelve al inicio para seguir navegando por la campaña."
+      as="h1"
+    />
+  </Section>
+</MainLayout>
