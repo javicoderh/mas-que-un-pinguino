@@ -26,6 +26,67 @@ const {
 const canonical = new URL(path, campaignConfig.site.siteUrl).toString();
 const theme = campaignConfig.theme.colors;
 const socialImage = new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString();
+const gaInitScript = `
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag("js", new Date());
+  gtag("config", ${JSON.stringify(gaMeasurementId)}, {
+    page_title: ${JSON.stringify(title)},
+    page_location: window.location.href,
+    page_path: window.location.pathname + window.location.search,
+    anonymize_ip: true,
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false,
+    send_page_view: true
+  });
+
+  window.trackGaEvent = (eventName, params = {}) => {
+    if (typeof window.gtag !== "function") return;
+    window.gtag("event", eventName, params);
+  };
+`;
+const gaEventsScript = `
+  const findTrackedElement = (target) =>
+    target instanceof Element ? target.closest("[data-analytics-event]") : null;
+
+  document.addEventListener("click", (event) => {
+    const tracked = findTrackedElement(event.target);
+    if (!tracked || typeof window.trackGaEvent !== "function") return;
+
+    const analyticsEvent = tracked.getAttribute("data-analytics-event");
+    if (!analyticsEvent) return;
+
+    const params = {
+      link_text: tracked.getAttribute("data-analytics-label") || tracked.textContent?.trim() || "",
+      link_url: tracked.getAttribute("href") || tracked.getAttribute("data-analytics-href") || "",
+      link_context: tracked.getAttribute("data-analytics-context") || "",
+      transport_type: "beacon"
+    };
+
+    window.trackGaEvent(analyticsEvent, params);
+  }, { passive: true });
+
+  window.addEventListener("signature:created", () => {
+    if (typeof window.trackGaEvent !== "function") return;
+    window.trackGaEvent("signature_submit_success", {
+      form_name: "campaign_signature_form",
+      page_path: window.location.pathname,
+      transport_type: "beacon"
+    });
+  });
+
+  window.addEventListener("signature:error", (event) => {
+    if (typeof window.trackGaEvent !== "function") return;
+    const detail = event instanceof CustomEvent ? event.detail || {} : {};
+    window.trackGaEvent("signature_submit_error", {
+      form_name: "campaign_signature_form",
+      page_path: window.location.pathname,
+      error_type: detail.errorType || "unknown",
+      transport_type: "beacon"
+    });
+  });
+`;
 const structuredData = [
   {
     "@context": "https://schema.org",
@@ -97,70 +158,8 @@ const structuredData = [
     {isGaEnabled && (
       <>
         <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}></script>
-        <script
-          is:inline
-          define:vars={{ gaMeasurementId, pageTitle: title }}
-        >{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){window.dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag("js", new Date());
-          gtag("config", gaMeasurementId, {
-            page_title: pageTitle,
-            page_location: window.location.href,
-            page_path: window.location.pathname + window.location.search,
-            anonymize_ip: true,
-            allow_google_signals: false,
-            allow_ad_personalization_signals: false,
-            send_page_view: true
-          });
-
-          window.trackGaEvent = (eventName, params = {}) => {
-            if (typeof window.gtag !== "function") return;
-            window.gtag("event", eventName, params);
-          };
-        `}</script>
-        <script is:inline>{`
-          const findTrackedElement = (target) =>
-            target instanceof Element ? target.closest("[data-analytics-event]") : null;
-
-          document.addEventListener("click", (event) => {
-            const tracked = findTrackedElement(event.target);
-            if (!tracked || typeof window.trackGaEvent !== "function") return;
-
-            const analyticsEvent = tracked.getAttribute("data-analytics-event");
-            if (!analyticsEvent) return;
-
-            const params = {
-              link_text: tracked.getAttribute("data-analytics-label") || tracked.textContent?.trim() || "",
-              link_url: tracked.getAttribute("href") || tracked.getAttribute("data-analytics-href") || "",
-              link_context: tracked.getAttribute("data-analytics-context") || "",
-              transport_type: "beacon"
-            };
-
-            window.trackGaEvent(analyticsEvent, params);
-          }, { passive: true });
-
-          window.addEventListener("signature:created", () => {
-            if (typeof window.trackGaEvent !== "function") return;
-            window.trackGaEvent("signature_submit_success", {
-              form_name: "campaign_signature_form",
-              page_path: window.location.pathname,
-              transport_type: "beacon"
-            });
-          });
-
-          window.addEventListener("signature:error", (event) => {
-            if (typeof window.trackGaEvent !== "function") return;
-            const detail = event instanceof CustomEvent ? event.detail || {} : {};
-            window.trackGaEvent("signature_submit_error", {
-              form_name: "campaign_signature_form",
-              page_path: window.location.pathname,
-              error_type: detail.errorType || "unknown",
-              transport_type: "beacon"
-            });
-          });
-        `}</script>
+        <script is:inline set:html={gaInitScript} />
+        <script is:inline set:html={gaEventsScript} />
       </>
     )}
   </head>
