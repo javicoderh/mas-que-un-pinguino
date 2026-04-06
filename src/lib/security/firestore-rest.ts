@@ -9,6 +9,7 @@ interface FirestoreWrite {
     name: string;
     fields: Record<string, unknown>;
   };
+  delete?: string;
   transform?: {
     document: string;
     fieldTransforms: Array<Record<string, unknown>>;
@@ -322,6 +323,13 @@ export function encodeIncrementTransform(relativePath: string, fieldPath: string
         }
       ]
     }
+  };
+}
+
+export function encodeDelete(relativePath: string, exists?: boolean): FirestoreWrite {
+  return {
+    delete: documentPath(relativePath),
+    currentDocument: exists === undefined ? undefined : { exists }
   };
 }
 

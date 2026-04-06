@@ -6,7 +6,7 @@ import ButtonLink from "../components/ui/ButtonLink.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { campaignConfig } from "../content/campaign";
 
-const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
+const letterPdfUrl = new URL(campaignConfig.assets.publicLetterPdf, campaignConfig.site.siteUrl).toString();
 const breadcrumbItems = [
   { name: "Inicio", path: "/" },
   { name: "Carta abierta", path: "/carta" }

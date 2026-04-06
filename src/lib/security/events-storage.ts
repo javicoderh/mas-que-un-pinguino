@@ -1,5 +1,5 @@
 import { securityConfig } from "./config";
-import { commitWrites, createDocument, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
+import { commitWrites, createDocument, encodeDelete, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
 import type { NormalizedEventSubmission } from "../validation/event-schema";
 
 export type EventSubmissionStatus = "pending" | "approved" | "rejected" | "flagged";
@@ -170,6 +170,20 @@ export async function reviewEventSubmission(params: {
       },
       true
     )
+  ]);
+}
+
+export async function deleteEventSubmission(params: {
+  eventId: string;
+}) {
+  const current = await getEventSubmission(params.eventId);
+
+  if (!current) {
+    throw new Error("event-not-found");
+  }
+
+  return commitWrites([
+    encodeDelete(`${securityConfig.collections.eventSubmissions}/${params.eventId}`, true)
   ]);
 }
 

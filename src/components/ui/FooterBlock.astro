@@ -4,7 +4,7 @@ import logo from "../../assets/logo_pinguino_humboldt_circulo.png";
 import ButtonLink from "./ButtonLink.astro";
 
 const { transparency, socialLinks, site, knowledgeHub } = campaignConfig;
-const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
+const letterPdfUrl = new URL(campaignConfig.assets.publicLetterPdf, campaignConfig.site.siteUrl).toString();
 const publicSocialLinks = socialLinks.filter((item) => /^https?:\/\//.test(item.href));
 const socialIconPaths: Record<string, string> = {
   Instagram:
