@@ -14,7 +14,7 @@ export const campaignConfig = {
     locale: "es_CL",
     title: "Es más que un pingüino | Firma por su protección",
     description:
-      "Campaña ciudadana para proteger al pingüino de Humboldt y exigir la restitución de su decreto como Monumento Natural. Lee la carta, firma y comparte.",
+      "Campaña ciudadana para apoyar la protección del pingüino de Humboldt desde la ciencia y la participación informada. Lee la carta, firma y comparte.",
     themeColor: "#05070B",
     contactEmail: "pinguinohumboldtmn@gmail.com"
   },
@@ -52,12 +52,12 @@ export const campaignConfig = {
     eyebrow: "Campaña ciudadana por la protección del pingüino de Humboldt",
     title: "Es más que un pingüino",
     subtitle:
-      "En solo 5 años, la población reproductiva del pingüino de Humboldt cayó un 63% en las colonias estudiadas de Chile. Necesitamos tu firma para exigir que el Gobierno devuelva el decreto de Monumento Natural a la Contraloría antes del 25 de abril.",
+      "En solo 5 años, la población reproductiva del pingüino de Humboldt cayó un 63% en las colonias estudiadas de Chile. Tu firma puede apoyar una protección oportuna, basada en evidencia científica, para esta especie y su ecosistema.",
     rotatingLines: [
-      "No es un trámite. Es su última oportunidad de sobrevivir.",
-      "Léelo, fírmalo y decrétalo.",
+      "Cuidar esta especie también es cuidar el mar que compartimos.",
+      "Infórmate, firma y comparte.",
       "Cada pingüino cuenta. Cada persona cuenta.",
-      "Entre tod@s le damos el valor."
+      "La ciencia nos ayuda a comprender por qué protegerlos importa."
     ],
     buttons: {
       readLetter: "Leer la carta",
@@ -72,9 +72,9 @@ export const campaignConfig = {
     }
   },
   problem: {
-    title: "La urgencia no es simbólica",
+    title: "La evidencia nos invita a actuar",
     intro:
-      "En marzo de 2026, el Gobierno retiró de la Contraloría el decreto que otorgaba protección absoluta al pingüino de Humboldt como Monumento Natural. Esto ocurre mientras la especie enfrenta un estado crítico tras perder miles de individuos por la Influenza Aviar y el fenómeno de El Niño. No podemos permitir que la burocracia extinga a nuestra fauna.",
+      "En marzo de 2026, se retiró de la Contraloría el decreto que otorgaba protección absoluta al pingüino de Humboldt como Monumento Natural. Esto ocurre mientras la especie enfrenta un estado crítico tras perder miles de individuos por la Influenza Aviar y el fenómeno de El Niño. Por eso, hoy es importante acompañar con participación ciudadana una protección basada en evidencia.",
     cards: [
       {
         value: "63%",
@@ -88,15 +88,15 @@ export const campaignConfig = {
       },
       {
         value: "25 Abr",
-        label: "Fecha límite",
-        detail: "Necesitamos presión ciudadana antes de esa fecha clave."
+        label: "Fecha clave",
+        detail: "Es una oportunidad para sumar apoyo ciudadano informado antes de esa fecha."
       }
     ]
   },
   ecosystem: {
-    title: "Si cae el pingüino, cae un sistema completo",
+    title: "Proteger al pingüino es cuidar un sistema completo",
     body:
-      "¿Por qué es más que un pingüino? Porque es el bioindicador clave de la corriente de Humboldt. Si él desaparece, significa que nuestro océano está colapsando, afectando la productividad marina, la pesca artesanal y el turismo del que dependen miles de familias chilenas. Salvarlos es salvar nuestro futuro.",
+      "¿Por qué es más que un pingüino? Porque es un bioindicador clave de la corriente de Humboldt. Su presencia ayuda a entender la salud del océano y los cambios que pueden afectar la productividad marina, la pesca artesanal y el turismo del que dependen miles de familias chilenas. Protegerlo también es cuidar nuestro futuro.",
     pillars: [
       {
         title: "Océano",
@@ -119,20 +119,21 @@ export const campaignConfig = {
     ]
   },
   conversion: {
-    title: "Tu firma puede mover al Estado",
+    title: "Cada pingüino cuenta, cada firma cuenta.",
     cardTitle: "Firma antes del 25 de abril",
     cardText:
-      "La carta abierta busca demostrar respaldo ciudadano real para que el decreto de Monumento Natural vuelva a la Contraloría.",
-    shareTitle: "¿Ya firmaste? Ahora haz que el Gobierno escuche. Síguenos y comparte.",
+      "La carta abierta busca reunir apoyo ciudadano informado para acompañar la protección del pingüino de Humboldt como Monumento Natural.",
+    shareTitle: "¿Ya firmaste? Ayuda a que más personas conozcan esta causa. Síguenos y comparte.",
     shareText:
       "No olvides compartir la página usando el hashtag #esmasqueunpinguino y el emoji 🐧.",
-    reminder: "Cada firma suma legitimidad. Cada persona que comparte multiplica la presión pública.",
+    reminder:
+      "Apoyar esta causa es una forma cercana de cuidar un hogar natural único. Cada firma ayuda a visibilizar, desde la ciencia, por qué proteger al pingüino de Humboldt importa.",
     hashtags: ["#esmasqueunpinguino", "#PingüinoDeHumboldt", "#MonumentoNatural"]
   },
   signatureForm: {
     title: "Firma la carta ciudadana",
     intro:
-      "Tu firma respalda una exigencia concreta: que el decreto de Monumento Natural vuelva a la Contraloría antes del 25 de abril.",
+      "Tu firma respalda una solicitud ciudadana para acompañar, desde la evidencia científica, la protección del pingüino de Humboldt.",
     helper:
       "Completa tus datos y acepta el consentimiento. La integración definitiva del envío se conecta desde el config del proyecto sin rehacer esta interfaz.",
     submitLabel: "Firmar la carta",
@@ -164,9 +165,9 @@ export const campaignConfig = {
     }
   },
   transparency: {
-    title: "Transparencia, ciencia y acción colectiva",
+    title: "Transparencia, ciencia y participación ciudadana",
     body:
-      "Esta campaña es pacífica, ciudadana, colaborativa y ambientalmente responsable. Se apoya en evidencia científica, participación abierta y coordinación no violenta para proteger al pingüino de Humboldt y el ecosistema que sostiene.",
+      "Esta campaña es ciudadana, colaborativa y ambientalmente responsable. Se apoya en evidencia científica, participación abierta y una invitación respetuosa a cuidar al pingüino de Humboldt y el ecosistema que sostiene.",
     publicReadinessTitle: "Señales públicas y técnicas del sitio",
     publicReadinessBody:
       "Además de la campaña pública, el sitio expone documentos, rutas y señales técnicas mínimas para buscadores, validadores y scrapers legítimos.",
