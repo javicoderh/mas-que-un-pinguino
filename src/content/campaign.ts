@@ -193,6 +193,7 @@ export const campaignConfig = {
   navigation: [
     { href: "/", label: "Inicio" },
     { href: "/ciencia", label: "Ciencia" },
+    { href: "/eventos", label: "Eventos" },
     { href: "/carta", label: "Carta" },
     { href: "/faq", label: "FAQ" },
     { href: "/firma", label: "Firma" },

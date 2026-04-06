@@ -2,6 +2,7 @@ import { securityConfig } from "./config";
 
 type Primitive = string | number | boolean | null;
 type FirestoreData = Primitive | FirestoreData[] | { [key: string]: FirestoreData };
+type FirestoreFilter = { field: string; op: string; value: FirestoreData };
 
 interface FirestoreWrite {
   update?: {
@@ -77,6 +78,30 @@ const decodeFirestoreValue = (value: any): any => {
 
 const encodeDocumentFields = (data: Record<string, FirestoreData>) =>
   Object.fromEntries(Object.entries(data).map(([key, value]) => [key, encodeFirestoreValue(value)]));
+
+const buildWhereClause = (filters: FirestoreFilter[]) =>
+  filters.length === 0
+    ? undefined
+    : filters.length === 1
+      ? {
+          fieldFilter: {
+            field: { fieldPath: filters[0].field },
+            op: filters[0].op,
+            value: encodeFirestoreValue(filters[0].value)
+          }
+        }
+      : {
+          compositeFilter: {
+            op: "AND",
+            filters: filters.map((filter) => ({
+              fieldFilter: {
+                field: { fieldPath: filter.field },
+                op: filter.op,
+                value: encodeFirestoreValue(filter.value)
+              }
+            }))
+          }
+        };
 
 const buildJwt = async () => {
   const nowSeconds = Math.floor(Date.now() / 1000);
@@ -247,29 +272,9 @@ export async function countNestedDocuments(parentPath: string, collectionId: str
 
 export async function countCollectionDocuments(
   collectionId: string,
-  filters: Array<{ field: string; op: string; value: FirestoreData }>
+  filters: FirestoreFilter[]
 ) {
-  const where =
-    filters.length === 1
-      ? {
-          fieldFilter: {
-            field: { fieldPath: filters[0].field },
-            op: filters[0].op,
-            value: encodeFirestoreValue(filters[0].value)
-          }
-        }
-      : {
-          compositeFilter: {
-            op: "AND",
-            filters: filters.map((filter) => ({
-              fieldFilter: {
-                field: { fieldPath: filter.field },
-                op: filter.op,
-                value: encodeFirestoreValue(filter.value)
-              }
-            }))
-          }
-        };
+  const where = buildWhereClause(filters);
 
   const response = await firestoreFetch("/documents:runAggregationQuery", {
     method: "POST",
@@ -278,7 +283,7 @@ export async function countCollectionDocuments(
         aggregations: [{ alias: "total", count: {} }],
         structuredQuery: {
           from: [{ collectionId }],
-          where
+          ...(where ? { where } : {})
         }
       }
     })
@@ -318,4 +323,50 @@ export function encodeIncrementTransform(relativePath: string, fieldPath: string
       ]
     }
   };
+}
+
+export async function queryCollection<T = Record<string, unknown>>(options: {
+  collectionId: string;
+  filters?: FirestoreFilter[];
+  orderBy?: Array<{ field: string; direction?: "ASCENDING" | "DESCENDING" }>;
+  limit?: number;
+}) {
+  const { collectionId, filters = [], orderBy = [], limit } = options;
+  const where = buildWhereClause(filters);
+  const response = await firestoreFetch("/documents:runQuery", {
+    method: "POST",
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId }],
+        ...(where ? { where } : {}),
+        ...(orderBy.length > 0
+          ? {
+              orderBy: orderBy.map((item) => ({
+                field: { fieldPath: item.field },
+                direction: item.direction ?? "ASCENDING"
+              }))
+            }
+          : {}),
+        ...(typeof limit === "number" ? { limit } : {})
+      }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`firestore-query-failed:${response.status}`);
+  }
+
+  const rows = await parseStreamingJson<any>(response);
+  return rows
+    .filter((row) => row.document?.fields)
+    .map((row) => {
+      const documentName = String(row.document.name ?? "");
+      const id = documentName.split("/").pop() ?? "";
+      return {
+        id,
+        ...Object.fromEntries(
+          Object.entries(row.document.fields ?? {}).map(([key, value]) => [key, decodeFirestoreValue(value)])
+        )
+      } as T & { id: string };
+    });
 }
