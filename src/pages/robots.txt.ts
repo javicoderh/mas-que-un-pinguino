@@ -5,7 +5,9 @@ const body = `User-agent: *
 Allow: /
 Disallow: /api/
 
+Host: ${campaignConfig.site.siteUrl}
 Sitemap: ${campaignConfig.site.siteUrl}/sitemap.xml
+Sitemap: ${campaignConfig.site.siteUrl}/sitemap-index.xml
 `;
 
 export const GET: APIRoute = async () =>

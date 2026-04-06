@@ -3,18 +3,27 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import ButtonLink from "../components/ui/ButtonLink.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { campaignConfig } from "../content/campaign";
 
-const { transparency, futureRoutes } = campaignConfig;
+const { transparency, futureRoutes, knowledgeHub } = campaignConfig;
 const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Transparencia", path: "/transparencia" }
+];
 ---
 
 <MainLayout
   path="/transparencia"
-  title="Transparencia | Es más que un pingüino"
-  description="Principios, base científica y acciones públicas de la campaña ciudadana por la protección del pingüino de Humboldt."
+  title="Transparencia y metodología | Es más que un pingüino"
+  description="Principios, base científica, metodología pública y estructura de información de la campaña por la protección del pingüino de Humboldt."
+  keywords={["transparencia campaña", "metodología", "base científica", "pingüino de Humboldt", "participación ciudadana"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="AboutPage"
 >
   <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
     <SectionHeading
       eyebrow="Transparencia"
       title={transparency.title}
@@ -68,6 +77,23 @@ const letterPdfUrl = campaignConfig.assets.publicLetterPdf;
       <div class="mt-6 flex flex-wrap gap-3">
         {transparency.publicReadinessLinks.map((item) => (
           <ButtonLink href={item.href} label={item.label} variant="ghost" analyticsEvent="navigation_click" analyticsContext="transparency_public_surface" />
+        ))}
+      </div>
+    </div>
+  </Section>
+
+  <Section class="pt-0">
+    <div class="surface-panel rounded-[2rem] p-8">
+      <h2 class="text-2xl font-bold text-white">Centro de información y fuentes de contexto</h2>
+      <p class="mt-4 max-w-3xl text-base leading-7 text-campaign-text-muted">
+        Para que el sitio no dependa de una sola landing, se crearon páginas temáticas que amplían contexto, responden preguntas específicas y ayudan a buscadores a entender mejor el alcance editorial del proyecto.
+      </p>
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        {knowledgeHub.slice(0, 4).map((item) => (
+          <a href={item.href} class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5 transition hover:border-white/20">
+            <p class="text-lg font-semibold text-white">{item.label}</p>
+            <p class="mt-2 text-sm leading-6 text-campaign-text-muted">{item.description}</p>
+          </a>
         ))}
       </div>
     </div>

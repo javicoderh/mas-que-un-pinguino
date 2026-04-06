@@ -12,11 +12,13 @@ export const campaignConfig = {
     name: "Es más que un pingüino",
     siteUrl: "https://esmasqueunpinguino.cl",
     locale: "es_CL",
+    language: "es-CL",
     title: "Es más que un pingüino | Firma por su protección",
     description:
       "Campaña ciudadana para apoyar la protección del pingüino de Humboldt desde la ciencia y la participación informada. Lee la carta, firma y comparte.",
     themeColor: "#05070B",
-    contactEmail: "pinguinohumboldtmn@gmail.com"
+    contactEmail: "pinguinohumboldtmn@gmail.com",
+    author: "Equipo Es más que un pingüino"
   },
   theme: {
     colors: {
@@ -190,10 +192,43 @@ export const campaignConfig = {
   },
   navigation: [
     { href: "/", label: "Inicio" },
+    { href: "/ciencia", label: "Ciencia" },
     { href: "/carta", label: "Carta" },
+    { href: "/faq", label: "FAQ" },
     { href: "/firma", label: "Firma" },
-    { href: "/transparencia", label: "Transparencia" },
     { href: "/contacto", label: "Contacto" }
+  ],
+  knowledgeHub: [
+    {
+      href: "/pinguino-de-humboldt",
+      label: "Pingüino de Humboldt",
+      description: "Contexto general sobre la especie, su ecosistema y por qué importa protegerla."
+    },
+    {
+      href: "/monumento-natural-pinguino-de-humboldt",
+      label: "Monumento Natural",
+      description: "Explicación clara sobre la figura de protección y su relevancia para la especie."
+    },
+    {
+      href: "/amenazas",
+      label: "Amenazas",
+      description: "Factores que hoy afectan al pingüino de Humboldt y a su hábitat."
+    },
+    {
+      href: "/ciencia",
+      label: "Ciencia",
+      description: "Resumen divulgativo de la base científica y de la metodología pública de la campaña."
+    },
+    {
+      href: "/faq",
+      label: "Preguntas frecuentes",
+      description: "Respuestas claras sobre la carta, la firma, el uso de datos y la participación ciudadana."
+    },
+    {
+      href: "/noticias",
+      label: "Noticias y actualizaciones",
+      description: "Hitos, novedades y avances publicados con fecha para mantener frescura editorial."
+    }
   ],
   socialLinks: [
     { href: externalLinks.instagram, label: "Instagram" },
@@ -204,8 +239,8 @@ export const campaignConfig = {
   futureRoutes: [
     {
       phase: "Fase 2",
-      route: "/noticias",
-      description: "Cobertura de hitos, avances y llamados públicos."
+      route: "/glosario",
+      description: "Glosario ciudadano para explicar conceptos ecológicos, jurídicos y científicos del sitio."
     },
     {
       phase: "Fase 3",

@@ -2,8 +2,13 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 
 const contactEmail = "pinguinohumboldtmn@gmail.com";
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Privacidad", path: "/privacidad" }
+];
 ---
 
 <MainLayout
@@ -11,8 +16,11 @@ const contactEmail = "pinguinohumboldtmn@gmail.com";
   title="Política de privacidad | Es más que un pingüino"
   description="Política de privacidad y tratamiento de datos de la campaña Es más que un pingüino."
   hideFloatingCta={true}
+  keywords={["privacidad", "tratamiento de datos", "firma campaña", "datos personales"]}
+  breadcrumbItems={breadcrumbItems}
 >
   <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
     <SectionHeading
       eyebrow="Privacidad"
       title="Política de privacidad de la campaña"

@@ -13,6 +13,14 @@ interface Props {
   path?: string;
   hideFloatingCta?: boolean;
   robots?: string;
+  keywords?: string[];
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+  breadcrumbItems?: Array<{ name: string; path: string }>;
+  pageType?: "WebPage" | "AboutPage" | "CollectionPage" | "FAQPage" | "ContactPage" | "Article";
+  socialImage?: string;
+  socialImageAlt?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
 }
 
 const {
@@ -20,12 +28,23 @@ const {
   description = campaignConfig.site.description,
   path = "/",
   hideFloatingCta = false,
-  robots = "index,follow"
+  robots = "index,follow",
+  keywords = [],
+  schema,
+  breadcrumbItems = [],
+  pageType = "WebPage",
+  socialImage,
+  socialImageAlt = `Imagen principal de ${campaignConfig.site.name}`,
+  publishedTime,
+  modifiedTime
 } = Astro.props;
 
 const canonical = new URL(path, campaignConfig.site.siteUrl).toString();
 const theme = campaignConfig.theme.colors;
-const socialImage = new URL(campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString();
+const socialImageUrl = new URL(socialImage ?? campaignConfig.assets.ogImage, campaignConfig.site.siteUrl).toString();
+const socialImageFallbackUrl = new URL(campaignConfig.assets.logo, campaignConfig.site.siteUrl).toString();
+const keywordContent = keywords.length > 0 ? keywords.join(", ") : undefined;
+const ogType = pageType === "Article" ? "article" : "website";
 const gaInitScript = `
   window.dataLayer = window.dataLayer || [];
   function gtag(){window.dataLayer.push(arguments);}
@@ -87,6 +106,33 @@ const gaEventsScript = `
     });
   });
 `;
+const customStructuredData = Array.isArray(schema) ? schema : schema ? [schema] : [];
+const breadcrumbStructuredData =
+  breadcrumbItems.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: breadcrumbItems.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.name,
+          item: new URL(item.path, campaignConfig.site.siteUrl).toString()
+        }))
+      }
+    : null;
+const pageStructuredData = {
+  "@context": "https://schema.org",
+  "@type": pageType,
+  name: title,
+  description,
+  url: canonical,
+  inLanguage: campaignConfig.site.language,
+  isPartOf: {
+    "@type": "WebSite",
+    name: campaignConfig.site.name,
+    url: campaignConfig.site.siteUrl
+  }
+};
 const structuredData = [
   {
     "@context": "https://schema.org",
@@ -95,6 +141,7 @@ const structuredData = [
     url: campaignConfig.site.siteUrl,
     logo: new URL(campaignConfig.assets.logo, campaignConfig.site.siteUrl).toString(),
     email: campaignConfig.site.contactEmail,
+    description: campaignConfig.site.description,
     sameAs: campaignConfig.socialLinks
       .map((item) => item.href)
       .filter((href) => /^https?:\/\//.test(href))
@@ -104,8 +151,11 @@ const structuredData = [
     "@type": "WebSite",
     name: campaignConfig.site.name,
     url: campaignConfig.site.siteUrl,
-    inLanguage: "es-CL"
-  }
+    inLanguage: campaignConfig.site.language
+  },
+  pageStructuredData,
+  ...(breadcrumbStructuredData ? [breadcrumbStructuredData] : []),
+  ...customStructuredData
 ];
 ---
 
@@ -131,29 +181,38 @@ const structuredData = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {keywordContent && <meta name="keywords" content={keywordContent} />}
+    <meta name="author" content={campaignConfig.site.author} />
     <meta name="robots" content={robots} />
     <meta name="theme-color" content={campaignConfig.site.themeColor} />
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={campaignConfig.site.language} href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={campaignConfig.site.name} />
     <meta property="og:locale" content={campaignConfig.site.locale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={socialImage} />
-    <meta property="og:image:secure_url" content={socialImage} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:secure_url" content={socialImageUrl} />
     <meta property="og:image:type" content="image/svg+xml" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`Imagen principal de ${campaignConfig.site.name}`} />
+    <meta property="og:image:alt" content={socialImageAlt} />
+    <meta property="og:image" content={socialImageFallbackUrl} />
+    <meta property="og:image:alt" content={`Logotipo de ${campaignConfig.site.name}`} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={socialImage} />
-    <meta name="twitter:image:alt" content={`Imagen principal de ${campaignConfig.site.name}`} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
+    <meta name="twitter:url" content={canonical} />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     {isGaEnabled && (
       <>
