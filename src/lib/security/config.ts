@@ -76,6 +76,12 @@ export const securityConfig = {
     dedupeIdentity:
       import.meta.env.FIREBASE_SIGNATURES_DEDUPE_IDENTITY_COLLECTION ?? "signature_dedupe_identity",
     dedupeRut: import.meta.env.FIREBASE_SIGNATURES_DEDUPE_RUT_COLLECTION ?? "signature_dedupe_rut",
+    eventSubmissions:
+      import.meta.env.FIREBASE_EVENT_SUBMISSIONS_COLLECTION ?? "event_submissions",
+    eventDedupe:
+      import.meta.env.FIREBASE_EVENT_DEDUPE_COLLECTION ?? "event_submission_dedupe",
+    adminUsers:
+      import.meta.env.FIREBASE_ADMIN_USERS_COLLECTION ?? "admin_users",
     rateLimitRoot: import.meta.env.FIREBASE_RATE_LIMIT_ROOT_COLLECTION ?? "security_rate_limits",
     events: import.meta.env.FIREBASE_SECURITY_EVENTS_COLLECTION ?? "security_events",
     counterCollection:
@@ -139,6 +145,46 @@ export const securityConfig = {
         maxHits: withAttackMode(
           parseNumber(import.meta.env.SECURITY_SIGNATURE_POST_FP_WINDOW_LIMIT, 4),
           parseNumber(import.meta.env.SECURITY_ATTACK_SIGNATURE_POST_FP_WINDOW_LIMIT, 2),
+          highProtectionMode
+        )
+      }
+    ] satisfies RateLimitRule[],
+    eventPostIp: [
+      {
+        name: "burst",
+        windowMs: 1000 * 60 * 5,
+        maxHits: withAttackMode(
+          parseNumber(import.meta.env.SECURITY_EVENT_POST_IP_BURST_LIMIT, 4),
+          parseNumber(import.meta.env.SECURITY_ATTACK_EVENT_POST_IP_BURST_LIMIT, 2),
+          highProtectionMode
+        )
+      },
+      {
+        name: "window",
+        windowMs: 1000 * 60 * 60 * 3,
+        maxHits: withAttackMode(
+          parseNumber(import.meta.env.SECURITY_EVENT_POST_IP_WINDOW_LIMIT, 8),
+          parseNumber(import.meta.env.SECURITY_ATTACK_EVENT_POST_IP_WINDOW_LIMIT, 4),
+          highProtectionMode
+        )
+      }
+    ] satisfies RateLimitRule[],
+    adminLoginIp: [
+      {
+        name: "burst",
+        windowMs: 1000 * 60 * 15,
+        maxHits: withAttackMode(
+          parseNumber(import.meta.env.SECURITY_ADMIN_LOGIN_IP_BURST_LIMIT, 6),
+          parseNumber(import.meta.env.SECURITY_ATTACK_ADMIN_LOGIN_IP_BURST_LIMIT, 3),
+          highProtectionMode
+        )
+      },
+      {
+        name: "window",
+        windowMs: 1000 * 60 * 60 * 4,
+        maxHits: withAttackMode(
+          parseNumber(import.meta.env.SECURITY_ADMIN_LOGIN_IP_WINDOW_LIMIT, 18),
+          parseNumber(import.meta.env.SECURITY_ATTACK_ADMIN_LOGIN_IP_WINDOW_LIMIT, 8),
           highProtectionMode
         )
       }

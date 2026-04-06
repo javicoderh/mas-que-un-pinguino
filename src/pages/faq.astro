@@ -1,0 +1,83 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Preguntas frecuentes", path: "/faq" }
+];
+
+const faqs = [
+  {
+    question: "¿Por qué firmar la carta si no soy especialista?",
+    answer:
+      "Porque la campaña busca una participación ciudadana informada. El sitio reúne contexto y lenguaje claro para que cualquier persona pueda entender la causa y decidir si quiere apoyarla."
+  },
+  {
+    question: "¿La campaña está basada solo en emociones?",
+    answer:
+      "No. El sitio se apoya en una base de información ecológica y en documentos públicos para explicar por qué el pingüino de Humboldt importa como especie y como indicador del estado del mar."
+  },
+  {
+    question: "¿Qué pasa con mis datos si firmo?",
+    answer:
+      "La política de privacidad explica qué datos se recopilan, con qué finalidad y cómo se resguardan. El objetivo es gestionar firmas válidas y mantener información clara sobre el uso de datos."
+  },
+  {
+    question: "¿Dónde puedo leer más antes de apoyar?",
+    answer:
+      "Puedes revisar la carta abierta, la página de ciencia, la sección de transparencia y las páginas temáticas del centro de información del sitio."
+  },
+  {
+    question: "¿Esta campaña invita a una confrontación política?",
+    answer:
+      "No. El tono del sitio busca invitar a una participación ciudadana respetuosa, centrada en la evidencia y en el cuidado del ecosistema marino."
+  }
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer
+    }
+  }))
+};
+---
+
+<MainLayout
+  path="/faq"
+  title="FAQ sobre el pingüino de Humboldt y la campaña | Es más que un pingüino"
+  description="Resuelve dudas frecuentes sobre la carta, la firma, la base científica del sitio, la privacidad y la forma de participar en esta causa ciudadana."
+  keywords={["FAQ pingüino de Humboldt", "preguntas frecuentes", "firma carta", "privacidad", "base científica"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="FAQPage"
+  schema={faqSchema}
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="FAQ"
+      title="Preguntas frecuentes sobre la campaña y el sitio"
+      body="Creamos esta página para responder dudas habituales con lenguaje claro y ayudar a que buscadores y personas encuentren respuestas específicas sin tener que recorrer toda la web."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    <div class="grid gap-4">
+      {faqs.map((item) => (
+        <article class="surface-panel rounded-[1.75rem] p-6">
+          <h2 class="text-xl font-bold text-white">{item.question}</h2>
+          <p class="mt-4 text-base leading-7 text-campaign-text-muted">{item.answer}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+</MainLayout>

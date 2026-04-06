@@ -2,9 +2,14 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { campaignConfig } from "../content/campaign";
 
 const { socialLinks } = campaignConfig;
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Contacto", path: "/contacto" }
+];
 const contactLinks = [
   {
     href: socialLinks.find((item) => item.label === "Instagram")?.href ?? "#",
@@ -24,11 +29,15 @@ const publicContactLinks = contactLinks.filter((item) => /^https?:\/\//.test(ite
 
 <MainLayout
   path="/contacto"
-  title="Contacto | Es más que un pingüino"
-  description="Canales de contacto y redes de la campaña Es más que un pingüino."
+  title="Contacto de la campaña | Es más que un pingüino"
+  description="Canales de contacto, correo y redes de Es más que un pingüino para consultas, coordinación y difusión responsable."
   hideFloatingCta={true}
+  keywords={["contacto pingüino de Humboldt", "correo campaña", "redes sociales", "consultas"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="ContactPage"
 >
   <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
     <SectionHeading
       eyebrow="Contacto"
       title="Conversemos y mantengamos la campaña en movimiento"

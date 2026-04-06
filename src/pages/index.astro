@@ -3,10 +3,37 @@ import MainLayout from "../layouts/MainLayout.astro";
 import HeroSection from "../components/sections/HeroSection.astro";
 import ProblemSection from "../components/sections/ProblemSection.astro";
 import ConversionSection from "../components/sections/ConversionSection.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import { campaignConfig } from "../content/campaign";
+
+const knowledgeHighlights = campaignConfig.knowledgeHub.slice(0, 4);
 ---
 
-<MainLayout path="/">
+<MainLayout
+  path="/"
+  title="Pingüino de Humboldt en Chile | Ciencia, carta y apoyo ciudadano"
+  description="Conoce por qué el pingüino de Humboldt importa para el ecosistema marino de Chile, revisa la carta científica y apoya esta causa con una participación ciudadana informada."
+  keywords={["pingüino de Humboldt", "protección del pingüino de Humboldt", "carta científica", "Monumento Natural", "participación ciudadana"]}
+>
   <HeroSection />
   <ProblemSection />
+  <Section>
+    <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+      <SectionHeading
+        eyebrow="Aprende"
+        title="Un sitio pensado para informar, contextualizar y sumar apoyo"
+        body="Además de la carta, reunimos páginas que explican la especie, su ecosistema, las amenazas que enfrenta y las preguntas más frecuentes de la campaña."
+      />
+      <div class="grid gap-4 md:grid-cols-2">
+        {knowledgeHighlights.map((item) => (
+          <a href={item.href} class="surface-panel rounded-[1.75rem] p-6 transition hover:-translate-y-0.5">
+            <p class="text-lg font-semibold text-white">{item.label}</p>
+            <p class="mt-3 text-sm leading-6 text-campaign-text-muted">{item.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </Section>
   <ConversionSection />
 </MainLayout>

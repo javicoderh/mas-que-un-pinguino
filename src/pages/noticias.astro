@@ -1,0 +1,63 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Noticias", path: "/noticias" }
+];
+
+const updates = [
+  {
+    date: "6 de abril de 2026",
+    title: "Lanzamiento del centro de información SEO del sitio",
+    body:
+      "Se publican nuevas páginas para explicar la especie, su base científica, preguntas frecuentes y contexto de protección con mejor estructura para buscadores."
+  },
+  {
+    date: "6 de abril de 2026",
+    title: "Refuerzo de metadatos y datos estructurados",
+    body:
+      "La web incorpora breadcrumbs, schema por página y mejoras en titles y descriptions para ampliar visibilidad orgánica."
+  },
+  {
+    date: "6 de abril de 2026",
+    title: "Actualización editorial del tono del sitio",
+    body:
+      "El contenido se reescribe para priorizar divulgación científica, participación ciudadana y un tono cercano para familias y comunidades."
+  }
+];
+---
+
+<MainLayout
+  path="/noticias"
+  title="Noticias y actualizaciones | Es más que un pingüino"
+  description="Revisa hitos y actualizaciones del sitio y de la campaña, publicados con fecha para mantener contexto editorial y frescura informativa."
+  keywords={["noticias pingüino de Humboldt", "actualizaciones campaña", "novedades sitio", "conservación marina"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="CollectionPage"
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="Actualizaciones"
+      title="Noticias y avances publicados con fecha"
+      body="Esta página reúne hitos del sitio y de la campaña en un formato simple. Su objetivo es mantener una capa editorial viva que ayude tanto a usuarios como a buscadores a reconocer cambios reales en el proyecto."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    <div class="grid gap-4">
+      {updates.map((item) => (
+        <article class="surface-panel rounded-[1.75rem] p-6">
+          <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-warm">{item.date}</p>
+          <h2 class="mt-3 text-2xl font-bold text-white">{item.title}</h2>
+          <p class="mt-4 text-base leading-7 text-campaign-text-muted">{item.body}</p>
+        </article>
+      ))}
+    </div>
+  </Section>
+</MainLayout>

@@ -1,0 +1,222 @@
+---
+import { chileRegions, chileRegionByKey, normalizeRegionKey } from "../../lib/events/chile-regions";
+
+interface EventMarker {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  date: string;
+  time: string;
+  region: string;
+  regionKey: string;
+  venue: string;
+}
+
+interface Props {
+  events: EventMarker[];
+}
+
+const { events } = Astro.props;
+const markerOffsets = [
+  { x: 0, y: 0 },
+  { x: 18, y: -18 },
+  { x: -18, y: -18 },
+  { x: 18, y: 18 },
+  { x: -18, y: 18 },
+  { x: 28, y: 0 },
+  { x: -28, y: 0 }
+];
+
+const eventsWithPosition = events.map((event) => {
+  const region = chileRegionByKey[normalizeRegionKey(event.regionKey || event.region)] ?? chileRegions[0];
+  const sameRegionIndex = events
+    .filter((item) => normalizeRegionKey(item.regionKey || item.region) === region.id)
+    .findIndex((item) => item.id === event.id);
+  const offset = markerOffsets[sameRegionIndex % markerOffsets.length] ?? markerOffsets[0];
+
+  return {
+    ...event,
+    regionName: region.name,
+    leftPercent: ((region.markerX + offset.x) / 360) * 100,
+    topPercent: ((region.markerY + offset.y) / 900) * 100
+  };
+});
+
+const regionCounts = Object.fromEntries(
+  chileRegions.map((region) => [
+    region.id,
+    events.filter((event) => normalizeRegionKey(event.regionKey || event.region) === region.id).length
+  ])
+);
+---
+
+<div class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+  <div class="surface-panel overflow-hidden rounded-[2rem] p-4 md:p-6">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-warm">Mapa ciudadano</p>
+        <h3 class="mt-2 text-2xl font-black text-white md:text-3xl">Chile por regiones</h3>
+      </div>
+      <p class="max-w-sm text-sm leading-6 text-campaign-text-muted">
+        Cada marcador representa un evento aprobado por el equipo. Al hacer click verás la ficha completa con fecha, lugar e imagen.
+      </p>
+    </div>
+
+    <div class="event-map-shell">
+      <svg
+        viewBox="0 0 360 900"
+        class="event-map-svg"
+        aria-labelledby="event-map-title"
+        role="img"
+      >
+        <title id="event-map-title">Mapa de Chile por regiones con eventos aprobados</title>
+        <defs>
+          <linearGradient id="regionStroke" x1="0" x2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.2)" />
+            <stop offset="100%" stop-color="rgba(56,182,255,0.8)" />
+          </linearGradient>
+        </defs>
+        <rect x="168" y="6" width="10" height="884" rx="999" fill="rgba(255,255,255,0.06)"></rect>
+        {chileRegions.map((region) => (
+          <g data-region={region.id}>
+            <rect
+              x={region.x}
+              y={region.y}
+              width={region.width}
+              height={region.height}
+              rx="18"
+              fill={region.tone}
+              stroke="url(#regionStroke)"
+              stroke-width="1.4"
+            ></rect>
+            <text
+              x={region.x + 12}
+              y={region.y + region.height / 2 + 5}
+              fill="white"
+              font-size="11"
+              font-weight="700"
+            >
+              {region.shortName}
+            </text>
+          </g>
+        ))}
+      </svg>
+
+      {eventsWithPosition.map((event, index) => (
+        <button
+          type="button"
+          class="event-marker focus-ring"
+          style={`left:${event.leftPercent}%;top:${event.topPercent}%;`}
+          data-event-open={event.id}
+          data-event-index={String(index)}
+          aria-label={`Abrir ${event.title}`}
+        >
+          <span class="event-marker-dot"></span>
+          <span class="event-marker-label">{index + 1}</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="mt-6 flex flex-wrap gap-2">
+      {chileRegions.filter((region) => regionCounts[region.id] > 0).map((region) => (
+        <span class="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white">
+          {region.shortName}: {regionCounts[region.id]}
+        </span>
+      ))}
+    </div>
+  </div>
+
+  <div class="grid gap-4">
+    {events.length > 0 ? (
+      events.slice(0, 6).map((event, index) => (
+        <button
+          type="button"
+          class="surface-panel focus-ring rounded-[1.75rem] p-5 text-left transition hover:-translate-y-0.5"
+          data-event-open={event.id}
+          data-event-index={String(index)}
+        >
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">{event.region}</p>
+          <h3 class="mt-2 text-xl font-bold text-white">{event.title}</h3>
+          <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
+            {event.date} · {event.time} · {event.venue}
+          </p>
+        </button>
+      ))
+    ) : (
+      <div class="surface-panel rounded-[1.75rem] p-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-pink">Próximamente</p>
+        <h3 class="mt-3 text-2xl font-bold text-white">Aún no hay eventos publicados</h3>
+        <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+          El mapa se actualizará cuando existan actividades aprobadas por el equipo. Puedes ser de las primeras personas en proponer una.
+        </p>
+      </div>
+    )}
+  </div>
+</div>
+
+<script is:inline type="application/json" data-events-json set:html={JSON.stringify(eventsWithPosition)}></script>
+
+<div class="event-modal hidden" data-event-modal>
+  <div class="event-modal-backdrop" data-event-close></div>
+  <div class="event-modal-card surface-panel">
+    <button type="button" class="event-modal-close focus-ring" data-event-close aria-label="Cerrar detalle del evento">×</button>
+    <img src="" alt="" class="event-modal-image" data-event-image />
+    <div class="event-modal-body">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-campaign-warm" data-event-region></p>
+      <h3 class="mt-2 text-2xl font-black text-white" data-event-title></h3>
+      <p class="mt-3 text-sm leading-6 text-campaign-text-muted" data-event-meta></p>
+      <p class="mt-5 text-base leading-7 text-campaign-text-muted" data-event-description></p>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  const events = JSON.parse(document.querySelector("[data-events-json]")?.textContent || "[]");
+  const modal = document.querySelector("[data-event-modal]");
+  const image = document.querySelector("[data-event-image]");
+  const region = document.querySelector("[data-event-region]");
+  const title = document.querySelector("[data-event-title]");
+  const meta = document.querySelector("[data-event-meta]");
+  const description = document.querySelector("[data-event-description]");
+
+  const openEvent = (eventId) => {
+    const event = events.find((item) => item.id === eventId);
+    if (!event || !(modal instanceof HTMLElement)) return;
+
+    if (image instanceof HTMLImageElement) {
+      image.src = event.imageUrl;
+      image.alt = event.title;
+    }
+    if (region instanceof HTMLElement) region.textContent = event.regionName;
+    if (title instanceof HTMLElement) title.textContent = event.title;
+    if (meta instanceof HTMLElement) meta.textContent = `${event.date} · ${event.time} · ${event.venue}`;
+    if (description instanceof HTMLElement) description.textContent = event.description;
+
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeModal = () => {
+    if (!(modal instanceof HTMLElement)) return;
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
+  };
+
+  document.querySelectorAll("[data-event-open]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const eventId = button.getAttribute("data-event-open");
+      if (eventId) openEvent(eventId);
+    });
+  });
+
+  document.querySelectorAll("[data-event-close]").forEach((node) => {
+    node.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeModal();
+    }
+  });
+</script>

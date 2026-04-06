@@ -1,0 +1,67 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Monumento Natural", path: "/monumento-natural-pinguino-de-humboldt" }
+];
+---
+
+<MainLayout
+  path="/monumento-natural-pinguino-de-humboldt"
+  title="Monumento Natural para el pingüino de Humboldt | Qué significa"
+  description="Explicación clara sobre qué implica la protección como Monumento Natural para el pingüino de Humboldt y por qué esta figura es relevante para la conservación."
+  keywords={["Monumento Natural pingüino de Humboldt", "protección del pingüino de Humboldt", "conservación en Chile", "decreto Monumento Natural"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="AboutPage"
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="Protección"
+      title="Qué significa hablar de Monumento Natural en esta campaña"
+      body="Aquí explicamos por qué esta figura de protección aparece en la carta abierta y por qué se presenta como una herramienta relevante para cuidar a la especie y su entorno."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    <div class="grid gap-6 lg:grid-cols-3">
+      <article class="surface-panel rounded-[2rem] p-8">
+        <h2 class="text-xl font-bold text-white">Una señal de prioridad pública</h2>
+        <p class="mt-4 text-sm leading-7 text-campaign-text-muted">
+          La figura de Monumento Natural comunica que una especie o elemento de la naturaleza merece resguardo especial. En términos públicos, ordena prioridades y ayuda a focalizar atención institucional.
+        </p>
+      </article>
+      <article class="surface-panel rounded-[2rem] p-8">
+        <h2 class="text-xl font-bold text-white">Un puente entre ciencia y política pública</h2>
+        <p class="mt-4 text-sm leading-7 text-campaign-text-muted">
+          La campaña propone que la evidencia científica y la preocupación ciudadana puedan acompañar una decisión de protección. El objetivo del sitio es explicar ese vínculo de manera accesible, sin simplificar en exceso.
+        </p>
+      </article>
+      <article class="surface-panel rounded-[2rem] p-8">
+        <h2 class="text-xl font-bold text-white">Una conversación comprensible para más personas</h2>
+        <p class="mt-4 text-sm leading-7 text-campaign-text-muted">
+          Esta página busca bajar a tierra un tema regulatorio que suele parecer lejano. La idea es que familias, estudiantes y comunidades puedan entender por qué esta figura importa en la práctica.
+        </p>
+      </article>
+    </div>
+  </Section>
+
+  <Section class="pt-0">
+    <div class="surface-panel rounded-[2rem] p-8">
+      <h2 class="text-2xl font-bold text-white">Cómo se conecta con el resto del sitio</h2>
+      <p class="mt-4 max-w-3xl text-base leading-7 text-campaign-text-muted">
+        La carta abierta presenta esta figura como parte de una propuesta de protección. La sección de ciencia aporta contexto ecológico y la sección de preguntas frecuentes ayuda a entender qué significa apoyar esta solicitud desde una participación ciudadana informada.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/carta" class="focus-ring rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:text-campaign-warm">Leer la carta</a>
+        <a href="/ciencia" class="focus-ring rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:text-campaign-warm">Ver base científica</a>
+        <a href="/faq" class="focus-ring rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:text-campaign-warm">Revisar preguntas frecuentes</a>
+      </div>
+    </div>
+  </Section>
+</MainLayout>

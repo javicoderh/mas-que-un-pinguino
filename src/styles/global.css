@@ -84,6 +84,114 @@ img {
   mask-image: radial-gradient(circle at center, black, transparent 85%);
 }
 
+.event-map-shell {
+  position: relative;
+  min-height: 42rem;
+  border-radius: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top, rgba(56, 182, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 80% 15%, rgba(255, 162, 209, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  overflow: hidden;
+}
+
+.event-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.event-marker {
+  position: absolute;
+  width: 2.9rem;
+  height: 2.9rem;
+  transform: translate(-50%, -50%);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.event-marker-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.28), transparent 45%),
+    linear-gradient(180deg, var(--campaign-warm), #f3d86f);
+  box-shadow:
+    0 18px 42px rgba(255, 232, 139, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.event-marker-label {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: #000;
+  letter-spacing: 0.02em;
+}
+
+.event-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.event-modal.hidden {
+  display: none;
+}
+
+.event-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 5, 10, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.event-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 38rem);
+  overflow: hidden;
+  border-radius: 1.9rem;
+}
+
+.event-modal-image {
+  width: 100%;
+  height: 15rem;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.event-modal-body {
+  padding: 1.5rem;
+}
+
+.event-modal-close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  z-index: 2;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(5, 7, 11, 0.65);
+  color: white;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -94,5 +202,16 @@ img {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .event-map-shell {
+    min-height: 34rem;
+  }
+
+  .event-marker {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }
