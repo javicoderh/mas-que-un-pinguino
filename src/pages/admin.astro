@@ -5,6 +5,7 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { getAdminSessionFromCookies } from "../lib/security/admin-auth";
 import { listApprovedEvents, listEventSubmissions } from "../lib/security/events-storage";
+import { listNews } from "../lib/security/news-storage";
 import { isSecurityConfigured, isServerStorageConfigured } from "../lib/security/config";
 
 export const prerender = false;
@@ -18,9 +19,17 @@ const session = await getAdminSessionFromCookies(Astro.cookies);
 const pendingEvents = session && isServerStorageConfigured ? await listEventSubmissions("pending") : [];
 const flaggedEvents = session && isServerStorageConfigured ? await listEventSubmissions("flagged") : [];
 const approvedEvents = session && isServerStorageConfigured ? await listApprovedEvents() : [];
+const newsItems = session && isServerStorageConfigured ? await listNews() : [];
 const error = Astro.url.searchParams.get("error");
 const review = Astro.url.searchParams.get("review");
 const deleted = Astro.url.searchParams.get("delete");
+const newsAction = Astro.url.searchParams.get("news");
+const formatAdminDateTime = (value: number) =>
+  new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "America/Santiago"
+  }).format(new Date(value));
 ---
 
 <MainLayout
@@ -84,7 +93,7 @@ const deleted = Astro.url.searchParams.get("delete");
             <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-warm">Sesión activa</p>
             <p class="mt-2 text-xl font-bold text-white">{session.username}</p>
             <p class="mt-2 text-sm leading-6 text-campaign-text-muted">
-              Pendientes: {pendingEvents.length} · Marcadas: {flaggedEvents.length} · Publicadas: {approvedEvents.length}
+              Pendientes: {pendingEvents.length} · Marcadas: {flaggedEvents.length} · Publicadas: {approvedEvents.length} · Pingüinoticias: {newsItems.length}
             </p>
           </div>
           <form method="post" action="/api/admin/logout">
@@ -104,11 +113,134 @@ const deleted = Astro.url.searchParams.get("delete");
             El evento fue eliminado correctamente.
           </p>
         )}
+        {newsAction === "create_ok" && (
+          <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/10 px-4 py-3 text-sm text-white">
+            La Pingüinoticia fue creada correctamente.
+          </p>
+        )}
+        {newsAction === "update_ok" && (
+          <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/10 px-4 py-3 text-sm text-white">
+            La Pingüinoticia fue actualizada correctamente.
+          </p>
+        )}
+        {newsAction === "delete_ok" && (
+          <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/10 px-4 py-3 text-sm text-white">
+            La Pingüinoticia fue eliminada correctamente.
+          </p>
+        )}
         {error && (
           <p class="rounded-2xl border border-campaign-pink/25 bg-campaign-pink/8 px-4 py-3 text-sm text-campaign-blush">
             {error}
           </p>
         )}
+
+        <div class="surface-panel rounded-[1.75rem] p-6">
+          <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-pink">Pingüinoticias</p>
+              <h2 class="mt-3 text-2xl font-black text-white">Crear nueva publicación</h2>
+              <p class="mt-4 text-sm leading-7 text-campaign-text-muted">
+                Cada noticia guarda automáticamente su fecha y hora de ingreso. La preferencia se inicializa en `0` y luego puede editarse desde la tabla.
+              </p>
+            </div>
+            <form method="post" action="/api/admin/create-news" class="grid gap-4">
+              <label class="grid gap-2 text-sm font-medium text-white">
+                <span>Título</span>
+                <input
+                  name="title"
+                  required
+                  class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                />
+              </label>
+              <label class="grid gap-2 text-sm font-medium text-white">
+                <span>Contenido</span>
+                <textarea
+                  name="body"
+                  rows="5"
+                  required
+                  class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                ></textarea>
+              </label>
+              <div>
+                <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
+                  Crear Pingüinoticia
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="surface-panel rounded-[1.75rem] p-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Tabla de noticias</p>
+              <h2 class="mt-2 text-2xl font-black text-white">CRUD de Pingüinoticias</h2>
+            </div>
+            <p class="max-w-xl text-sm leading-6 text-campaign-text-muted">
+              El orden público se mantiene por fecha y hora de ingreso. La columna `preferencia` es editable para gestión interna.
+            </p>
+          </div>
+
+          <div class="mt-6 grid gap-4">
+            {newsItems.length > 0 ? (
+              newsItems.map((item) => (
+                <article class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5">
+                  <form method="post" action="/api/admin/update-news" class="grid gap-4">
+                    <input type="hidden" name="news_id" value={item.id} />
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">
+                        Ingresada: {formatAdminDateTime(item.createdAtMs)}
+                      </p>
+                      <label class="flex items-center gap-3 text-sm font-medium text-white">
+                        <span>Preferencia</span>
+                        <input
+                          type="number"
+                          name="preference"
+                          min="0"
+                          value={item.preference}
+                          class="focus-ring w-24 rounded-2xl border border-white/14 bg-white/6 px-3 py-2 text-white"
+                        />
+                      </label>
+                    </div>
+                    <label class="grid gap-2 text-sm font-medium text-white">
+                      <span>Título</span>
+                      <input
+                        name="title"
+                        required
+                        value={item.title}
+                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                      />
+                    </label>
+                    <label class="grid gap-2 text-sm font-medium text-white">
+                      <span>Contenido</span>
+                      <textarea
+                        name="body"
+                        rows="5"
+                        required
+                        class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                      >{item.body}</textarea>
+                    </label>
+                    <div class="flex flex-wrap gap-3">
+                      <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
+                        Guardar cambios
+                      </button>
+                    </div>
+                  </form>
+                  <form method="post" action="/api/admin/delete-news" class="mt-3">
+                    <input type="hidden" name="news_id" value={item.id} />
+                    <button type="submit" class="focus-ring rounded-full border border-campaign-pink/30 bg-campaign-pink/10 px-5 py-3 text-sm font-semibold text-campaign-blush transition hover:bg-campaign-pink/18">
+                      Borrar Pingüinoticia
+                    </button>
+                  </form>
+                </article>
+              ))
+            ) : (
+              <div class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5">
+                <p class="text-base leading-7 text-campaign-text-muted">Todavía no hay Pingüinoticias registradas.</p>
+              </div>
+            )}
+          </div>
+        </div>
 
         <div class="grid gap-8 xl:grid-cols-[1fr_1fr]">
           <div class="space-y-4">
