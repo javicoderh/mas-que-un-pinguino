@@ -14,6 +14,7 @@ import { parseSignaturePayload } from "../../../lib/validation/signature-schema"
 import { getDuplicateMatch, storeSignature } from "../../../lib/security/storage";
 import { isTokenUsed, markTokenUsed } from "../../../lib/security/token-store";
 import { checkAndFireAlert } from "../../../lib/security/alerts";
+import { sendSignatureConfirmationEmail } from "../../../lib/email/signature-confirmation";
 
 export const prerender = false;
 
@@ -270,6 +271,18 @@ export const POST: APIRoute = async ({ request, url }) => {
     });
 
     await markTokenUsed(nonce, securityConfig.maxTokenAgeMs);
+
+    try {
+      await sendSignatureConfirmationEmail({
+        email: signature.email,
+        fullName: signature.fullName,
+        rut: signature.rut,
+        country: signature.country,
+        status
+      });
+    } catch (emailError) {
+      console.error("signature-confirmation-email-failed", emailError);
+    }
 
     recordDecision(status as "accepted" | "flagged");
     if (status === "flagged") {

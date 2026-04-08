@@ -8,7 +8,6 @@ export type SciencePaperKind =
   | "Informe técnico"
   | "Informe final"
   | "Manual técnico"
-  | "Tesis de magíster"
   | "Instrumento público";
 
 interface SciencePaperDefinition {
@@ -265,17 +264,6 @@ const definitions: SciencePaperDefinition[] = [
     doi: "10.1007/s10336-012-0837-z"
   },
   {
-    slug: "plaza-2010-sitios-nidificacion-tesis",
-    fileName: "Plaza_P 2010_Uso_de_sitios_de_nidificacion del Pinguino de Humboldt_Tesis de Magister UNAB.pdf",
-    title: "Uso de sitios de nidificación del pingüino de Humboldt",
-    authors: "P. Plaza",
-    year: 2010,
-    source: "Universidad Andrés Bello",
-    kind: "Tesis de magíster",
-    pages: 55,
-    language: "Español"
-  },
-  {
     slug: "ucn-2008-linea-base-reservas-marinas",
     fileName: "UCN 2008_INFORME FINAL PROYECTO FIP 2006-56 EVALUACION DE LINEA BASE DE LAS RESERVAS MARINAS “ISLA CHAÑARAL” E “ISLA CHOROSDAMAS”.pdf",
     title: "Informe final proyecto FIP 2006-56: evaluación de línea base de las reservas marinas Isla Chañaral e Isla Choros-Damas",
@@ -386,4 +374,3 @@ export const sciencePapers: SciencePaperRecord[] = definitions
     downloadName: paper.fileName
   }))
   .sort((a, b) => b.year - a.year || a.title.localeCompare(b.title, "es"));
-
