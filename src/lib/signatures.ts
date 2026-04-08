@@ -6,6 +6,7 @@ export interface SignatureCounterPayload {
 
 export async function getSignatureCount(): Promise<SignatureCounterPayload> {
   const response = await fetch("/api/signatures/count", {
+    cache: "no-store",
     headers: {
       accept: "application/json"
     }

@@ -1,7 +1,22 @@
 ---
 import { campaignConfig } from "../../content/campaign";
+import { getCachedPublicSignatureBreakdown } from "../../lib/security/storage";
 
 const { hero } = campaignConfig;
+const formatCount = (value: number) => new Intl.NumberFormat("es-CL").format(value);
+
+let initialCount = Number(hero.signaturesCounter.value ?? 0);
+let initialChileanCount = 0;
+let initialForeignCount = 0;
+
+try {
+  const breakdown = await getCachedPublicSignatureBreakdown();
+  initialCount = breakdown.count;
+  initialChileanCount = breakdown.chileanCount;
+  initialForeignCount = breakdown.foreignCount;
+} catch (error) {
+  console.error("signature-counter-ssr-fallback", error);
+}
 ---
 
 <aside
@@ -22,16 +37,16 @@ const { hero } = campaignConfig;
         {hero.signaturesCounter.label}
       </p>
       <p class="mt-1.5 text-2xl font-black leading-none text-white md:mt-2 md:text-3xl" data-signature-counter-value>
-        {hero.signaturesCounter.value}
+        {formatCount(initialCount)}
       </p>
       <div class="mt-2 grid grid-cols-2 gap-2 text-[10px] md:mt-3 md:text-xs">
         <div class="rounded-2xl border border-white/10 bg-white/6 px-2 py-2 text-center md:px-2.5">
           <p class="text-[8px] font-semibold uppercase leading-tight tracking-[0.06em] text-campaign-sky/90 md:text-[10px] md:tracking-[0.1em]">Chilenas</p>
-          <p class="mt-1 text-sm font-black leading-none text-white md:text-lg" data-signature-counter-chile>0</p>
+          <p class="mt-1 text-sm font-black leading-none text-white md:text-lg" data-signature-counter-chile>{formatCount(initialChileanCount)}</p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/6 px-2 py-2 text-center md:px-2.5">
           <p class="text-[8px] font-semibold uppercase leading-tight tracking-[0.06em] text-campaign-sky/90 md:text-[10px] md:tracking-[0.1em]">Extranjeras</p>
-          <p class="mt-1 text-sm font-black leading-none text-white md:text-lg" data-signature-counter-foreign>0</p>
+          <p class="mt-1 text-sm font-black leading-none text-white md:text-lg" data-signature-counter-foreign>{formatCount(initialForeignCount)}</p>
         </div>
       </div>
     </div>
@@ -71,4 +86,5 @@ const { hero } = campaignConfig;
 
   refreshCounter();
   window.addEventListener("signature:created", refreshCounter);
+  window.setInterval(refreshCounter, 1000 * 20);
 </script>

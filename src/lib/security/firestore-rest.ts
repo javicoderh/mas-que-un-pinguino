@@ -309,14 +309,18 @@ export function encodeWrite(relativePath: string, data: Record<string, Firestore
 }
 
 export function encodeIncrementTransform(relativePath: string, fieldPath: string): FirestoreWrite {
+  return encodeIncrementTransforms(relativePath, [fieldPath]);
+}
+
+export function encodeIncrementTransforms(relativePath: string, fieldPaths: string[]): FirestoreWrite {
   return {
     transform: {
       document: documentPath(relativePath),
       fieldTransforms: [
-        {
+        ...fieldPaths.map((fieldPath) => ({
           fieldPath,
           increment: { integerValue: "1" }
-        },
+        })),
         {
           fieldPath: "updatedAtMs",
           setToServerValue: "REQUEST_TIME"

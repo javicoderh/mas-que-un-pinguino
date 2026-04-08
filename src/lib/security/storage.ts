@@ -1,9 +1,37 @@
 import { isServerStorageConfigured, securityConfig } from "./config";
-import { commitWrites, countCollectionDocuments, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
-import { getPublicCounterFromFirestore } from "./public-firestore";
+import {
+  commitWrites,
+  countCollectionDocuments,
+  encodeIncrementTransforms,
+  encodeWrite,
+  getDocument,
+  queryCollection
+} from "./firestore-rest";
+import { getPublicCounterBreakdownFromFirestore, getPublicCounterFromFirestore } from "./public-firestore";
 import { getDeclaredCountryCode } from "./visitor-origin";
 import type { RiskDecision } from "./risk-score";
 import type { NormalizedSignature } from "../validation/signature-schema";
+
+export const emergencySignatureCounterFallback = {
+  count: 2654,
+  chileanCount: 2642,
+  foreignCount: 12
+} as const;
+
+export interface SignatureCounterBreakdown {
+  count: number;
+  chileanCount: number;
+  foreignCount: number;
+}
+
+const signatureCounterCacheTtlMs = 1000 * 20;
+
+let signatureCounterCache:
+  | {
+      value: SignatureCounterBreakdown;
+      expiresAt: number;
+    }
+  | null = null;
 
 export interface StoredSignatureInput {
   signature: NormalizedSignature;
@@ -38,6 +66,11 @@ export async function getPublicSignatureCount() {
     return getPublicCounterFromFirestore();
   }
 
+  const storedCounter = await getStoredPublicCounter();
+  if (hasPublicCounterFields(storedCounter)) {
+    return Number(storedCounter.count ?? 0);
+  }
+
   try {
     return await countCollectionDocuments(securityConfig.collections.signatures, [
       { field: "status", op: "EQUAL", value: "accepted" }
@@ -46,10 +79,21 @@ export async function getPublicSignatureCount() {
     console.error("signature-count-fallback", error);
 
     try {
-      return await getPublicCounterFromFirestore();
-    } catch (publicError) {
-      console.error("signature-count-public-fallback-failed", publicError);
-      return 0;
+      const acceptedRows = await queryCollection<PublicAcceptedSignatureRow>({
+        collectionId: securityConfig.collections.signatures,
+        filters: [{ field: "status", op: "EQUAL", value: "accepted" }],
+        limit: 5000
+      });
+      return acceptedRows.length;
+    } catch (queryError) {
+      console.error("signature-count-query-fallback-failed", queryError);
+
+      try {
+        return await getPublicCounterFromFirestore();
+      } catch (publicError) {
+        console.error("signature-count-public-fallback-failed", publicError);
+        return emergencySignatureCounterFallback.count;
+      }
     }
   }
 }
@@ -87,16 +131,61 @@ interface PublicAcceptedSignatureRow {
   country: string;
 }
 
-export async function getPublicSignatureBreakdown() {
-  const count = await getPublicSignatureCount();
+interface PublicCounterDocument {
+  count?: number;
+  chileanCount?: number;
+  foreignCount?: number;
+}
 
+const publicCounterPath = `${securityConfig.collections.counterCollection}/${securityConfig.collections.counterDoc}`;
+
+function getCounterFieldToIncrement(country: string) {
+  return isChileanCountry(country) ? "chileanCount" : "foreignCount";
+}
+
+function hasPublicCounterFields(counter: PublicCounterDocument | null): counter is PublicCounterDocument {
+  return Boolean(
+    counter &&
+      (counter.count !== undefined ||
+        counter.chileanCount !== undefined ||
+        counter.foreignCount !== undefined)
+  );
+}
+
+async function getStoredPublicCounter(): Promise<PublicCounterDocument | null> {
+  try {
+    return await getDocument<PublicCounterDocument>(publicCounterPath);
+  } catch (error) {
+    console.error("stored-public-counter-read-failed", error);
+    return null;
+  }
+}
+
+export async function getPublicSignatureBreakdown() {
   if (!isServerStorageConfigured) {
+    try {
+      const publicCounter = await getPublicCounterBreakdownFromFirestore();
+      return {
+        count: publicCounter.count,
+        chileanCount: publicCounter.chileanCount,
+        foreignCount: publicCounter.foreignCount
+      };
+    } catch (error) {
+      console.error("public-signature-breakdown-fallback", error);
+      return emergencySignatureCounterFallback;
+    }
+  }
+
+  const storedCounter = await getStoredPublicCounter();
+  if (hasPublicCounterFields(storedCounter)) {
     return {
-      count,
-      chileanCount: count,
-      foreignCount: 0
+      count: Number(storedCounter.count ?? 0),
+      chileanCount: Number(storedCounter.chileanCount ?? 0),
+      foreignCount: Number(storedCounter.foreignCount ?? 0)
     };
   }
+
+  const count = await getPublicSignatureCount();
 
   try {
     const acceptedRows = await queryCollection<PublicAcceptedSignatureRow>({
@@ -123,12 +212,23 @@ export async function getPublicSignatureBreakdown() {
     };
   } catch (error) {
     console.error("signature-breakdown-fallback", error);
-    return {
-      count,
-      chileanCount: count,
-      foreignCount: 0
-    };
+    return emergencySignatureCounterFallback;
   }
+}
+
+export async function getCachedPublicSignatureBreakdown(
+  forceRefresh = false
+): Promise<SignatureCounterBreakdown> {
+  if (!forceRefresh && signatureCounterCache && signatureCounterCache.expiresAt > Date.now()) {
+    return signatureCounterCache.value;
+  }
+
+  const value = await getPublicSignatureBreakdown();
+  signatureCounterCache = {
+    value,
+    expiresAt: Date.now() + signatureCounterCacheTtlMs
+  };
+  return value;
 }
 
 export async function storeSignature(input: StoredSignatureInput) {
@@ -209,6 +309,10 @@ export async function storeSignature(input: StoredSignatureInput) {
     )
   ];
 
+  if (input.status === "accepted") {
+    writes.push(encodeIncrementTransforms(publicCounterPath, ["count", getCounterFieldToIncrement(input.signature.country)]));
+  }
+
   return commitWrites(writes);
 }
 
@@ -281,11 +385,17 @@ export async function reviewFlaggedSignature(params: {
   if (!doc) throw new Error("signature-not-found");
 
   const now = Date.now();
-  await commitWrites([
+  const writes = [
     encodeWrite(
       `${securityConfig.collections.signatures}/${params.signatureId}`,
       { ...doc, status: params.decision, updatedAtMs: now },
       true
     )
-  ]);
+  ];
+
+  if (doc.status !== "accepted" && params.decision === "accepted") {
+    writes.push(encodeIncrementTransforms(publicCounterPath, ["count", getCounterFieldToIncrement(String(doc.country ?? ""))]));
+  }
+
+  await commitWrites(writes);
 }
