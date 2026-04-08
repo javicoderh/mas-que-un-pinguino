@@ -122,17 +122,25 @@ export async function eventSubmissionExists(duplicateHash: string) {
   return Boolean(doc);
 }
 
-export async function listEventSubmissions(status?: EventSubmissionStatus) {
+export async function listEventSubmissions(status?: EventSubmissionStatus, page = 1, pageSize = 20) {
   const rows = await queryCollection<EventSubmissionRecord>({
     collectionId: securityConfig.collections.eventSubmissions,
     filters: status ? [{ field: "status", op: "EQUAL", value: status }] : [],
-    limit: 120
+    orderBy: [{ field: "createdAtMs", direction: "DESCENDING" }],
+    limit: pageSize,
+    offset: (page - 1) * pageSize
   });
-  return rows.sort((a, b) => Number(b.createdAtMs ?? 0) - Number(a.createdAtMs ?? 0));
+  return rows;
 }
 
 export async function listApprovedEvents() {
-  return listEventSubmissions("approved");
+  const rows = await queryCollection<EventSubmissionRecord>({
+    collectionId: securityConfig.collections.eventSubmissions,
+    filters: [{ field: "status", op: "EQUAL", value: "approved" }],
+    orderBy: [{ field: "createdAtMs", direction: "DESCENDING" }],
+    limit: 120
+  });
+  return rows;
 }
 
 export async function getEventSubmission(id: string) {
@@ -227,4 +235,30 @@ export async function ensureAdminUser(params: {
     createdAtMs: now,
     updatedAtMs: now
   } satisfies AdminUserRecord;
+}
+
+export async function updateAdminUserPassword(params: {
+  username: string;
+  passwordHash: string;
+  passwordSalt: string;
+  passwordIterations: number;
+}) {
+  const user = await getAdminUserByUsername(params.username);
+  if (!user) throw new Error("admin-user-not-found");
+
+  const now = Date.now();
+  const { id, ...documentData } = user;
+  return commitWrites([
+    encodeWrite(
+      `${securityConfig.collections.adminUsers}/${id}`,
+      {
+        ...documentData,
+        passwordHash: params.passwordHash,
+        passwordSalt: params.passwordSalt,
+        passwordIterations: params.passwordIterations,
+        updatedAtMs: now
+      },
+      true
+    )
+  ]);
 }

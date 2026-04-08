@@ -18,6 +18,8 @@ const html429 = (message: string) =>
   `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Intenta nuevamente</title></head><body style="font-family:system-ui,sans-serif;background:#05070B;color:#fff;padding:2rem;line-height:1.6"><main style="max-width:36rem;margin:10vh auto"><h1 style="font-size:1.75rem;margin-bottom:1rem">Estamos recibiendo mucho tráfico</h1><p>${message}</p></main></body></html>`;
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const requestId = crypto.randomUUID();
+
   if (
     !["/firma", "/eventos/proponer"].includes(context.url.pathname) ||
     context.request.method !== "GET" ||
@@ -36,6 +38,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       response.headers.set("cache-control", "no-store");
     }
 
+    response.headers.set("x-request-id", requestId);
     return response;
   }
 
@@ -59,6 +62,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       response.headers.set("cache-control", "no-store");
     }
 
+    response.headers.set("x-request-id", requestId);
     return response;
   }
 
@@ -68,6 +72,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       decision: "block",
       reasonCodes: ["rate_limited"],
       hashedIp: ipHash,
+      requestId,
     metadata: result.counts
   });
 
@@ -76,6 +81,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     headers: {
       "content-type": "text/html; charset=utf-8",
       "retry-after": String(result.retryAfterSeconds),
+      "x-request-id": requestId,
       ...publicSecurityHeaders
     }
   });

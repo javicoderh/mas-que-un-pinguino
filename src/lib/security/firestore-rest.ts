@@ -338,8 +338,9 @@ export async function queryCollection<T = Record<string, unknown>>(options: {
   filters?: FirestoreFilter[];
   orderBy?: Array<{ field: string; direction?: "ASCENDING" | "DESCENDING" }>;
   limit?: number;
+  offset?: number;
 }) {
-  const { collectionId, filters = [], orderBy = [], limit } = options;
+  const { collectionId, filters = [], orderBy = [], limit, offset } = options;
   const where = buildWhereClause(filters);
   const response = await firestoreFetch("/documents:runQuery", {
     method: "POST",
@@ -355,7 +356,8 @@ export async function queryCollection<T = Record<string, unknown>>(options: {
               }))
             }
           : {}),
-        ...(typeof limit === "number" ? { limit } : {})
+        ...(typeof limit === "number" ? { limit } : {}),
+        ...(typeof offset === "number" && offset > 0 ? { offset } : {})
       }
     })
   });

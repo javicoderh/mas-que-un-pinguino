@@ -12,10 +12,27 @@ import { buildSignatureDedupeKeys } from "../../../lib/security/dedupe";
 import { verifyCaptchaToken } from "../../../lib/security/captcha";
 import { parseSignaturePayload } from "../../../lib/validation/signature-schema";
 import { getDuplicateMatch, storeSignature } from "../../../lib/security/storage";
+import { isTokenUsed, markTokenUsed } from "../../../lib/security/token-store";
+import { checkAndFireAlert } from "../../../lib/security/alerts";
 
 export const prerender = false;
 
 const suspiciousUserAgentPattern = /(curl|wget|python|httpclient|scrapy|aiohttp|bot|headless)/i;
+
+// Rolling 5-minute window for alert threshold calculation
+const alertWindow = { accepted: 0, flagged: 0, blocked: 0, resetAtMs: 0 };
+const ALERT_WINDOW_MS = 5 * 60 * 1000;
+
+function recordDecision(decision: "accepted" | "flagged" | "blocked") {
+  const now = Date.now();
+  if (now > alertWindow.resetAtMs) {
+    alertWindow.accepted = 0;
+    alertWindow.flagged = 0;
+    alertWindow.blocked = 0;
+    alertWindow.resetAtMs = now + ALERT_WINDOW_MS;
+  }
+  alertWindow[decision]++;
+}
 
 const jsonResponse = (status: number, body: Record<string, unknown>, headers?: HeadersInit) =>
   new Response(JSON.stringify(body), {
@@ -27,6 +44,7 @@ const jsonResponse = (status: number, body: Record<string, unknown>, headers?: H
   });
 
 export const POST: APIRoute = async ({ request, url }) => {
+  const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
   if (!isSecurityConfigured || !isServerStorageConfigured) {
     return jsonResponse(503, {
       ok: false,
@@ -86,6 +104,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       hashedIp: ipHash,
       hashedUserAgent: userAgentHash,
       hashedFingerprint: fingerprintHash,
+      requestId,
       metadata: {
         ipCounts: ipRateLimit.counts,
         fingerprintCounts: fingerprintRateLimit.counts
@@ -120,6 +139,14 @@ export const POST: APIRoute = async ({ request, url }) => {
   const captcha = await verifyCaptchaToken(captchaToken, ip);
 
   if (!tokenValid || submitTimeMs > securityConfig.maxTokenAgeMs) {
+    return jsonResponse(400, {
+      ok: false,
+      message: securityMessages.invalidSubmission
+    });
+  }
+
+  const tokenAlreadyUsed = await isTokenUsed(nonce);
+  if (tokenAlreadyUsed) {
     return jsonResponse(400, {
       ok: false,
       message: securityMessages.invalidSubmission
@@ -180,8 +207,11 @@ export const POST: APIRoute = async ({ request, url }) => {
         reasonCodes: ["duplicate_signature"],
         hashedIp: ipHash,
         hashedUserAgent: userAgentHash,
-        hashedFingerprint: fingerprintHash
+        hashedFingerprint: fingerprintHash,
+        requestId
       });
+      recordDecision("blocked");
+      void checkAndFireAlert(alertWindow, requestId);
 
       return jsonResponse(409, {
         ok: false,
@@ -199,8 +229,11 @@ export const POST: APIRoute = async ({ request, url }) => {
         hashedIp: ipHash,
         hashedUserAgent: userAgentHash,
         hashedFingerprint: fingerprintHash,
+        requestId,
         metadata: { submitTimeMs }
       });
+      recordDecision("blocked");
+      void checkAndFireAlert(alertWindow, requestId);
 
       return jsonResponse(400, {
         ok: false,
@@ -236,6 +269,13 @@ export const POST: APIRoute = async ({ request, url }) => {
       }
     });
 
+    await markTokenUsed(nonce, securityConfig.maxTokenAgeMs);
+
+    recordDecision(status as "accepted" | "flagged");
+    if (status === "flagged") {
+      void checkAndFireAlert(alertWindow, requestId);
+    }
+
     logSecurityEvent({
       route: url.pathname,
       action: "signature_post",
@@ -244,6 +284,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       hashedIp: ipHash,
       hashedUserAgent: userAgentHash,
       hashedFingerprint: fingerprintHash,
+      requestId,
       metadata: { status }
     });
     await emitSecurityMetric("signature.accepted", 1, { status, route: url.pathname });

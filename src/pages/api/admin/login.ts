@@ -4,7 +4,7 @@ import { securityMessages } from "../../../lib/security/messages";
 import { enforceRateLimit } from "../../../lib/security/rate-limit";
 import { hashWithSecret } from "../../../lib/security/hash";
 import { getClientIp } from "../../../lib/security/request";
-import { isSecurityConfigured, isServerStorageConfigured, securityConfig } from "../../../lib/security/config";
+import { isAdminBootstrapConfigured, isSecurityConfigured, isServerStorageConfigured, securityConfig } from "../../../lib/security/config";
 import { ensureAdminUser, getAdminUserByUsername } from "../../../lib/security/events-storage";
 import { hashPassword, verifyPassword } from "../../../lib/security/password";
 
@@ -19,7 +19,7 @@ const redirect = (location: string) =>
   });
 
 export const POST: APIRoute = async ({ request, cookies, url }) => {
-  if (!isSecurityConfigured || !isServerStorageConfigured) {
+  if (!isSecurityConfigured || !isServerStorageConfigured || !isAdminBootstrapConfigured) {
     return redirect("/admin?error=config");
   }
 
@@ -38,8 +38,8 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  const defaultUsername = import.meta.env.ADMIN_USERNAME ?? "masqueunpinguino";
-  const defaultPassword = import.meta.env.ADMIN_PASSWORD ?? "salvemoshumboldt";
+  const defaultUsername = import.meta.env.ADMIN_USERNAME as string;
+  const defaultPassword = import.meta.env.ADMIN_PASSWORD as string;
 
   const bootstrapHash = await hashPassword(defaultPassword);
   await ensureAdminUser({

@@ -1,5 +1,5 @@
 import { isServerStorageConfigured, securityConfig } from "./config";
-import { commitWrites, countCollectionDocuments, encodeWrite, getDocument } from "./firestore-rest";
+import { commitWrites, countCollectionDocuments, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
 import { getPublicCounterFromFirestore } from "./public-firestore";
 import type { RiskDecision } from "./risk-score";
 import type { NormalizedSignature } from "../validation/signature-schema";
@@ -154,4 +154,49 @@ export async function getDuplicateMatch(keys: {
     rut: Boolean(rutDoc),
     any: Boolean(emailDoc || identityDoc || rutDoc)
   };
+}
+
+export interface FlaggedSignatureRecord {
+  id: string;
+  fullName: string;
+  country: string;
+  region: string;
+  commune: string;
+  legalNature: string;
+  affiliation: string;
+  status: string;
+  riskScore: number;
+  riskReasons: string[];
+  createdAtMs: number;
+  submittedAtMs?: number;
+}
+
+export async function listFlaggedSignatures(page = 1, pageSize = 20): Promise<FlaggedSignatureRecord[]> {
+  const rows = await queryCollection<FlaggedSignatureRecord>({
+    collectionId: securityConfig.collections.signatures,
+    filters: [{ field: "status", op: "EQUAL", value: "flagged" }],
+    orderBy: [{ field: "createdAtMs", direction: "DESCENDING" }],
+    limit: pageSize,
+    offset: (page - 1) * pageSize
+  });
+  return rows;
+}
+
+export async function reviewFlaggedSignature(params: {
+  signatureId: string;
+  decision: "accepted" | "rejected";
+}): Promise<void> {
+  const doc = await getDocument<Record<string, unknown>>(
+    `${securityConfig.collections.signatures}/${params.signatureId}`
+  );
+  if (!doc) throw new Error("signature-not-found");
+
+  const now = Date.now();
+  await commitWrites([
+    encodeWrite(
+      `${securityConfig.collections.signatures}/${params.signatureId}`,
+      { ...doc, status: params.decision, updatedAtMs: now },
+      true
+    )
+  ]);
 }

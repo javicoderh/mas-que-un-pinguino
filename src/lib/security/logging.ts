@@ -6,6 +6,7 @@ interface SecurityLogEvent {
   hashedIp?: string;
   hashedUserAgent?: string;
   hashedFingerprint?: string;
+  requestId?: string;
   metadata?: Record<string, unknown>;
 }
 

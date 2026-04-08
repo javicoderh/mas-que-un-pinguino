@@ -84,6 +84,7 @@ export const securityConfig = {
       import.meta.env.FIREBASE_ADMIN_USERS_COLLECTION ?? "admin_users",
     rateLimitRoot: import.meta.env.FIREBASE_RATE_LIMIT_ROOT_COLLECTION ?? "security_rate_limits",
     events: import.meta.env.FIREBASE_SECURITY_EVENTS_COLLECTION ?? "security_events",
+    usedTokens: import.meta.env.FIREBASE_USED_TOKENS_COLLECTION ?? "security_used_tokens",
     counterCollection:
       import.meta.env.PUBLIC_FIREBASE_COUNTER_COLLECTION ?? "public_stats",
     counterDoc: import.meta.env.PUBLIC_FIREBASE_COUNTER_DOC ?? "signatures_counter"
@@ -192,6 +193,8 @@ export const securityConfig = {
   }
 };
 
+export const alertWebhookUrl: string = import.meta.env.SECURITY_ALERT_WEBHOOK_URL ?? "";
+
 export const isSecurityConfigured = Boolean(securityConfig.hashSecret);
 export const isServerStorageConfigured = Boolean(
   securityConfig.firestore.projectId &&
@@ -200,4 +203,7 @@ export const isServerStorageConfigured = Boolean(
 );
 export const isPublicFirestoreConfigured = Boolean(
   import.meta.env.PUBLIC_FIREBASE_PROJECT_ID && import.meta.env.PUBLIC_FIREBASE_API_KEY
+);
+export const isAdminBootstrapConfigured = Boolean(
+  import.meta.env.ADMIN_USERNAME && import.meta.env.ADMIN_PASSWORD
 );

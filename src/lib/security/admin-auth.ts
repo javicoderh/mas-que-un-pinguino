@@ -11,28 +11,38 @@ export interface AdminSession {
   expiresAtMs: number;
 }
 
-const serialize = (session: AdminSession) => `${session.username}.${session.expiresAtMs}.${sessionIntent}`;
+const serialize = (username: string, expiresAtMs: number, nonce: string) =>
+  `${username}.${expiresAtMs}.${nonce}.${sessionIntent}`;
 
 export async function createAdminSessionCookie(username: string) {
   const expiresAtMs = Date.now() + adminSessionTtlMs;
-  const payload = { username, expiresAtMs };
-  const signature = await hmacSha256Base64Url(securityConfig.hashSecret, serialize(payload));
-  return `${payload.username}.${payload.expiresAtMs}.${signature}`;
+  const nonce = crypto.randomUUID();
+  const signature = await hmacSha256Base64Url(securityConfig.hashSecret, serialize(username, expiresAtMs, nonce));
+  return `${username}.${expiresAtMs}.${nonce}.${signature}`;
 }
 
 export async function verifyAdminSessionCookie(value: string | undefined | null): Promise<AdminSession | null> {
   if (!value) return null;
 
-  const [username, expiresRaw, signature] = value.split(".");
+  const parts = value.split(".");
+  if (parts.length < 4) return null;
+
+  // signature is last part, nonce is second-to-last, expiresAtMs is second, username is first
+  // But username can contain dots in theory — use fixed positions from right
+  const signature = parts[parts.length - 1];
+  const nonce = parts[parts.length - 2];
+  const expiresRaw = parts[parts.length - 3];
+  const username = parts.slice(0, parts.length - 3).join(".");
+
   const expiresAtMs = Number(expiresRaw);
 
-  if (!username || !signature || !Number.isFinite(expiresAtMs) || expiresAtMs < Date.now()) {
+  if (!username || !nonce || !signature || !Number.isFinite(expiresAtMs) || expiresAtMs < Date.now()) {
     return null;
   }
 
   const expected = await hmacSha256Base64Url(
     securityConfig.hashSecret,
-    serialize({ username, expiresAtMs })
+    serialize(username, expiresAtMs, nonce)
   );
 
   if (expected !== signature) {
