@@ -38,9 +38,20 @@ export async function getPublicSignatureCount() {
     return getPublicCounterFromFirestore();
   }
 
-  return countCollectionDocuments(securityConfig.collections.signatures, [
-    { field: "status", op: "EQUAL", value: "accepted" }
-  ]);
+  try {
+    return await countCollectionDocuments(securityConfig.collections.signatures, [
+      { field: "status", op: "EQUAL", value: "accepted" }
+    ]);
+  } catch (error) {
+    console.error("signature-count-fallback", error);
+
+    try {
+      return await getPublicCounterFromFirestore();
+    } catch (publicError) {
+      console.error("signature-count-public-fallback-failed", publicError);
+      return 0;
+    }
+  }
 }
 
 const likelyChileCountryTypos = new Set([
@@ -77,8 +88,9 @@ interface PublicAcceptedSignatureRow {
 }
 
 export async function getPublicSignatureBreakdown() {
+  const count = await getPublicSignatureCount();
+
   if (!isServerStorageConfigured) {
-    const count = await getPublicCounterFromFirestore();
     return {
       count,
       chileanCount: count,
@@ -86,28 +98,37 @@ export async function getPublicSignatureBreakdown() {
     };
   }
 
-  const acceptedRows = await queryCollection<PublicAcceptedSignatureRow>({
-    collectionId: securityConfig.collections.signatures,
-    filters: [{ field: "status", op: "EQUAL", value: "accepted" }],
-    limit: 5000
-  });
+  try {
+    const acceptedRows = await queryCollection<PublicAcceptedSignatureRow>({
+      collectionId: securityConfig.collections.signatures,
+      filters: [{ field: "status", op: "EQUAL", value: "accepted" }],
+      limit: 5000
+    });
 
-  let chileanCount = 0;
-  let foreignCount = 0;
+    let chileanCount = 0;
+    let foreignCount = 0;
 
-  for (const row of acceptedRows) {
-    if (isChileanCountry(row.country ?? "")) {
-      chileanCount++;
-    } else {
-      foreignCount++;
+    for (const row of acceptedRows) {
+      if (isChileanCountry(row.country ?? "")) {
+        chileanCount++;
+      } else {
+        foreignCount++;
+      }
     }
-  }
 
-  return {
-    count: acceptedRows.length,
-    chileanCount,
-    foreignCount
-  };
+    return {
+      count,
+      chileanCount,
+      foreignCount
+    };
+  } catch (error) {
+    console.error("signature-breakdown-fallback", error);
+    return {
+      count,
+      chileanCount: count,
+      foreignCount: 0
+    };
+  }
 }
 
 export async function storeSignature(input: StoredSignatureInput) {
