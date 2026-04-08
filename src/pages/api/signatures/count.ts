@@ -8,11 +8,11 @@ export const prerender = false;
 
 export const GET: APIRoute = async () => {
   try {
-    const payload = await getCachedPublicSignatureBreakdown();
+    const payload = await getCachedPublicSignatureBreakdown(true);
     return new Response(JSON.stringify(payload), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=600, s-maxage=600"
+        "cache-control": "no-store"
       }
     });
   } catch (error) {
@@ -20,7 +20,7 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(emergencySignatureCounterFallback), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=600, s-maxage=600"
+        "cache-control": "no-store"
       }
     });
   }
