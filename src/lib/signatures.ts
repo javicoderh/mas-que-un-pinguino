@@ -1,4 +1,10 @@
-export async function getSignatureCount() {
+export interface SignatureCounterPayload {
+  count: number;
+  chileanCount: number;
+  foreignCount: number;
+}
+
+export async function getSignatureCount(): Promise<SignatureCounterPayload> {
   const response = await fetch("/api/signatures/count", {
     headers: {
       accept: "application/json"
@@ -10,5 +16,9 @@ export async function getSignatureCount() {
   }
 
   const payload = await response.json();
-  return Number(payload.count ?? 0);
+  return {
+    count: Number(payload.count ?? 0),
+    chileanCount: Number(payload.chileanCount ?? payload.count ?? 0),
+    foreignCount: Number(payload.foreignCount ?? 0)
+  };
 }

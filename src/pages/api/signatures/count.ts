@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
-import { getPublicSignatureCount } from "../../../lib/security/storage";
+import { getPublicSignatureBreakdown } from "../../../lib/security/storage";
 
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
   try {
-    const count = await getPublicSignatureCount();
-    return new Response(JSON.stringify({ count }), {
+    const payload = await getPublicSignatureBreakdown();
+    return new Response(JSON.stringify(payload), {
       headers: {
         "content-type": "application/json; charset=utf-8",
         "cache-control": "public, max-age=60"

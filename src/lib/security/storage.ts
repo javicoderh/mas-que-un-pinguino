@@ -1,6 +1,7 @@
 import { isServerStorageConfigured, securityConfig } from "./config";
 import { commitWrites, countCollectionDocuments, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
 import { getPublicCounterFromFirestore } from "./public-firestore";
+import { getDeclaredCountryCode } from "./visitor-origin";
 import type { RiskDecision } from "./risk-score";
 import type { NormalizedSignature } from "../validation/signature-schema";
 
@@ -40,6 +41,73 @@ export async function getPublicSignatureCount() {
   return countCollectionDocuments(securityConfig.collections.signatures, [
     { field: "status", op: "EQUAL", value: "accepted" }
   ]);
+}
+
+const likelyChileCountryTypos = new Set([
+  "chule",
+  "cjile",
+  "chike",
+  "chila",
+  "chilr",
+  "chilena",
+  "chiie",
+  "chle",
+  "chole",
+  "chilw"
+]);
+
+const normalizeCountryText = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z]/g, "");
+
+const isChileanCountry = (country: string) => {
+  const normalized = normalizeCountryText(country);
+  if (!normalized) return false;
+  if (getDeclaredCountryCode(country) === "CL") return true;
+  return likelyChileCountryTypos.has(normalized);
+};
+
+interface PublicAcceptedSignatureRow {
+  id: string;
+  country: string;
+}
+
+export async function getPublicSignatureBreakdown() {
+  if (!isServerStorageConfigured) {
+    const count = await getPublicCounterFromFirestore();
+    return {
+      count,
+      chileanCount: count,
+      foreignCount: 0
+    };
+  }
+
+  const acceptedRows = await queryCollection<PublicAcceptedSignatureRow>({
+    collectionId: securityConfig.collections.signatures,
+    filters: [{ field: "status", op: "EQUAL", value: "accepted" }],
+    limit: 5000
+  });
+
+  let chileanCount = 0;
+  let foreignCount = 0;
+
+  for (const row of acceptedRows) {
+    if (isChileanCountry(row.country ?? "")) {
+      chileanCount++;
+    } else {
+      foreignCount++;
+    }
+  }
+
+  return {
+    count: acceptedRows.length,
+    chileanCount,
+    foreignCount
+  };
 }
 
 export async function storeSignature(input: StoredSignatureInput) {
