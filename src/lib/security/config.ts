@@ -80,6 +80,8 @@ export const securityConfig = {
       import.meta.env.FIREBASE_EVENT_SUBMISSIONS_COLLECTION ?? "event_submissions",
     eventDedupe:
       import.meta.env.FIREBASE_EVENT_DEDUPE_COLLECTION ?? "event_submission_dedupe",
+    news:
+      import.meta.env.FIREBASE_NEWS_COLLECTION ?? "campaign_news",
     adminUsers:
       import.meta.env.FIREBASE_ADMIN_USERS_COLLECTION ?? "admin_users",
     rateLimitRoot: import.meta.env.FIREBASE_RATE_LIMIT_ROOT_COLLECTION ?? "security_rate_limits",

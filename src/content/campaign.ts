@@ -194,6 +194,7 @@ export const campaignConfig = {
     { href: "/", label: "Inicio" },
     { href: "/ciencia", label: "Ciencia" },
     { href: "/eventos", label: "Eventos" },
+    { href: "/noticias", label: "Pingüinoticias" },
     { href: "/carta", label: "Carta" },
     { href: "/faq", label: "FAQ" },
     { href: "/firma", label: "Firma" },
@@ -227,7 +228,7 @@ export const campaignConfig = {
     },
     {
       href: "/noticias",
-      label: "Noticias y actualizaciones",
+      label: "Pingüinoticias",
       description: "Hitos, novedades y avances publicados con fecha para mantener frescura editorial."
     }
   ],

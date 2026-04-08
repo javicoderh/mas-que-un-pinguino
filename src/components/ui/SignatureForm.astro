@@ -572,7 +572,15 @@ const formToken = isConfigured ? await createFormToken("signature_submit") : nul
           typeof payload.message === "string"
             ? payload.message
             : "Tu firma fue registrada. Gracias por sumarte.";
-        window.dispatchEvent(new CustomEvent("signature:created"));
+        window.dispatchEvent(
+          new CustomEvent("signature:created", {
+            detail: {
+              status: typeof payload.status === "string" ? payload.status : "accepted",
+              uiSurface: window.location.pathname === "/firma" ? "signature_page" : "embedded_signature_form",
+              sourceContext: "campaign_site"
+            }
+          })
+        );
       } catch (error) {
         console.error(error);
         status.textContent =

@@ -4,7 +4,7 @@ import SiteHeader from "../components/layout/SiteHeader.astro";
 import FloatingCTA from "../components/ui/FloatingCTA.astro";
 import FloatingSignatureCounter from "../components/ui/FloatingSignatureCounter.astro";
 import { campaignConfig } from "../content/campaign";
-import { gaMeasurementId, isGaEnabled } from "../lib/analytics";
+import { analyticsFormNames, gaEventNames, gaMeasurementId, isGaEnabled } from "../lib/analytics";
 import "../styles/global.css";
 
 interface Props {
@@ -86,11 +86,16 @@ const gaEventsScript = `
     window.trackGaEvent(analyticsEvent, params);
   }, { passive: true });
 
-  window.addEventListener("signature:created", () => {
+  window.addEventListener("signature:created", (event) => {
     if (typeof window.trackGaEvent !== "function") return;
-    window.trackGaEvent("signature_submit_success", {
-      form_name: "campaign_signature_form",
+    const detail = event instanceof CustomEvent ? event.detail || {} : {};
+    window.trackGaEvent(${JSON.stringify(gaEventNames.signatureSubmitSuccess)}, {
+      form_name: ${JSON.stringify(analyticsFormNames.campaignSignature)},
       page_path: window.location.pathname,
+      submission_status: detail.status || "accepted",
+      conversion_type: "signature_registered",
+      ui_surface: detail.uiSurface || "signature_page",
+      source_context: detail.sourceContext || "campaign_site",
       transport_type: "beacon"
     });
   });
@@ -98,8 +103,8 @@ const gaEventsScript = `
   window.addEventListener("signature:error", (event) => {
     if (typeof window.trackGaEvent !== "function") return;
     const detail = event instanceof CustomEvent ? event.detail || {} : {};
-    window.trackGaEvent("signature_submit_error", {
-      form_name: "campaign_signature_form",
+    window.trackGaEvent(${JSON.stringify(gaEventNames.signatureSubmitError)}, {
+      form_name: ${JSON.stringify(analyticsFormNames.campaignSignature)},
       page_path: window.location.pathname,
       error_type: detail.errorType || "unknown",
       transport_type: "beacon"

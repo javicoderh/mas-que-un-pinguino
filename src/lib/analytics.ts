@@ -1,5 +1,8 @@
 export const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID ?? "";
 export const isGaEnabled = import.meta.env.PROD && Boolean(gaMeasurementId);
+export const analyticsFormNames = {
+  campaignSignature: "campaign_signature_form"
+} as const;
 
 export const gaEventNames = {
   ctaClick: "cta_click",
@@ -9,4 +12,9 @@ export const gaEventNames = {
   fileDownload: "file_download",
   signatureSubmitSuccess: "signature_submit_success",
   signatureSubmitError: "signature_submit_error"
+} as const;
+
+export const keyEventRecommendations = {
+  primary: gaEventNames.signatureSubmitSuccess,
+  supporting: [gaEventNames.documentOpen]
 } as const;
