@@ -24,7 +24,7 @@ export interface SignatureCounterBreakdown {
   foreignCount: number;
 }
 
-const signatureCounterCacheTtlMs = 1000 * 20;
+const signatureCounterCacheTtlMs = 1000 * 60 * 10;
 
 let signatureCounterCache:
   | {

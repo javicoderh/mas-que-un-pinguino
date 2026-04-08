@@ -12,7 +12,7 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(payload), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=20, s-maxage=20"
+        "cache-control": "public, max-age=600, s-maxage=600"
       }
     });
   } catch (error) {
@@ -20,7 +20,7 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(emergencySignatureCounterFallback), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=20, s-maxage=20"
+        "cache-control": "public, max-age=600, s-maxage=600"
       }
     });
   }
