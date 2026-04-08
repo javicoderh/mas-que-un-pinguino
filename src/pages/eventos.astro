@@ -15,7 +15,17 @@ const breadcrumbItems = [
   { name: "Eventos", path: "/eventos" }
 ];
 
-const approvedEvents = isServerStorageConfigured ? await listApprovedEvents() : [];
+type ApprovedEvent = Awaited<ReturnType<typeof listApprovedEvents>>;
+
+let approvedEvents: ApprovedEvent = [];
+
+if (isServerStorageConfigured) {
+  try {
+    approvedEvents = await listApprovedEvents();
+  } catch (error) {
+    console.error("eventos-page-fallback", error);
+  }
+}
 ---
 
 <MainLayout

@@ -52,7 +52,7 @@ export const GET: APIRoute = async () => {
     );
   } catch (error) {
     console.error(error);
-    return jsonResponse(503, { ok: false, events: [] });
+    return jsonResponse(200, { ok: true, events: [] }, { "cache-control": "no-store" });
   }
 };
 

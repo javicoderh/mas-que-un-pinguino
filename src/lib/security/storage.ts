@@ -66,11 +66,6 @@ export async function getPublicSignatureCount() {
     return getPublicCounterFromFirestore();
   }
 
-  const storedCounter = await getStoredPublicCounter();
-  if (hasPublicCounterFields(storedCounter)) {
-    return Number(storedCounter.count ?? 0);
-  }
-
   try {
     return await countCollectionDocuments(securityConfig.collections.signatures, [
       { field: "status", op: "EQUAL", value: "accepted" }
@@ -87,6 +82,11 @@ export async function getPublicSignatureCount() {
       return acceptedRows.length;
     } catch (queryError) {
       console.error("signature-count-query-fallback-failed", queryError);
+
+      const storedCounter = await getStoredPublicCounter();
+      if (hasPublicCounterFields(storedCounter)) {
+        return Number(storedCounter.count ?? 0);
+      }
 
       try {
         return await getPublicCounterFromFirestore();
@@ -176,18 +176,10 @@ export async function getPublicSignatureBreakdown() {
     }
   }
 
-  const storedCounter = await getStoredPublicCounter();
-  if (hasPublicCounterFields(storedCounter)) {
-    return {
-      count: Number(storedCounter.count ?? 0),
-      chileanCount: Number(storedCounter.chileanCount ?? 0),
-      foreignCount: Number(storedCounter.foreignCount ?? 0)
-    };
-  }
-
-  const count = await getPublicSignatureCount();
-
   try {
+    const count = await countCollectionDocuments(securityConfig.collections.signatures, [
+      { field: "status", op: "EQUAL", value: "accepted" }
+    ]);
     const acceptedRows = await queryCollection<PublicAcceptedSignatureRow>({
       collectionId: securityConfig.collections.signatures,
       filters: [{ field: "status", op: "EQUAL", value: "accepted" }],
@@ -212,7 +204,22 @@ export async function getPublicSignatureBreakdown() {
     };
   } catch (error) {
     console.error("signature-breakdown-fallback", error);
-    return emergencySignatureCounterFallback;
+
+    const storedCounter = await getStoredPublicCounter();
+    if (hasPublicCounterFields(storedCounter)) {
+      return {
+        count: Number(storedCounter.count ?? 0),
+        chileanCount: Number(storedCounter.chileanCount ?? 0),
+        foreignCount: Number(storedCounter.foreignCount ?? 0)
+      };
+    }
+
+    try {
+      return await getPublicCounterBreakdownFromFirestore();
+    } catch (publicError) {
+      console.error("public-signature-breakdown-final-fallback", publicError);
+      return emergencySignatureCounterFallback;
+    }
   }
 }
 
