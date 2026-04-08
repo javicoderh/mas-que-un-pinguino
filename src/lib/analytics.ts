@@ -8,6 +8,7 @@ export const gaEventNames = {
   ctaClick: "cta_click",
   navigationClick: "navigation_click",
   socialClick: "social_click",
+  sciencePaperModalOpen: "science_paper_modal_open",
   documentOpen: "document_open",
   fileDownload: "file_download",
   signatureSubmitSuccess: "signature_submit_success",

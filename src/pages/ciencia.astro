@@ -3,91 +3,106 @@ import MainLayout from "../layouts/MainLayout.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import DataCard from "../components/ui/DataCard.astro";
+import SciencePaperLibrary from "../components/sections/SciencePaperLibrary.astro";
+import { sciencePapers } from "../content/science-papers";
+import { campaignConfig } from "../content/campaign";
 
 const breadcrumbItems = [
   { name: "Inicio", path: "/" },
   { name: "Ciencia", path: "/ciencia" }
 ];
 
-const evidenceBlocks = [
-  {
-    title: "Indicadores ecológicos",
-    body:
-      "El sitio presenta al pingüino de Humboldt como una especie que ayuda a interpretar cambios en el ecosistema marino y en la disponibilidad de alimento."
-  },
-  {
-    title: "Contexto reciente",
-    body:
-      "La campaña reúne antecedentes sobre pérdida de individuos, influenza aviar y efectos asociados a cambios oceanográficos para dar contexto a la necesidad de protección."
-  },
-  {
-    title: "Lectura ciudadana de la evidencia",
-    body:
-      "El contenido busca traducir información científica a un lenguaje claro para que la participación no dependa de dominar tecnicismos."
-  }
-];
+const articleCount = sciencePapers.filter((paper) => paper.kind === "Artículo científico").length;
+const technicalCount = sciencePapers.length - articleCount;
+const newestYear = Math.max(...sciencePapers.map((paper) => paper.year));
 
-const methodologySchema = {
+const scienceCollectionSchema = {
   "@context": "https://schema.org",
-  "@type": "Article",
-  headline: "Base científica y metodología pública de la campaña",
-  about: ["pingüino de Humboldt", "conservación marina", "participación ciudadana"],
-  author: {
-    "@type": "Organization",
-    name: "Es más que un pingüino"
-  }
+  "@type": "ItemList",
+  name: "Biblioteca científica sobre el pingüino de Humboldt",
+  itemListOrder: "https://schema.org/ItemListOrderDescending",
+  numberOfItems: sciencePapers.length,
+  itemListElement: sciencePapers.map((paper, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type":
+        paper.kind === "Artículo científico"
+          ? "ScholarlyArticle"
+          : paper.kind === "Tesis de magíster"
+            ? "Thesis"
+            : paper.kind === "Instrumento público"
+              ? "Legislation"
+              : "Report",
+      name: paper.title,
+      author: paper.authors,
+      datePublished: String(paper.year),
+      inLanguage: paper.language === "Español" ? "es" : "en",
+      isPartOf: {
+        "@type": "CollectionPage",
+        name: "Ciencia del pingüino de Humboldt"
+      },
+      url: new URL(paper.url, campaignConfig.site.siteUrl).toString(),
+      ...(paper.doi ? { sameAs: `https://doi.org/${paper.doi}` } : {}),
+      publisher: {
+        "@type": "Organization",
+        name: paper.source
+      }
+    }
+  }))
 };
 ---
 
 <MainLayout
   path="/ciencia"
-  title="Ciencia del pingüino de Humboldt | Base y metodología de la campaña"
-  description="Revisa la base científica divulgativa del sitio, cómo se traduce la evidencia a lenguaje claro y qué materiales públicos sustentan la campaña."
-  keywords={["ciencia pingüino de Humboldt", "base científica", "conservación marina", "metodología", "divulgación científica"]}
+  title="Ciencia del pingüino de Humboldt | Biblioteca científica de la campaña"
+  description="Explora papers, informes técnicos, tesis e instrumentos públicos sobre el pingüino de Humboldt. Cada entrada abre una ficha bibliográfica con acceso al PDF y descarga."
+  keywords={["ciencia pingüino de Humboldt", "papers pingüino de Humboldt", "bibliografía pingüino de Humboldt", "informes técnicos", "conservación marina"]}
   breadcrumbItems={breadcrumbItems}
-  pageType="Article"
-  schema={methodologySchema}
+  pageType="CollectionPage"
+  schema={scienceCollectionSchema}
   publishedTime="2026-04-06T12:00:00-04:00"
-  modifiedTime="2026-04-06T12:00:00-04:00"
+  modifiedTime="2026-04-08T13:00:00-04:00"
 >
   <Section size="compact">
     <Breadcrumbs items={breadcrumbItems} />
     <SectionHeading
-      eyebrow="Base científica"
-      title="Cómo se apoya este sitio en ciencia y divulgación responsable"
-      body="La intención de esta página es mostrar, con transparencia, cómo la campaña conecta evidencia ecológica, documentos públicos y lenguaje accesible para invitar a una participación mejor informada."
+      eyebrow="Biblioteca científica"
+      title="Papers, informes y documentos públicos para revisar la base técnica de la campaña"
+      body="Esta sección reúne los archivos que hoy sostienen la conversación científica del sitio. Cada entrada abre una ficha bibliográfica con datos básicos del documento y accesos separados para abrir o descargar su PDF."
       as="h1"
     />
   </Section>
 
   <Section class="pt-0">
-    <div class="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-      <article class="surface-panel rounded-[2rem] p-8">
-        <h2 class="text-2xl font-bold text-white">Qué ofrece esta sección</h2>
-        <div class="mt-6 space-y-5">
-          {evidenceBlocks.map((block) => (
-            <div class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5">
-              <h3 class="text-lg font-semibold text-white">{block.title}</h3>
-              <p class="mt-3 text-sm leading-7 text-campaign-text-muted">{block.body}</p>
-            </div>
-          ))}
-        </div>
-      </article>
+    <div class="grid gap-4 md:grid-cols-3">
+      <DataCard
+        value={String(sciencePapers.length)}
+        label="Documentos disponibles"
+        detail="Incluye artículos científicos, informes técnicos, informes finales, una tesis y un instrumento público."
+      />
+      <DataCard
+        value={String(articleCount)}
+        label="Artículos científicos"
+        detail="Trabajos publicados en revistas o repositorios académicos que ayudan a contextualizar ecología, amenazas y monitoreo."
+      />
+      <DataCard
+        value={String(newestYear)}
+        label="Año más reciente"
+        detail="La biblioteca mezcla documentos históricos y materiales recientes para mostrar continuidad y cambios en el tiempo."
+      />
+    </div>
+  </Section>
 
-      <article class="surface-panel rounded-[2rem] p-8">
-        <h2 class="text-2xl font-bold text-white">Materiales públicos del sitio</h2>
-        <ul class="mt-6 space-y-4 text-sm leading-7 text-campaign-text-muted">
-          <li>La carta abierta como documento central de contexto y propuesta pública.</li>
-          <li>La página de transparencia como explicación de principios, metodología y criterios de participación.</li>
-          <li>Las páginas temáticas del centro de información para responder intenciones de búsqueda más específicas.</li>
-          <li>Las Pingüinoticias para mantener vigencia editorial y registrar hitos con fecha.</li>
-        </ul>
-        <div class="mt-6 flex flex-wrap gap-3">
-          <a href="/carta" class="focus-ring rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:text-campaign-warm">Carta abierta</a>
-          <a href="/transparencia" class="focus-ring rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:text-campaign-warm">Transparencia</a>
-          <a href="/noticias" class="focus-ring rounded-full border border-white/12 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:text-campaign-warm">Pingüinoticias</a>
-        </div>
-      </article>
+  <Section class="pt-0">
+    <SectionHeading
+      eyebrow="Repositorio"
+      title="Explora la biblioteca"
+      body="Selecciona cualquier documento para abrir su ficha bibliográfica. Desde ahí podrás abrir el PDF en una pestaña nueva o descargarlo."
+    />
+    <div class="mt-8">
+      <SciencePaperLibrary />
     </div>
   </Section>
 </MainLayout>

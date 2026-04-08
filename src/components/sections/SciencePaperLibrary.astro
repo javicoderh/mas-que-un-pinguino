@@ -1,0 +1,435 @@
+---
+import { sciencePapers, type SciencePaperRecord } from "../../content/science-papers";
+import { gaEventNames } from "../../lib/analytics";
+
+const kindTone: Record<SciencePaperRecord["kind"], string> = {
+  "Artículo científico": "bg-campaign-sky/12 text-campaign-sky border-campaign-sky/20",
+  "Informe técnico": "bg-campaign-ocean/14 text-campaign-ocean border-campaign-ocean/20",
+  "Informe final": "bg-campaign-warm/14 text-campaign-warm border-campaign-warm/20",
+  "Manual técnico": "bg-campaign-blush/14 text-campaign-blush border-campaign-blush/20",
+  "Tesis de magíster": "bg-white/8 text-white border-white/14",
+  "Instrumento público": "bg-campaign-pink/14 text-campaign-pink border-campaign-pink/20"
+};
+
+const formatCitation = (paper: SciencePaperRecord) => {
+  const base = `${paper.authors} (${paper.year}). ${paper.title}. ${paper.source}.`;
+  return paper.doi ? `${base} DOI: ${paper.doi}.` : base;
+};
+
+const papersForClient = sciencePapers.map((paper) => ({
+  ...paper,
+  citation: formatCitation(paper),
+  doiUrl: paper.doi ? `https://doi.org/${paper.doi}` : ""
+}));
+
+const spanishCount = sciencePapers.filter((paper) => paper.language === "Español").length;
+const englishCount = sciencePapers.filter((paper) => paper.language === "Inglés").length;
+---
+
+<div class="mb-8 flex flex-wrap items-center gap-3">
+  <p class="text-sm font-semibold text-campaign-text-muted">Filtrar por idioma:</p>
+  <button
+    type="button"
+    class="science-paper-filter is-active focus-ring rounded-full border border-campaign-warm/30 bg-campaign-warm/14 px-4 py-2 text-sm font-semibold text-campaign-warm transition hover:bg-campaign-warm/20"
+    data-paper-filter="all"
+    aria-pressed="true"
+  >
+    Todas ({sciencePapers.length})
+  </button>
+  <button
+    type="button"
+    class="science-paper-filter focus-ring rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/20 hover:text-campaign-warm"
+    data-paper-filter="Español"
+    aria-pressed="false"
+  >
+    Español ({spanishCount})
+  </button>
+  <button
+    type="button"
+    class="science-paper-filter focus-ring rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/20 hover:text-campaign-warm"
+    data-paper-filter="Inglés"
+    aria-pressed="false"
+  >
+    Inglés ({englishCount})
+  </button>
+</div>
+
+<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-science-paper-grid>
+  {sciencePapers.map((paper) => (
+    <article class="science-paper-card surface-panel flex h-full flex-col rounded-[1.9rem] p-6" data-paper-language={paper.language}>
+      <div class="flex items-start justify-between gap-3">
+        <span class={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${kindTone[paper.kind]}`}>
+          {paper.kind}
+        </span>
+        <span class="text-sm font-semibold text-campaign-text-muted">{paper.year}</span>
+      </div>
+
+      <h3 class="mt-4 text-xl font-bold leading-tight text-white">{paper.title}</h3>
+      <p class="mt-3 text-sm leading-6 text-campaign-text-muted">{paper.authors}</p>
+      <p class="mt-3 text-sm font-semibold text-campaign-sky">{paper.source}</p>
+
+      <dl class="mt-5 grid gap-3 text-sm text-campaign-text-muted">
+        <div>
+          <dt class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">Idioma</dt>
+          <dd class="mt-1">{paper.language}</dd>
+        </div>
+        <div>
+          <dt class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">Páginas</dt>
+          <dd class="mt-1">{paper.pages}</dd>
+        </div>
+      </dl>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button
+          type="button"
+          data-paper-trigger={paper.slug}
+          class="focus-ring rounded-full border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/20 hover:text-campaign-warm"
+        >
+          Ver ficha bibliográfica
+        </button>
+      </div>
+    </article>
+  ))}
+</div>
+
+<p class="mt-6 hidden rounded-[1.4rem] border border-white/10 bg-white/5 px-5 py-4 text-sm text-campaign-text-muted" data-science-paper-empty>
+  No hay publicaciones disponibles para este idioma.
+</p>
+
+<script is:inline type="application/json" data-science-papers-json set:html={JSON.stringify(papersForClient)}></script>
+
+<div class="science-paper-modal hidden" data-science-paper-modal aria-hidden="true">
+  <div class="science-paper-modal__backdrop" data-science-paper-close></div>
+  <div
+    class="science-paper-modal__card surface-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="science-paper-modal-title"
+  >
+    <button
+      type="button"
+      class="science-paper-modal__close focus-ring"
+      data-science-paper-close
+      aria-label="Cerrar ficha bibliográfica"
+    >
+      ×
+    </button>
+
+    <div class="science-paper-modal__body">
+      <div class="flex flex-wrap items-center gap-3">
+        <p
+          class="rounded-full border border-campaign-sky/20 bg-campaign-sky/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-campaign-sky"
+          data-science-paper-kind
+        ></p>
+        <p class="text-sm font-semibold text-campaign-text-muted" data-science-paper-year></p>
+      </div>
+
+      <h3 id="science-paper-modal-title" class="mt-4 text-3xl font-black leading-tight text-white" data-science-paper-title></h3>
+      <p class="mt-4 text-base leading-7 text-campaign-text-muted" data-science-paper-authors></p>
+      <p class="mt-2 text-sm font-semibold text-campaign-sky" data-science-paper-source></p>
+
+      <div class="mt-8 grid gap-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-5 sm:grid-cols-2">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">Idioma</p>
+          <p class="mt-2 text-sm text-white" data-science-paper-language></p>
+        </div>
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">Páginas</p>
+          <p class="mt-2 text-sm text-white" data-science-paper-pages></p>
+        </div>
+        <div class="sm:col-span-2">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">Referencia sugerida</p>
+          <p class="mt-2 text-sm leading-7 text-white" data-science-paper-citation></p>
+        </div>
+        <div class="sm:col-span-2" data-science-paper-doi-wrap>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">DOI</p>
+          <a
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-2 inline-flex text-sm font-semibold text-campaign-warm transition hover:text-[#FFF1A8]"
+            data-science-paper-doi
+          ></a>
+        </div>
+        <div class="sm:col-span-2 hidden" data-science-paper-note-wrap>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-campaign-text-muted/70">Observación</p>
+          <p class="mt-2 text-sm leading-7 text-campaign-text-muted" data-science-paper-note></p>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:border-black/55 hover:bg-[#FFF1A8]"
+          data-science-paper-open-pdf
+        >
+          Abrir PDF
+        </a>
+        <a
+          href="#"
+          class="focus-ring rounded-full border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/20 hover:text-campaign-warm"
+          data-science-paper-download-pdf
+        >
+          Descargar PDF
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script
+  is:inline
+  define:vars={{
+    sciencePaperModalOpenEventName: gaEventNames.sciencePaperModalOpen,
+    sciencePaperDocumentOpenEventName: gaEventNames.documentOpen,
+    sciencePaperFileDownloadEventName: gaEventNames.fileDownload
+  }}
+>
+  const papers = JSON.parse(document.querySelector("[data-science-papers-json]")?.textContent || "[]");
+  const filterButtons = document.querySelectorAll("[data-paper-filter]");
+  const paperCards = document.querySelectorAll("[data-paper-language]");
+  const emptyState = document.querySelector("[data-science-paper-empty]");
+  const modal = document.querySelector("[data-science-paper-modal]");
+  const closeNodes = document.querySelectorAll("[data-science-paper-close]");
+  const titleNode = document.querySelector("[data-science-paper-title]");
+  const kindNode = document.querySelector("[data-science-paper-kind]");
+  const yearNode = document.querySelector("[data-science-paper-year]");
+  const authorsNode = document.querySelector("[data-science-paper-authors]");
+  const sourceNode = document.querySelector("[data-science-paper-source]");
+  const languageNode = document.querySelector("[data-science-paper-language]");
+  const pagesNode = document.querySelector("[data-science-paper-pages]");
+  const citationNode = document.querySelector("[data-science-paper-citation]");
+  const doiWrap = document.querySelector("[data-science-paper-doi-wrap]");
+  const doiNode = document.querySelector("[data-science-paper-doi]");
+  const noteWrap = document.querySelector("[data-science-paper-note-wrap]");
+  const noteNode = document.querySelector("[data-science-paper-note]");
+  const openPdfNode = document.querySelector("[data-science-paper-open-pdf]");
+  const downloadPdfNode = document.querySelector("[data-science-paper-download-pdf]");
+  let activePaper = null;
+  let lastTrigger = null;
+
+  const syncLanguageFilter = (language) => {
+    let visibleCount = 0;
+
+    filterButtons.forEach((button) => {
+      const isActive = button.getAttribute("data-paper-filter") === language;
+      button.setAttribute("aria-pressed", String(isActive));
+      button.classList.toggle("is-active", isActive);
+      button.classList.toggle("border-campaign-warm/30", isActive);
+      button.classList.toggle("bg-campaign-warm/14", isActive);
+      button.classList.toggle("text-campaign-warm", isActive);
+      button.classList.toggle("border-white/12", !isActive);
+      button.classList.toggle("bg-white/6", !isActive);
+      button.classList.toggle("text-white", !isActive);
+    });
+
+    paperCards.forEach((card) => {
+      const cardLanguage = card.getAttribute("data-paper-language");
+      const matches = language === "all" || cardLanguage === language;
+      card.classList.toggle("hidden", !matches);
+      if (matches) visibleCount++;
+    });
+
+    if (emptyState instanceof HTMLElement) {
+      emptyState.classList.toggle("hidden", visibleCount > 0);
+    }
+  };
+
+  const trackPaperEvent = (eventName, paper, extra = {}) => {
+    const tracker = window["trackGaEvent"];
+    if (!paper || typeof tracker !== "function") return;
+    tracker(eventName, {
+      page_path: window.location.pathname,
+      paper_slug: paper.slug,
+      paper_title: paper.title,
+      paper_year: String(paper.year),
+      paper_type: paper.kind,
+      paper_source: paper.source,
+      transport_type: "beacon",
+      ...extra
+    });
+  };
+
+  const syncModal = (paper) => {
+    if (titleNode instanceof HTMLElement) titleNode.textContent = paper.title;
+    if (kindNode instanceof HTMLElement) kindNode.textContent = paper.kind;
+    if (yearNode instanceof HTMLElement) yearNode.textContent = String(paper.year);
+    if (authorsNode instanceof HTMLElement) authorsNode.textContent = paper.authors;
+    if (sourceNode instanceof HTMLElement) sourceNode.textContent = paper.source;
+    if (languageNode instanceof HTMLElement) languageNode.textContent = paper.language;
+    if (pagesNode instanceof HTMLElement) pagesNode.textContent = String(paper.pages);
+    if (citationNode instanceof HTMLElement) citationNode.textContent = paper.citation;
+
+    if (doiWrap instanceof HTMLElement) {
+      doiWrap.classList.toggle("hidden", !paper.doi);
+    }
+    if (doiNode instanceof HTMLAnchorElement) {
+      doiNode.textContent = paper.doi || "";
+      doiNode.href = paper.doiUrl || "#";
+    }
+
+    if (noteWrap instanceof HTMLElement) {
+      noteWrap.classList.toggle("hidden", !paper.note);
+    }
+    if (noteNode instanceof HTMLElement) {
+      noteNode.textContent = paper.note || "";
+    }
+
+    if (openPdfNode instanceof HTMLAnchorElement) {
+      openPdfNode.href = paper.url;
+    }
+    if (downloadPdfNode instanceof HTMLAnchorElement) {
+      downloadPdfNode.href = paper.url;
+      downloadPdfNode.setAttribute("download", paper.downloadName || `${paper.slug}.pdf`);
+    }
+  };
+
+  const openPaperModal = (slug, origin = "card", syncHash = true) => {
+    const paper = papers.find((item) => item.slug === slug);
+    if (!paper || !(modal instanceof HTMLElement)) return;
+
+    activePaper = paper;
+    syncModal(paper);
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    if (syncHash) {
+      history.replaceState(null, "", `#paper-${paper.slug}`);
+    }
+
+    trackPaperEvent(sciencePaperModalOpenEventName, paper, {
+      interaction_surface: "science_page_modal",
+      open_origin: origin
+    });
+  };
+
+  const closePaperModal = (clearHash = true) => {
+    if (!(modal instanceof HTMLElement)) return;
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    activePaper = null;
+
+    if (clearHash && window.location.hash.startsWith("#paper-")) {
+      history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+
+    if (lastTrigger instanceof HTMLElement) {
+      lastTrigger.focus();
+    }
+  };
+
+  document.querySelectorAll("[data-paper-trigger]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const slug = button.getAttribute("data-paper-trigger");
+      if (!slug) return;
+      lastTrigger = button;
+      openPaperModal(slug, "card");
+    });
+  });
+
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const language = button.getAttribute("data-paper-filter") || "all";
+      syncLanguageFilter(language);
+    });
+  });
+
+  closeNodes.forEach((node) => {
+    node.addEventListener("click", () => closePaperModal());
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closePaperModal();
+    }
+  });
+
+  if (openPdfNode instanceof HTMLAnchorElement) {
+    openPdfNode.addEventListener("click", () => {
+      if (!activePaper) return;
+      trackPaperEvent(sciencePaperDocumentOpenEventName, activePaper, {
+        interaction_surface: "science_page_modal",
+        link_url: activePaper.url,
+        link_text: "Abrir PDF"
+      });
+    });
+  }
+
+  if (downloadPdfNode instanceof HTMLAnchorElement) {
+    downloadPdfNode.addEventListener("click", () => {
+      if (!activePaper) return;
+      trackPaperEvent(sciencePaperFileDownloadEventName, activePaper, {
+        interaction_surface: "science_page_modal",
+        link_url: activePaper.url,
+        link_text: "Descargar PDF"
+      });
+    });
+  }
+
+  const initialHash = window.location.hash;
+  syncLanguageFilter("all");
+  if (initialHash.startsWith("#paper-")) {
+    openPaperModal(initialHash.replace("#paper-", ""), "hash", false);
+  }
+</script>
+
+<style is:global>
+  .science-paper-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 85;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+  }
+
+  .science-paper-modal.hidden {
+    display: none;
+  }
+
+  .science-paper-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 5, 10, 0.82);
+    backdrop-filter: blur(10px);
+  }
+
+  .science-paper-modal__card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 52rem);
+    max-height: min(100vh - 2rem, 54rem);
+    overflow: hidden;
+    border-radius: 2rem;
+  }
+
+  .science-paper-modal__body {
+    max-height: min(100vh - 2rem, 54rem);
+    overflow: auto;
+    padding: 1.5rem;
+  }
+
+  .science-paper-modal__close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    z-index: 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(5, 7, 11, 0.68);
+    color: #fff;
+    font-size: 1.35rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 767px) {
+    .science-paper-modal__body {
+      padding: 1.25rem;
+    }
+  }
+</style>
