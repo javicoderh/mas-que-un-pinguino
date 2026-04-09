@@ -4,14 +4,25 @@ import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { isServerStorageConfigured } from "../lib/security/config";
-import { listNews } from "../lib/security/news-storage";
+import { listNews, type NewsRecord } from "../lib/security/news-storage";
 
 const breadcrumbItems = [
   { name: "Inicio", path: "/" },
   { name: "Pingüinoticias", path: "/noticias" }
 ];
 
-const updates = isServerStorageConfigured ? await listNews() : [];
+let updates: NewsRecord[] = [];
+let newsFallbackActive = false;
+
+if (isServerStorageConfigured) {
+  try {
+    updates = await listNews();
+  } catch (error) {
+    console.error("news-page-fallback", error);
+    newsFallbackActive = true;
+  }
+}
+
 const formatDateTime = (value: number) =>
   new Intl.DateTimeFormat("es-CL", {
     dateStyle: "long",
@@ -58,10 +69,14 @@ const formatDateTime = (value: number) =>
       </div>
     ) : (
       <div class="surface-panel rounded-[1.75rem] p-6">
-        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-pink">Aún sin publicaciones</p>
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-pink">
+          {newsFallbackActive ? "Pingüinoticias en pausa" : "Aún sin publicaciones"}
+        </p>
         <h2 class="mt-3 text-2xl font-bold text-white">Pingüinoticias aparecerá aquí</h2>
         <p class="mt-4 text-base leading-7 text-campaign-text-muted">
-          Cuando el equipo publique nuevas entradas desde el panel admin, esta sección mostrará cada noticia con su fecha y hora de ingreso.
+          {newsFallbackActive
+            ? "No pudimos cargar las publicaciones en este momento, pero la ruta sigue disponible. Cuando vuelva la lectura de base de datos, aquí aparecerán nuevamente las noticias publicadas."
+            : "Cuando el equipo publique nuevas entradas desde el panel admin, esta sección mostrará cada noticia con su fecha y hora de ingreso."}
         </p>
       </div>
     )}
