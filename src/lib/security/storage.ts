@@ -13,9 +13,9 @@ import type { RiskDecision } from "./risk-score";
 import type { NormalizedSignature } from "../validation/signature-schema";
 
 export const emergencySignatureCounterFallback = {
-  count: 2654,
-  chileanCount: 2642,
-  foreignCount: 12
+  count: 5480,
+  chileanCount: 5453,
+  foreignCount: 27
 } as const;
 
 export interface SignatureCounterBreakdown {
@@ -241,6 +241,7 @@ export async function getCachedPublicSignatureBreakdown(
 export async function storeSignature(input: StoredSignatureInput) {
   const signatureId = crypto.randomUUID();
   const signaturePath = `${securityConfig.collections.signatures}/${signatureId}`;
+  const bypassReadChecks = securityConfig.bypassSignatureReadChecks;
 
   const writes = [
     encodeWrite(
@@ -290,31 +291,36 @@ export async function storeSignature(input: StoredSignatureInput) {
       },
       false
     ),
-    encodeWrite(
-      `${securityConfig.collections.dedupeEmails}/${input.dedupeKeys.emailHash}`,
-      {
-        signatureId,
-        createdAtMs: input.source.submittedAtMs
-      },
-      false
-    ),
-    encodeWrite(
-      `${securityConfig.collections.dedupeIdentity}/${input.dedupeKeys.identityHash}`,
-      {
-        signatureId,
-        createdAtMs: input.source.submittedAtMs
-      },
-      false
-    ),
-    encodeWrite(
-      `${securityConfig.collections.dedupeRut}/${input.dedupeKeys.rutHash}`,
-      {
-        signatureId,
-        createdAtMs: input.source.submittedAtMs
-      },
-      false
-    )
   ];
+
+  if (!bypassReadChecks) {
+    writes.push(
+      encodeWrite(
+        `${securityConfig.collections.dedupeEmails}/${input.dedupeKeys.emailHash}`,
+        {
+          signatureId,
+          createdAtMs: input.source.submittedAtMs
+        },
+        false
+      ),
+      encodeWrite(
+        `${securityConfig.collections.dedupeIdentity}/${input.dedupeKeys.identityHash}`,
+        {
+          signatureId,
+          createdAtMs: input.source.submittedAtMs
+        },
+        false
+      ),
+      encodeWrite(
+        `${securityConfig.collections.dedupeRut}/${input.dedupeKeys.rutHash}`,
+        {
+          signatureId,
+          createdAtMs: input.source.submittedAtMs
+        },
+        false
+      )
+    );
+  }
 
   if (input.status === "accepted") {
     writes.push(encodeIncrementTransforms(publicCounterPath, ["count", getCounterFieldToIncrement(input.signature.country)]));

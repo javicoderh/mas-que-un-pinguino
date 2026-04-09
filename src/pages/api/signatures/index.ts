@@ -80,20 +80,25 @@ export const POST: APIRoute = async ({ request, url }) => {
     userAgent.slice(0, 120),
     request.headers.get("accept-language") ?? ""
   );
+  const bypassReadChecks = securityConfig.bypassSignatureReadChecks;
 
-  const ipRateLimit = await enforceRateLimit("signature_post_ip", ipHash, securityConfig.rateLimits.signaturePostIp, {
-    route: url.pathname,
-    action: "signature_post"
-  });
-  const fingerprintRateLimit = await enforceRateLimit(
-    "signature_post_fingerprint",
-    fingerprintHash,
-    securityConfig.rateLimits.signaturePostFingerprint,
-    {
-      route: url.pathname,
-      action: "signature_post"
-    }
-  );
+  const ipRateLimit = bypassReadChecks
+    ? { allowed: true, retryAfterSeconds: 0, counts: {} }
+    : await enforceRateLimit("signature_post_ip", ipHash, securityConfig.rateLimits.signaturePostIp, {
+        route: url.pathname,
+        action: "signature_post"
+      });
+  const fingerprintRateLimit = bypassReadChecks
+    ? { allowed: true, retryAfterSeconds: 0, counts: {} }
+    : await enforceRateLimit(
+        "signature_post_fingerprint",
+        fingerprintHash,
+        securityConfig.rateLimits.signaturePostFingerprint,
+        {
+          route: url.pathname,
+          action: "signature_post"
+        }
+      );
 
   if (!ipRateLimit.allowed || !fingerprintRateLimit.allowed) {
     const retryAfter = Math.max(ipRateLimit.retryAfterSeconds, fingerprintRateLimit.retryAfterSeconds, 60);
@@ -146,7 +151,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     });
   }
 
-  const tokenAlreadyUsed = await isTokenUsed(nonce);
+  const tokenAlreadyUsed = bypassReadChecks ? false : await isTokenUsed(nonce);
   if (tokenAlreadyUsed) {
     return jsonResponse(400, {
       ok: false,
@@ -179,11 +184,13 @@ export const POST: APIRoute = async ({ request, url }) => {
       ipHash
     });
 
-    const duplicateMatch = await getDuplicateMatch({
-      emailHash: dedupeKeys.emailHash,
-      identityHash: dedupeKeys.identityHash,
-      rutHash: dedupeKeys.rutHash
-    });
+    const duplicateMatch = bypassReadChecks
+      ? { email: false, identity: false, rut: false, any: false }
+      : await getDuplicateMatch({
+          emailHash: dedupeKeys.emailHash,
+          identityHash: dedupeKeys.identityHash,
+          rutHash: dedupeKeys.rutHash
+        });
     const duplicateDetected = duplicateMatch.any;
 
     const risk = scoreSignatureRisk({

@@ -44,10 +44,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const ip = getClientIp(context.request.headers);
   const ipHash = await hashWithSecret(securityConfig.hashSecret, "ip", ip);
-  const result = await enforceRateLimit("signature_form_get", ipHash, securityConfig.rateLimits.formGet, {
-    route: context.url.pathname,
-    action: context.url.pathname === "/firma" ? "signature_form_get" : "event_form_get"
-  });
+  const result = securityConfig.bypassSignatureReadChecks
+    ? { allowed: true, retryAfterSeconds: 0, counts: {} }
+    : await enforceRateLimit("signature_form_get", ipHash, securityConfig.rateLimits.formGet, {
+        route: context.url.pathname,
+        action: context.url.pathname === "/firma" ? "signature_form_get" : "event_form_get"
+      });
 
   if (result.allowed) {
     const response = await next();
