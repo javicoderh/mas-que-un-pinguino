@@ -8,20 +8,7 @@ const { href, label } = Astro.props;
 const normalizedHref = href === "/firma" ? "/firma#formulario-firma" : href;
 ---
 
-<div class="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+6rem)] z-50 px-4 md:hidden">
-  <div class="mx-auto max-w-md">
-    <a
-      href={normalizedHref}
-      data-analytics-event="cta_click"
-      data-analytics-label={label}
-      data-analytics-context="floating_cta_mobile"
-      class="focus-ring pointer-events-auto flex min-h-14 items-center justify-center rounded-full bg-campaign-pink px-6 py-4 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-black shadow-[0_20px_70px_rgba(255,162,209,0.35)] transition hover:-translate-y-0.5 hover:bg-campaign-warm"
-    >
-      {label}
-    </a>
-  </div>
-</div>
-
+<!-- Desktop: appears on scroll and hides near footer -->
 <div
   class="pointer-events-none fixed inset-x-0 bottom-6 z-50 hidden px-4 opacity-0 translate-y-6 transition duration-300 md:block"
   data-floating-cta-desktop
@@ -32,7 +19,7 @@ const normalizedHref = href === "/firma" ? "/firma#formulario-firma" : href;
       data-analytics-event="cta_click"
       data-analytics-label={label}
       data-analytics-context="floating_cta_desktop"
-      class="focus-ring pointer-events-auto flex min-h-12 items-center justify-center rounded-full bg-campaign-pink px-5 py-3 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-black shadow-[0_20px_70px_rgba(255,162,209,0.35)] transition hover:-translate-y-0.5 hover:bg-campaign-warm"
+      class="focus-ring button-text-outline pointer-events-auto flex min-h-12 items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-5 py-3 text-center text-sm font-extrabold uppercase tracking-[0.16em] text-white shadow-[0_20px_70px_rgba(56,182,255,0.35)]"
     >
       {label}
     </a>
@@ -41,15 +28,29 @@ const normalizedHref = href === "/firma" ? "/firma#formulario-firma" : href;
 
 <script>
   const desktopCta = document.querySelector("[data-floating-cta-desktop]");
+  const footer = document.querySelector("footer");
+  let footerVisible = false;
 
-  if (desktopCta instanceof HTMLElement) {
+  if (window.matchMedia("(min-width: 768px)").matches && desktopCta instanceof HTMLElement) {
     const toggle = () => {
-      const visible = window.scrollY > 12;
+      const visible = window.scrollY > 12 && !footerVisible;
       desktopCta.classList.toggle("opacity-0", !visible);
       desktopCta.classList.toggle("translate-y-6", !visible);
+      desktopCta.classList.toggle("pointer-events-none", !visible);
       desktopCta.classList.toggle("opacity-100", visible);
       desktopCta.classList.toggle("translate-y-0", visible);
     };
+
+    if (footer instanceof HTMLElement) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          footerVisible = entry.isIntersecting;
+          toggle();
+        },
+        { threshold: 0 }
+      );
+      observer.observe(footer);
+    }
 
     toggle();
     window.addEventListener("scroll", toggle, { passive: true });

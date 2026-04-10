@@ -9,7 +9,7 @@ const formToken = isConfigured ? await createFormToken("event_submit") : null;
 
 <div class="surface-panel rounded-[2rem] p-7 md:p-8">
   <div class="mb-8">
-    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-pink">Proponer evento</p>
+    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Proponer evento</p>
     <h2 class="mt-3 text-3xl font-black tracking-tight text-white">Comparte una actividad para el mapa</h2>
     <p class="mt-4 text-base leading-7 text-campaign-text-muted">
       Tu propuesta quedará en revisión antes de publicarse. Así mantenemos el mapa ordenado, seguro y útil para la comunidad.
@@ -171,14 +171,14 @@ const formToken = isConfigured ? await createFormToken("event_submit") : null;
 
     <div class="grid gap-4 border-t border-white/10 pt-5">
       {!isConfigured && (
-        <p class="rounded-2xl border border-campaign-pink/25 bg-campaign-pink/8 px-4 py-3 text-sm text-campaign-blush">
+        <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/8 px-4 py-3 text-sm text-campaign-sky">
           Falta completar la configuración server-side para registrar propuestas de eventos.
         </p>
       )}
       <button
         type="submit"
         data-event-submit
-        class="focus-ring inline-flex min-h-12 items-center justify-center rounded-full border border-black/45 bg-campaign-warm px-6 py-3 text-[0.95rem] font-extrabold uppercase tracking-[0.08em] text-black shadow-[0_18px_60px_rgba(255,232,139,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:bg-[#FFF1A8]"
+        class="focus-ring button-text-outline inline-flex min-h-12 items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-6 py-3 text-[0.95rem] font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)] transition hover:bg-[#63C6FF]"
       >
         Enviar propuesta
       </button>

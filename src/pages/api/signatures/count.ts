@@ -8,11 +8,12 @@ export const prerender = false;
 
 export const GET: APIRoute = async () => {
   try {
-    const payload = await getCachedPublicSignatureBreakdown(true);
+    const payload = await getCachedPublicSignatureBreakdown();
     return new Response(JSON.stringify(payload), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        "cache-control": "no-store"
+        // CDN/Vercel Edge caches 5 min; stale-while-revalidate refreshes in background
+        "cache-control": "public, s-maxage=300, stale-while-revalidate=60"
       }
     });
   } catch (error) {
@@ -20,7 +21,7 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(emergencySignatureCounterFallback), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        "cache-control": "no-store"
+        "cache-control": "public, s-maxage=60, stale-while-revalidate=30"
       }
     });
   }

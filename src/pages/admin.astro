@@ -67,13 +67,13 @@ const formatAdminDateTime = (value: number) =>
       </div>
     ) : !session ? (
       <div class="mx-auto max-w-xl surface-panel rounded-[2rem] p-8 md:p-10">
-        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-pink">Acceso</p>
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Acceso</p>
         <h2 class="mt-3 text-3xl font-black text-white">Iniciar sesión</h2>
         <p class="mt-4 text-base leading-7 text-campaign-text-muted">
           Usa la cuenta administradora para revisar y moderar propuestas antes de publicarlas.
         </p>
         {error && (
-          <p class="mt-5 rounded-2xl border border-campaign-pink/25 bg-campaign-pink/8 px-4 py-3 text-sm text-campaign-blush">
+          <p class="mt-5 rounded-2xl border border-campaign-sky/25 bg-campaign-sky/8 px-4 py-3 text-sm text-campaign-sky">
             {error}
           </p>
         )}
@@ -155,7 +155,7 @@ const formatAdminDateTime = (value: number) =>
           </p>
         )}
         {error && (
-          <p class="rounded-2xl border border-campaign-pink/25 bg-campaign-pink/8 px-4 py-3 text-sm text-campaign-blush">
+          <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/8 px-4 py-3 text-sm text-campaign-sky">
             {error}
           </p>
         )}
@@ -179,7 +179,7 @@ const formatAdminDateTime = (value: number) =>
         <div class="surface-panel rounded-[1.75rem] p-6">
           <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-pink">Pingüinoticias</p>
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Pingüinoticias</p>
               <h2 class="mt-3 text-2xl font-black text-white">Crear nueva publicación</h2>
               <p class="mt-4 text-sm leading-7 text-campaign-text-muted">
                 Cada noticia guarda automáticamente su fecha y hora de ingreso. La preferencia se inicializa en `0` y luego puede editarse desde la tabla.
@@ -270,7 +270,7 @@ const formatAdminDateTime = (value: number) =>
                   </form>
                   <form method="post" action="/api/admin/delete-news" class="mt-3">
                     <input type="hidden" name="news_id" value={item.id} />
-                    <button type="submit" class="focus-ring rounded-full border border-campaign-pink/30 bg-campaign-pink/10 px-5 py-3 text-sm font-semibold text-campaign-blush transition hover:bg-campaign-pink/18">
+                    <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
                       Borrar Pingüinoticia
                     </button>
                   </form>
@@ -322,7 +322,7 @@ const formatAdminDateTime = (value: number) =>
                           <form method="post" action="/api/admin/review-signature">
                             <input type="hidden" name="signature_id" value={sig.id} />
                             <input type="hidden" name="decision" value="rejected" />
-                            <button type="submit" class="focus-ring rounded-full border border-campaign-pink/30 bg-campaign-pink/10 px-3 py-1.5 text-xs font-semibold text-campaign-blush transition hover:bg-campaign-pink/18">
+                            <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-3 py-1.5 text-xs font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
                               Rechazar
                             </button>
                           </form>
@@ -373,7 +373,7 @@ const formatAdminDateTime = (value: number) =>
                     </form>
                     <form method="post" action="/api/admin/delete-event">
                       <input type="hidden" name="event_id" value={event.id} />
-                      <button type="submit" class="focus-ring rounded-full border border-campaign-pink/30 bg-campaign-pink/10 px-5 py-3 text-sm font-semibold text-campaign-blush transition hover:bg-campaign-pink/18">
+                      <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
                         Borrar
                       </button>
                     </form>
@@ -400,7 +400,7 @@ const formatAdminDateTime = (value: number) =>
                   <div class="mt-5">
                     <form method="post" action="/api/admin/delete-event">
                       <input type="hidden" name="event_id" value={event.id} />
-                      <button type="submit" class="focus-ring rounded-full border border-campaign-pink/30 bg-campaign-pink/10 px-5 py-3 text-sm font-semibold text-campaign-blush transition hover:bg-campaign-pink/18">
+                      <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
                         Borrar evento
                       </button>
                     </form>

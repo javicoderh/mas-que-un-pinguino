@@ -23,6 +23,9 @@ if (isServerStorageConfigured) {
   }
 }
 
+// Cache at CDN/Edge for 5 minutes; revalidates in background
+Astro.response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=60");
+
 const formatDateTime = (value: number) =>
   new Intl.DateTimeFormat("es-CL", {
     dateStyle: "long",
@@ -69,7 +72,7 @@ const formatDateTime = (value: number) =>
       </div>
     ) : (
       <div class="surface-panel rounded-[1.75rem] p-6">
-        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-pink">
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-sky">
           {newsFallbackActive ? "Pingüinoticias en pausa" : "Aún sin publicaciones"}
         </p>
         <h2 class="mt-3 text-2xl font-bold text-white">Pingüinoticias aparecerá aquí</h2>

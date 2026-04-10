@@ -12,6 +12,9 @@ export default defineConfig({
     checkOrigin: false
   },
   vite: {
+    server: {
+      allowedHosts: ["showery-overbearing-dennis.ngrok-free.dev"]
+    },
     plugins: [tailwindcss()]
   }
 });

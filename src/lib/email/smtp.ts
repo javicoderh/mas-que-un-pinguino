@@ -33,6 +33,7 @@ export interface SendEmailParams {
   to: string;
   subject: string;
   text: string;
+  html?: string;
 }
 
 export async function sendEmail(params: SendEmailParams) {
@@ -42,19 +43,46 @@ export async function sendEmail(params: SendEmailParams) {
 
   const subject = encodeHeaderWord(params.subject);
 
-  const messageLines = [
-    `From: ${formatAddressHeader(smtpFrom)}`,
-    `To: ${normalizeSmtpLine(params.to)}`,
-    `Reply-To: ${formatAddressHeader(smtpReplyTo)}`,
-    `Subject: ${subject}`,
-    "MIME-Version: 1.0",
-    `Date: ${new Date().toUTCString()}`,
-    'Content-Type: text/plain; charset="utf-8"',
-    "Content-Transfer-Encoding: 8bit",
-    "",
-    params.text,
-    ""
-  ];
+  const boundary = `boundary_${crypto.randomUUID().replace(/-/g, "")}`;
+
+  const messageLines = params.html
+    ? [
+        `From: ${formatAddressHeader(smtpFrom)}`,
+        `To: ${normalizeSmtpLine(params.to)}`,
+        `Reply-To: ${formatAddressHeader(smtpReplyTo)}`,
+        `Subject: ${subject}`,
+        "MIME-Version: 1.0",
+        `Date: ${new Date().toUTCString()}`,
+        `Content-Type: multipart/alternative; boundary="${boundary}"`,
+        "",
+        `--${boundary}`,
+        'Content-Type: text/plain; charset="utf-8"',
+        "Content-Transfer-Encoding: 8bit",
+        "",
+        params.text,
+        "",
+        `--${boundary}`,
+        'Content-Type: text/html; charset="utf-8"',
+        "Content-Transfer-Encoding: 8bit",
+        "",
+        params.html,
+        "",
+        `--${boundary}--`,
+        ""
+      ]
+    : [
+        `From: ${formatAddressHeader(smtpFrom)}`,
+        `To: ${normalizeSmtpLine(params.to)}`,
+        `Reply-To: ${formatAddressHeader(smtpReplyTo)}`,
+        `Subject: ${subject}`,
+        "MIME-Version: 1.0",
+        `Date: ${new Date().toUTCString()}`,
+        'Content-Type: text/plain; charset="utf-8"',
+        "Content-Transfer-Encoding: 8bit",
+        "",
+        params.text,
+        ""
+      ];
 
   const message = messageLines.join("\r\n");
 

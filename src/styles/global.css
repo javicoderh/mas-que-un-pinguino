@@ -57,10 +57,24 @@ img {
 }
 
 .text-gradient {
-  background: linear-gradient(120deg, var(--campaign-warm), var(--campaign-pink), var(--campaign-sky));
+  background: linear-gradient(
+    100deg,
+    var(--campaign-warm) 15%,
+    #7ecfff 52%,
+    var(--campaign-sky) 85%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+.button-text-outline {
+  text-shadow:
+    -1px 0 rgba(0, 0, 0, 0.85),
+    0 1px rgba(0, 0, 0, 0.85),
+    1px 0 rgba(0, 0, 0, 0.85),
+    0 -1px rgba(0, 0, 0, 0.85),
+    0 2px 10px rgba(0, 0, 0, 0.28);
 }
 
 .focus-ring {
