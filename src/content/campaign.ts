@@ -17,7 +17,7 @@ export const campaignConfig = {
     description:
       "Campaña ciudadana para apoyar la protección del pingüino de Humboldt desde la ciencia y la participación informada. Lee la carta, firma y comparte.",
     themeColor: "#05070B",
-    contactEmail: "pinguinohumboldtmn@gmail.com",
+    contactEmail: "esmasqueunpinguino@gmail.com",
     author: "Equipo Es más que un pingüino"
   },
   theme: {
@@ -141,7 +141,7 @@ export const campaignConfig = {
     submitLabel: "Firmar la carta",
     rutHelp: "Ingresa tu RUT con puntos o sin puntos. El dígito verificador puede ser número o K.",
     privacyNote:
-      "Tus datos se usan únicamente para gestionar tu firma, respaldar esta campaña y, si lo autorizas, enviarte actualizaciones del proceso. Para consultas sobre privacidad o tratamiento de datos, escríbenos a pinguinohumboldtmn@gmail.com.",
+      "Tus datos se usan únicamente para gestionar tu firma, respaldar esta campaña y, si lo autorizas, enviarte actualizaciones del proceso. Para consultas sobre privacidad o tratamiento de datos, escríbenos a esmasqueunpinguino@gmail.com.",
     configuredNote:
       "El formulario está listo para conectarse a un endpoint o proveedor externo desde `src/content/campaign.ts`.",
     trustPoints: [

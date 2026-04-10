@@ -61,7 +61,7 @@ await expectIncludes("src/middleware.ts", [
 
 await expectIncludes("src/content/campaign.ts", [
   'publicLetterPdf: "/assets/carta-abierta-pinguino-humboldt.pdf"',
-  'contactEmail: "pinguinohumboldtmn@gmail.com"'
+  'contactEmail: "esmasqueunpinguino@gmail.com"'
 ]);
 
 await expectFile("PRODUCTION_READINESS_AUDIT.md");
