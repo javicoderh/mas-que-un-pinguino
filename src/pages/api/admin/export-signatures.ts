@@ -1,22 +1,9 @@
 import type { APIRoute } from "astro";
 import { AdminUnauthorizedError, redirectUnauthorized, requireAdminSession } from "../../../lib/security/admin-middleware";
-import { isServerStorageConfigured, securityConfig } from "../../../lib/security/config";
-import { queryCollection } from "../../../lib/security/firestore-rest";
+import { isServerStorageConfigured } from "../../../lib/security/config";
+import { listSignaturesForExport } from "../../../lib/security/storage";
 
 export const prerender = false;
-
-interface SignatureExportRow {
-  id: string;
-  fullName: string;
-  country: string;
-  region: string;
-  commune: string;
-  legalNature: string;
-  affiliation: string;
-  status: string;
-  createdAtMs: number;
-  source?: { submittedAtMs?: number };
-}
 
 const escapeCsvField = (value: unknown): string => {
   const str = String(value ?? "");
@@ -47,17 +34,10 @@ export const GET: APIRoute = async ({ cookies, url }) => {
     return new Response("invalid status", { status: 400 });
   }
 
-  const filters =
-    statusParam === "all"
-      ? []
-      : [{ field: "status", op: "EQUAL", value: statusParam }];
-
-  const rows = await queryCollection<SignatureExportRow>({
-    collectionId: securityConfig.collections.signatures,
-    filters,
-    orderBy: [{ field: "createdAtMs", direction: "DESCENDING" }],
-    limit: 5000
-  });
+  const rows = await listSignaturesForExport(
+    statusParam as "accepted" | "flagged" | "rejected" | "all",
+    5000
+  );
 
   const csvHeader = ["fullName", "country", "region", "commune", "legalNature", "affiliation", "status", "submittedAt"];
   const csvRows = rows.map((row) => [

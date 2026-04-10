@@ -11,6 +11,7 @@ import { scoreSignatureRisk } from "../../lib/security/risk-score";
 import { emitSecurityMetric, logSecurityEvent } from "../../lib/security/logging";
 import { eventSubmissionExists, listApprovedEvents, storeEventSubmission } from "../../lib/security/events-storage";
 import { parseEventSubmissionPayload } from "../../lib/validation/event-schema";
+import { isUniqueViolation } from "../../lib/db/postgres";
 
 export const prerender = false;
 
@@ -235,6 +236,14 @@ export const POST: APIRoute = async ({ request, url }) => {
       message: securityMessages.eventSuccess
     });
   } catch (error) {
+    if (isUniqueViolation(error)) {
+      return jsonResponse(409, {
+        ok: false,
+        duplicate: true,
+        message: securityMessages.eventDuplicate
+      });
+    }
+
     if (error instanceof ZodError) {
       return jsonResponse(400, {
         ok: false,

@@ -1,13 +1,20 @@
 ---
 import { campaignConfig } from "../../content/campaign";
-import { emergencySignatureCounterFallback } from "../../lib/security/storage";
+
+interface Props {
+  initialCount?: number;
+  initialChileanCount?: number;
+  initialForeignCount?: number;
+}
 
 const { hero } = campaignConfig;
 const formatCount = (value: number) => new Intl.NumberFormat("es-CL").format(value);
 
-const initialCount = Number(hero.signaturesCounter.value ?? emergencySignatureCounterFallback.count);
-const initialChileanCount = emergencySignatureCounterFallback.chileanCount;
-const initialForeignCount = emergencySignatureCounterFallback.foreignCount;
+const {
+  initialCount = 0,
+  initialChileanCount = 0,
+  initialForeignCount = 0
+} = Astro.props;
 ---
 
 <aside class="fixed bottom-6 right-4 z-50 hidden w-[calc(100vw-2rem)] max-w-xs md:block" aria-label="Contador de firmas">
@@ -39,7 +46,7 @@ const initialForeignCount = emergencySignatureCounterFallback.foreignCount;
 </aside>
 
 <script>
-  import { getSignatureCount } from "../../lib/signatures";
+  import { getSignatureCount, invalidateSignatureCountCache } from "../../lib/signatures";
 
   const valueNode = document.querySelector("[data-signature-counter-value]");
   const chileNode = document.querySelector("[data-signature-counter-chile]");
@@ -57,6 +64,6 @@ const initialForeignCount = emergencySignatureCounterFallback.foreignCount;
   };
 
   refresh();
-  window.addEventListener("signature:created", refresh);
-  window.setInterval(refresh, 1000 * 60 * 10);
+  window.addEventListener("signature:created", () => { invalidateSignatureCountCache(); refresh(); });
+  window.setInterval(() => { invalidateSignatureCountCache(); refresh(); }, 1000 * 60 * 10);
 </script>

@@ -27,7 +27,10 @@ const highProtectionMode = parseBoolean(import.meta.env.SECURITY_HIGH_PROTECTION
 
 export const securityConfig = {
   highProtectionMode,
-  bypassSignatureReadChecks: true,
+  bypassSignatureReadChecks: parseBoolean(
+    import.meta.env.SECURITY_BYPASS_SIGNATURE_READ_CHECKS,
+    false
+  ),
   hashSecret: import.meta.env.SECURITY_HASH_SECRET ?? "",
   maxPayloadBytes: parseNumber(import.meta.env.SECURITY_MAX_PAYLOAD_BYTES, 16_384),
   minSubmitTimeMs: withAttackMode(
@@ -70,6 +73,16 @@ export const securityConfig = {
       "",
     clientEmail: import.meta.env.FIREBASE_SERVICE_ACCOUNT_CLIENT_EMAIL ?? "",
     privateKey: (import.meta.env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY ?? "").replace(/\\n/g, "\n")
+  },
+  postgres: {
+    url: import.meta.env.DATABASE_URL ?? import.meta.env.POSTGRES_URL ?? "",
+    unpooledUrl:
+      import.meta.env.DATABASE_URL_UNPOOLED ??
+      import.meta.env.POSTGRES_URL_NON_POOLING ??
+      import.meta.env.POSTGRES_PRISMA_URL ??
+      import.meta.env.DATABASE_URL ??
+      import.meta.env.POSTGRES_URL ??
+      ""
   },
   collections: {
     signatures: import.meta.env.FIREBASE_SIGNATURES_COLLECTION ?? "campaign_signatures",
@@ -198,12 +211,14 @@ export const securityConfig = {
 
 export const alertWebhookUrl: string = import.meta.env.SECURITY_ALERT_WEBHOOK_URL ?? "";
 
-export const isSecurityConfigured = Boolean(securityConfig.hashSecret);
-export const isServerStorageConfigured = Boolean(
+export const isPostgresConfigured = Boolean(securityConfig.postgres.url);
+export const isFirestoreConfigured = Boolean(
   securityConfig.firestore.projectId &&
     securityConfig.firestore.clientEmail &&
     securityConfig.firestore.privateKey
 );
+export const isSecurityConfigured = Boolean(securityConfig.hashSecret);
+export const isServerStorageConfigured = Boolean(isPostgresConfigured || isFirestoreConfigured);
 export const isPublicFirestoreConfigured = Boolean(
   import.meta.env.PUBLIC_FIREBASE_PROJECT_ID && import.meta.env.PUBLIC_FIREBASE_API_KEY
 );

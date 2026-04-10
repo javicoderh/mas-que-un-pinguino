@@ -12,8 +12,8 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(payload), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        // CDN/Vercel Edge caches 5 min; stale-while-revalidate refreshes in background
-        "cache-control": "public, s-maxage=300, stale-while-revalidate=60"
+        // Central shared response cache for all users, refreshed every 10 min.
+        "cache-control": "public, s-maxage=600, stale-while-revalidate=60"
       }
     });
   } catch (error) {

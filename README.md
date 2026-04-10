@@ -6,7 +6,7 @@ Sitio de campaña construido con Astro para movilización ciudadana en torno a l
 - captación y conteo de firmas
 - operación segura en un entorno serverless
 
-Hoy el sitio corre con SSR sobre Vercel, persiste firmas en Firestore y expone una interfaz enfocada en conversión: leer la carta, firmar y compartir.
+Hoy el sitio corre con SSR sobre Vercel, persiste firmas en Neon Postgres cuando `DATABASE_URL` está configurada y mantiene la capa Firestore disponible como fallback y compatibilidad operativa. La interfaz sigue enfocada en conversión: leer la carta, firmar y compartir.
 
 ## Qué resuelve este proyecto
 
@@ -24,6 +24,7 @@ Hoy el sitio corre con SSR sobre Vercel, persiste firmas en Firestore y expone u
 - TypeScript
 - Tailwind CSS 4
 - Vue 3
+- Neon Postgres
 - Firebase Firestore
 - Vercel Serverless
 
@@ -160,6 +161,7 @@ Aquí se centraliza:
 - [storage.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/storage.ts)
 - [dedupe.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/dedupe.ts)
 - [firestore-rest.ts](/home/javier/Documents/salvemos-humboldt/src/lib/security/firestore-rest.ts)
+- [postgres.ts](/home/javier/Documents/salvemos-humboldt/src/lib/db/postgres.ts)
 
 ## Flujo de firmas
 
@@ -189,7 +191,7 @@ El formulario pide:
 4. El `POST /api/signatures` valida de nuevo en server-side.
 5. Se evalúa dedupe por hashes.
 6. Se aplica scoring de riesgo.
-7. Si pasa, se escribe en Firestore.
+7. Si pasa, se escribe en Neon Postgres si `DATABASE_URL` existe; si no, usa Firestore.
 8. El contador público se alimenta desde firmas `accepted`.
 
 ## Modelo de datos de firmas
@@ -274,11 +276,22 @@ Hoy el código ya no depende del documento manual `public_stats/signatures_count
 
 ## Variables de entorno
 
-Variables mínimas para firmar de verdad:
+Variables mínimas para firmar de verdad con Neon:
 
 ```bash
 SECURITY_HASH_SECRET=
 SECURITY_ALLOWED_ORIGINS=https://esmasqueunpinguino.cl,https://www.esmasqueunpinguino.cl,https://masqueunpinguino.cl,https://www.masqueunpinguino.cl,http://localhost:4321
+
+DATABASE_URL=
+DATABASE_URL_UNPOOLED=
+POSTGRES_URL=
+POSTGRES_URL_NON_POOLING=
+POSTGRES_PRISMA_URL=
+```
+
+Variables para dejar Firestore disponible como fallback o uso operativo paralelo:
+
+```bash
 
 FIREBASE_SERVICE_ACCOUNT_PROJECT_ID=
 FIREBASE_SERVICE_ACCOUNT_CLIENT_EMAIL=
@@ -391,7 +404,8 @@ Los RUT se limpian, rescatan y validan antes de generar el archivo listo para im
 
 - proyecto Astro SSR
 - adapter de Vercel
-- variables de entorno de Firestore y seguridad cargadas en Vercel
+- variables de entorno de Neon y seguridad cargadas en Vercel
+- variables de Firestore opcionales si quieres mantener fallback operativo
 - Node runtime 22
 
 ### Dominios

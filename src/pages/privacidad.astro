@@ -90,11 +90,19 @@ const breadcrumbItems = [
           <section>
             <h2 class="text-xl font-semibold text-white">5. Conservación y resguardo</h2>
             <p class="mt-3">
-              Los datos se almacenan en infraestructura técnica asociada a la operación de la campaña. Se aplican
-              controles razonables para reducir abuso, duplicación no autorizada y acceso indebido.
+              Actualmente las nuevas firmas y persistencias operativas del sitio se almacenan en
+              <span class="font-semibold text-white"> Neon Postgres</span>, dentro de la infraestructura técnica de
+              la campaña. Además, existe un repositorio histórico separado en
+              <span class="font-semibold text-white"> Firebase Firestore</span> que contiene firmas previas.
             </p>
             <p class="mt-3">
-              No obstante, ninguna plataforma conectada a internet puede garantizar seguridad absoluta. Por eso el
+              Por razones de privacidad y minimización de tratamiento, esas firmas históricas almacenadas en Firestore
+              no se migran a la nueva base de datos. El contador público puede considerar ambos conjuntos de datos,
+              pero la operación actual del formulario se realiza sobre Neon Postgres.
+            </p>
+            <p class="mt-3">
+              Se aplican controles razonables para reducir abuso, duplicación no autorizada y acceso indebido. No
+              obstante, ninguna plataforma conectada a internet puede garantizar seguridad absoluta. Por eso el
               proyecto busca minimizar superficie de exposición, validar entradas y restringir los flujos de escritura.
             </p>
           </section>

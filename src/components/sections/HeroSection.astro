@@ -1,6 +1,5 @@
 ---
 import { campaignConfig } from "../../content/campaign";
-import { emergencySignatureCounterFallback } from "../../lib/security/storage";
 import logo from "../../assets/logo_pinguino_humboldt_circulo.png";
 import pinguinosVideo from "../../assets/pinguinos.mp4";
 import pinguinosVideoMobile from "../../assets/pinguinos-mobile.mp4";
@@ -9,11 +8,19 @@ import PenguinSmartGallery from "../campaign/PenguinSmartGallery.vue";
 import Countdown from "../ui/Countdown.astro";
 import Section from "../ui/Section.astro";
 
+interface Props {
+  initialCount?: number;
+  initialChileanCount?: number;
+  initialForeignCount?: number;
+}
+
 const { hero, dates, ecosystem } = campaignConfig;
 const formatCount = (value: number) => new Intl.NumberFormat("es-CL").format(value);
-const initialCount = Number(hero.signaturesCounter.value ?? emergencySignatureCounterFallback.count);
-const initialChileanCount = emergencySignatureCounterFallback.chileanCount;
-const initialForeignCount = emergencySignatureCounterFallback.foreignCount;
+const {
+  initialCount = 0,
+  initialChileanCount = 0,
+  initialForeignCount = 0
+} = Astro.props;
 ---
 
 <Section size="hero" class="overflow-visible" id="inicio">
@@ -205,7 +212,7 @@ const initialForeignCount = emergencySignatureCounterFallback.foreignCount;
 </Section>
 
 <script>
-  import { getSignatureCount } from "../../lib/signatures";
+  import { getSignatureCount, invalidateSignatureCountCache } from "../../lib/signatures";
 
   const mobileValueNode = document.querySelector("[data-mobile-counter-value]");
   const mobileChileNode = document.querySelector("[data-mobile-counter-chile]");
@@ -223,8 +230,8 @@ const initialForeignCount = emergencySignatureCounterFallback.foreignCount;
   };
 
   refreshMobile();
-  window.addEventListener("signature:created", refreshMobile);
-  window.setInterval(refreshMobile, 1000 * 60 * 10);
+  window.addEventListener("signature:created", () => { invalidateSignatureCountCache(); refreshMobile(); });
+  window.setInterval(() => { invalidateSignatureCountCache(); refreshMobile(); }, 1000 * 60 * 10);
 </script>
 
 <script>

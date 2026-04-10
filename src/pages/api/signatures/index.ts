@@ -15,6 +15,7 @@ import { getDuplicateMatch, storeSignature } from "../../../lib/security/storage
 import { isTokenUsed, markTokenUsed } from "../../../lib/security/token-store";
 import { checkAndFireAlert } from "../../../lib/security/alerts";
 import { sendSignatureConfirmationEmail } from "../../../lib/email/signature-confirmation";
+import { isUniqueViolation } from "../../../lib/db/postgres";
 
 export const prerender = false;
 
@@ -316,10 +317,11 @@ export const POST: APIRoute = async ({ request, url }) => {
     });
   } catch (error) {
     if (
-      error instanceof Error &&
-      (error.message.includes("FAILED_PRECONDITION") ||
+      (error instanceof Error &&
+        (error.message.includes("FAILED_PRECONDITION") ||
         error.message.includes("ALREADY_EXISTS") ||
-        error.message.includes("firestore-commit-failed:409"))
+        error.message.includes("firestore-commit-failed:409"))) ||
+      isUniqueViolation(error)
     ) {
       return jsonResponse(409, {
         ok: false,
