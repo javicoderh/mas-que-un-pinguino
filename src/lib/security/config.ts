@@ -3,8 +3,11 @@ const parseNumber = (value: string | undefined, fallback: number) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-const parseBoolean = (value: string | undefined, fallback = false) => {
-  if (value === undefined) return fallback;
+const parseBoolean = (value: unknown, fallback = false) => {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value !== "string") return fallback;
   return ["1", "true", "yes", "on"].includes(value.toLowerCase());
 };
 
