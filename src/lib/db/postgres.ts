@@ -105,6 +105,16 @@ async function createSchema(sql: Sql) {
     `;
 
     await tx`
+      create table if not exists counter_read_events (
+        id uuid primary key,
+        source text not null,
+        read_kind text not null,
+        read_at_ms bigint not null
+      )
+    `;
+    await tx`create index if not exists counter_read_events_kind_time_idx on counter_read_events (read_kind, read_at_ms desc)`;
+
+    await tx`
       create table if not exists used_tokens (
         nonce_hash text primary key,
         expires_at_ms bigint not null,

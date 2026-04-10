@@ -136,6 +136,19 @@ function setSignatureCounterCache(value: SignatureCounterBreakdown) {
   };
 }
 
+async function recordCounterReadEvent(readKind: "cache_hit" | "cache_miss" | "db_read") {
+  if (!isPostgresAvailable) return;
+
+  try {
+    await withPostgres((sql) => sql`
+      insert into counter_read_events (id, source, read_kind, read_at_ms)
+      values (${crypto.randomUUID()}, 'public_counter', ${readKind}, ${Date.now()})
+    `);
+  } catch (error) {
+    console.error("counter-read-event-write-failed", error);
+  }
+}
+
 function bumpSignatureCounterCache(country: string) {
   if (!signatureCounterCache) return;
   const nextValue = {
@@ -156,12 +169,15 @@ function bumpSignatureCounterCache(country: string) {
 async function getStoredPublicCounter(): Promise<PublicCounterDocument | null> {
   if (isPostgresAvailable) {
     try {
-      const rows = await withPostgres((sql) => sql`
-        select count, chilean_count, foreign_count
-        from signature_counter
-        where counter_key = 'public'
-        limit 1
-      `);
+      await recordCounterReadEvent("db_read");
+      const rows = await withPostgres((sql) =>
+        sql`
+          select count, chilean_count, foreign_count
+          from signature_counter
+          where counter_key = 'public'
+          limit 1
+        `
+      );
       const counter = rows[0];
       if (!counter) return null;
       return {
@@ -182,6 +198,36 @@ async function getStoredPublicCounter(): Promise<PublicCounterDocument | null> {
     console.error("stored-public-counter-read-failed", error);
     return null;
   }
+}
+
+export async function getPublicCounterReadStats() {
+  if (isPostgresAvailable) {
+    const rows = await withPostgres((sql) => sql`
+      select
+        count(*) filter (where read_kind = 'db_read')::int as db_reads,
+        count(*) filter (where read_kind = 'cache_hit')::int as cache_hits,
+        count(*) filter (where read_kind = 'cache_miss')::int as cache_misses,
+        count(*)::int as total_events,
+        max(read_at_ms) as last_read_at_ms
+      from counter_read_events
+    `);
+
+    return {
+      totalReads: Number(rows[0]?.db_reads ?? 0),
+      cacheHits: Number(rows[0]?.cache_hits ?? 0),
+      cacheMisses: Number(rows[0]?.cache_misses ?? 0),
+      totalEvents: Number(rows[0]?.total_events ?? 0),
+      lastReadAtMs: rows[0]?.last_read_at_ms ? Number(rows[0].last_read_at_ms) : null
+    };
+  }
+
+  return {
+    totalReads: 0,
+    cacheHits: 0,
+    cacheMisses: 0,
+    totalEvents: 0,
+    lastReadAtMs: null
+  };
 }
 
 async function findDuplicateInSignatures(keys: {
@@ -249,9 +295,11 @@ export async function getCachedPublicSignatureBreakdown(
   forceRefresh = false
 ): Promise<SignatureCounterBreakdown> {
   if (!forceRefresh && signatureCounterCache && signatureCounterCache.expiresAt > Date.now()) {
+    await recordCounterReadEvent("cache_hit");
     return signatureCounterCache.value;
   }
 
+  await recordCounterReadEvent("cache_miss");
   const value = await getPublicSignatureBreakdown();
   signatureCounterCache = {
     value,
