@@ -231,7 +231,7 @@ const {
 
   refreshMobile();
   window.addEventListener("signature:created", () => { invalidateSignatureCountCache(); refreshMobile(); });
-  window.setInterval(() => { invalidateSignatureCountCache(); refreshMobile(); }, 1000 * 60 * 10);
+  window.setInterval(() => { invalidateSignatureCountCache(); refreshMobile(); }, 1000 * 60);
 </script>
 
 <script>
