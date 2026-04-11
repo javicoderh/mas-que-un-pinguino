@@ -1,4 +1,4 @@
-import { withPostgres, isPostgresAvailable } from "../db/postgres";
+import { recordPostgresReadEvent, withPostgres, isPostgresAvailable } from "../db/postgres";
 import { isFirestoreConfigured, securityConfig } from "./config";
 import {
   countCollectionDocuments,
@@ -140,10 +140,7 @@ async function recordCounterReadEvent(readKind: "cache_hit" | "cache_miss" | "db
   if (!isPostgresAvailable) return;
 
   try {
-    await withPostgres((sql) => sql`
-      insert into counter_read_events (id, source, read_kind, read_at_ms)
-      values (${crypto.randomUUID()}, 'public_counter', ${readKind}, ${Date.now()})
-    `);
+    await recordPostgresReadEvent("public_counter", readKind);
   } catch (error) {
     console.error("counter-read-event-write-failed", error);
   }
@@ -204,29 +201,44 @@ export async function getPublicCounterReadStats() {
   if (isPostgresAvailable) {
     const rows = await withPostgres((sql) => sql`
       select
-        count(*) filter (where read_kind = 'db_read')::int as db_reads,
+        count(*) filter (where source = 'public_counter' and read_kind = 'db_read')::int as public_counter_db_reads,
         count(*) filter (where read_kind = 'cache_hit')::int as cache_hits,
         count(*) filter (where read_kind = 'cache_miss')::int as cache_misses,
+        count(*) filter (where read_kind = 'db_read')::int as db_reads,
         count(*)::int as total_events,
         max(read_at_ms) as last_read_at_ms
       from counter_read_events
     `);
+    const sourceRows = await withPostgres((sql) => sql`
+      select source, count(*)::int as total
+      from counter_read_events
+      where read_kind = 'db_read'
+      group by source
+      order by total desc, source asc
+    `);
 
     return {
       totalReads: Number(rows[0]?.db_reads ?? 0),
+      publicCounterReads: Number(rows[0]?.public_counter_db_reads ?? 0),
       cacheHits: Number(rows[0]?.cache_hits ?? 0),
       cacheMisses: Number(rows[0]?.cache_misses ?? 0),
       totalEvents: Number(rows[0]?.total_events ?? 0),
-      lastReadAtMs: rows[0]?.last_read_at_ms ? Number(rows[0].last_read_at_ms) : null
+      lastReadAtMs: rows[0]?.last_read_at_ms ? Number(rows[0].last_read_at_ms) : null,
+      readsBySource: sourceRows.map((row) => ({
+        source: String(row.source ?? "unknown"),
+        total: Number(row.total ?? 0)
+      }))
     };
   }
 
   return {
     totalReads: 0,
+    publicCounterReads: 0,
     cacheHits: 0,
     cacheMisses: 0,
     totalEvents: 0,
-    lastReadAtMs: null
+    lastReadAtMs: null,
+    readsBySource: []
   };
 }
 
@@ -236,6 +248,7 @@ async function findDuplicateInSignatures(keys: {
   rutHash: string;
 }) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("signature_dedupe");
     const rows = await withPostgres((sql) => sql`
       select
         exists(select 1 from signatures where dedupe_email_hash = ${keys.emailHash}) as email,
@@ -545,6 +558,7 @@ export interface SignatureExportRow {
 
 export async function listFlaggedSignatures(page = 1, pageSize = 20): Promise<FlaggedSignatureRecord[]> {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("signature_flagged_list");
     const rows = await withPostgres((sql) => sql`
       select id, full_name, country, region, commune, legal_nature, affiliation, status,
              risk_score, risk_reasons, created_at_ms, source_submitted_at_ms
@@ -585,6 +599,7 @@ export async function listSignaturesForExport(
   limit = 5000
 ): Promise<SignatureExportRow[]> {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("signature_export");
     const rows =
       status === "all"
         ? await withPostgres((sql) => sql`
@@ -633,6 +648,7 @@ export async function reviewFlaggedSignature(params: {
   decision: "accepted" | "rejected";
 }): Promise<void> {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("signature_review_lookup");
     await withPostgres((sql) =>
       sql.begin(async (tx) => {
         const rows = await tx`

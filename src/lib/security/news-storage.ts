@@ -1,4 +1,4 @@
-import { withPostgres, isPostgresAvailable } from "../db/postgres";
+import { recordPostgresReadEvent, withPostgres, isPostgresAvailable } from "../db/postgres";
 import { securityConfig } from "./config";
 import { commitWrites, createDocument, encodeDelete, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
 
@@ -24,6 +24,7 @@ function mapNewsRow(row: Record<string, any>): NewsRecord {
 
 export async function listNews() {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("news_list");
     const rows = await withPostgres((sql) => sql`
       select *
       from news_items
@@ -43,6 +44,7 @@ export async function listNews() {
 
 export async function getNewsItem(id: string) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("news_item");
     const rows = await withPostgres((sql) => sql`
       select *
       from news_items

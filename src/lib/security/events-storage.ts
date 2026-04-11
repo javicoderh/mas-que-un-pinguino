@@ -1,4 +1,4 @@
-import { withPostgres, isPostgresAvailable } from "../db/postgres";
+import { recordPostgresReadEvent, withPostgres, isPostgresAvailable } from "../db/postgres";
 import { securityConfig } from "./config";
 import { commitWrites, createDocument, encodeDelete, encodeWrite, getDocument, queryCollection } from "./firestore-rest";
 import type { NormalizedEventSubmission } from "../validation/event-schema";
@@ -183,6 +183,7 @@ export async function storeEventSubmission(input: StoredEventSubmissionInput) {
 
 export async function eventSubmissionExists(duplicateHash: string) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("event_dedupe");
     const rows = await withPostgres((sql) => sql`
       select exists(select 1 from event_submissions where dedupe_hash = ${duplicateHash}) as exists
     `);
@@ -195,6 +196,7 @@ export async function eventSubmissionExists(duplicateHash: string) {
 
 export async function listEventSubmissions(status?: EventSubmissionStatus, page = 1, pageSize = 20) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent(status ? "event_submission_list_filtered" : "event_submission_list");
     const rows =
       status
         ? await withPostgres((sql) => sql`
@@ -226,6 +228,7 @@ export async function listEventSubmissions(status?: EventSubmissionStatus, page 
 
 export async function listApprovedEvents() {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("event_public_list");
     const rows = await withPostgres((sql) => sql`
       select *
       from event_submissions
@@ -246,6 +249,7 @@ export async function listApprovedEvents() {
 
 export async function getEventSubmission(id: string) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("event_submission_item");
     const rows = await withPostgres((sql) => sql`
       select *
       from event_submissions
@@ -269,6 +273,7 @@ export async function reviewEventSubmission(params: {
   reviewer: string;
 }) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("event_review_returning");
     const reviewedAtMs = Date.now();
     const rows = await withPostgres((sql) => sql`
       update event_submissions
@@ -311,6 +316,7 @@ export async function deleteEventSubmission(params: {
   eventId: string;
 }) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("event_delete_returning");
     const rows = await withPostgres((sql) => sql`
       delete from event_submissions
       where id = ${params.eventId}
@@ -332,6 +338,7 @@ export async function deleteEventSubmission(params: {
 
 export async function getAdminUserByUsername(username: string) {
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("admin_user_lookup");
     const rows = await withPostgres((sql) => sql`
       select *
       from admin_users

@@ -1,4 +1,4 @@
-import { withPostgres, isPostgresAvailable } from "../db/postgres";
+import { recordPostgresReadEvent, withPostgres, isPostgresAvailable } from "../db/postgres";
 import { securityConfig, type RateLimitRule } from "./config";
 import { createDocument, countNestedDocuments } from "./firestore-rest";
 import { logSecurityEvent } from "./logging";
@@ -80,6 +80,7 @@ export async function enforceRateLimit(
       let exceededRule: string | undefined;
 
       for (const rule of rules) {
+        await recordPostgresReadEvent("rate_limit_lookup");
         const rows = await withPostgres((sql) => sql`
           select count(*)::int as total
           from rate_limit_events

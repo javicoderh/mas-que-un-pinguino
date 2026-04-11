@@ -215,6 +215,19 @@ export async function withPostgres<T>(callback: (sql: Sql) => Promise<T>): Promi
   return callback(getPostgres());
 }
 
+export async function recordPostgresReadEvent(
+  source: string,
+  readKind: "db_read" | "cache_hit" | "cache_miss" = "db_read"
+) {
+  if (!isPostgresAvailable) return;
+
+  await ensurePostgresSchema();
+  await getPostgres()`
+    insert into counter_read_events (id, source, read_kind, read_at_ms)
+    values (${crypto.randomUUID()}, ${source}, ${readKind}, ${Date.now()})
+  `;
+}
+
 export function isUniqueViolation(error: unknown) {
   return Boolean(
     error &&

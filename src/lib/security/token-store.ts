@@ -1,4 +1,4 @@
-import { withPostgres, isPostgresAvailable } from "../db/postgres";
+import { recordPostgresReadEvent, withPostgres, isPostgresAvailable } from "../db/postgres";
 import { securityConfig } from "./config";
 import { createDocument, getDocument } from "./firestore-rest";
 import { sha256Hex } from "./hash";
@@ -7,6 +7,7 @@ export async function isTokenUsed(nonce: string): Promise<boolean> {
   const hash = await sha256Hex(nonce);
 
   if (isPostgresAvailable) {
+    await recordPostgresReadEvent("used_token_lookup");
     const rows = await withPostgres((sql) => sql`
       select expires_at_ms
       from used_tokens
