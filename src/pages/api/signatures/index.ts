@@ -70,6 +70,13 @@ export const POST: APIRoute = async ({ request, url }) => {
     });
   }
 
+  if (!isAllowedOrigin(request)) {
+    return jsonResponse(403, {
+      ok: false,
+      message: securityMessages.invalidSubmission
+    });
+  }
+
   const ip = getClientIp(request.headers);
   const userAgent = getUserAgent(request.headers);
   const ipHash = await hashWithSecret(securityConfig.hashSecret, "ip", ip);
@@ -141,7 +148,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     token.length > 0 &&
     (await verifyFormToken({ issuedAtMs, nonce, intent: "signature_submit" }, token));
   const submitTimeMs = Date.now() - issuedAtMs;
-  const invalidOrigin = !isAllowedOrigin(request);
+  const invalidOrigin = false;
   const suspiciousUserAgent = suspiciousUserAgentPattern.test(userAgent);
   const captcha = await verifyCaptchaToken(captchaToken, ip);
 

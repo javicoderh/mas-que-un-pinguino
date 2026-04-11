@@ -27,7 +27,7 @@ export function isAllowedOrigin(request: Request) {
   const origin = request.headers.get("origin");
   const referer = request.headers.get("referer");
 
-  if (!origin && !referer) return true;
+  if (!origin && !referer) return false;
 
   const allowed = securityConfig.allowedOrigins;
   const originOk = origin ? allowed.includes(origin) : false;
