@@ -12,8 +12,8 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify(payload), {
       headers: {
         "content-type": "application/json; charset=utf-8",
-        // Keep the UI fresh while the underlying counter source stays cheap to read.
-        "cache-control": "public, s-maxage=60, stale-while-revalidate=30"
+        // Central shared response cache for all users, refreshed every 1 hour.
+        "cache-control": "public, s-maxage=3600, stale-while-revalidate=60"
       }
     });
   } catch (error) {

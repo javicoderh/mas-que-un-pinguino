@@ -3,7 +3,6 @@ import { isFirestoreConfigured, securityConfig } from "./config";
 import {
   countCollectionDocuments,
   commitWrites,
-  createDocument,
   encodeIncrementTransforms,
   encodeWrite,
   getDocument,
@@ -135,34 +134,6 @@ function setSignatureCounterCache(value: SignatureCounterBreakdown) {
     value,
     expiresAt: Date.now() + signatureCounterCacheTtlMs
   };
-}
-
-async function syncPublicCounterDocument(country: string, submittedAtMs: number) {
-  if (!isFirestoreConfigured) return;
-
-  try {
-    await commitWrites([
-      encodeIncrementTransforms(publicCounterPath, ["count", getCounterFieldToIncrement(country)])
-    ]);
-    return;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (!message.includes("firestore-commit-failed:404")) {
-      console.error("public-counter-sync-failed", error);
-      return;
-    }
-  }
-
-  try {
-    await createDocument(publicCounterPath, {
-      count: 1,
-      chileanCount: isChileanCountry(country) ? 1 : 0,
-      foreignCount: isChileanCountry(country) ? 0 : 1,
-      updatedAtMs: submittedAtMs
-    });
-  } catch (error) {
-    console.error("public-counter-create-failed", error);
-  }
 }
 
 async function recordCounterReadEvent(readKind: "cache_hit" | "cache_miss" | "db_read") {
@@ -312,15 +283,6 @@ async function findDuplicateInSignatures(keys: {
 
 export async function getPublicSignatureBreakdown() {
   try {
-    const firestoreCounter = await getPublicCounterBreakdownFromFirestore();
-    if (Number.isFinite(firestoreCounter.count) && firestoreCounter.count > 0) {
-      return mergeHistoricalBaseline(firestoreCounter);
-    }
-  } catch (error) {
-    console.error("public-signature-breakdown-firestore-counter-failed", error);
-  }
-
-  try {
     const storedCounter = await getStoredPublicCounter();
     if (hasPublicCounterFields(storedCounter)) {
       return mergeHistoricalBaseline({
@@ -333,7 +295,13 @@ export async function getPublicSignatureBreakdown() {
     console.error("public-signature-breakdown-counter-doc-failed", error);
   }
 
-  return emergencySignatureCounterFallback;
+  try {
+    const firestoreCounter = await getPublicCounterBreakdownFromFirestore();
+    return mergeHistoricalBaseline(firestoreCounter);
+  } catch (publicError) {
+    console.error("public-signature-breakdown-final-fallback", publicError);
+    return emergencySignatureCounterFallback;
+  }
 }
 
 export async function getCachedPublicSignatureBreakdown(
@@ -409,7 +377,6 @@ export async function storeSignature(input: StoredSignatureInput) {
       })
     );
     if (input.status === "accepted") {
-      await syncPublicCounterDocument(input.signature.country, input.source.submittedAtMs);
       bumpSignatureCounterCache(input.signature.country);
     } else {
       invalidateSignatureCounterCache();

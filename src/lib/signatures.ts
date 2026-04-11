@@ -5,7 +5,7 @@ export interface SignatureCounterPayload {
 }
 
 // Client-side cache: share one in-flight request across all counter consumers on the same page.
-// Keep the page responsive without holding a stale counter for too long.
+// TTL matches the central counter refresh cadence (10 min).
 let _cachedCountEntry: { promise: Promise<SignatureCounterPayload>; expiresAt: number } | null = null;
 
 export function getSignatureCount(): Promise<SignatureCounterPayload> {
@@ -28,7 +28,7 @@ export function getSignatureCount(): Promise<SignatureCounterPayload> {
   // On error, clear the cache so the next call retries
   promise.catch(() => { _cachedCountEntry = null; });
 
-  _cachedCountEntry = { promise, expiresAt: Date.now() + 60_000 };
+  _cachedCountEntry = { promise, expiresAt: Date.now() + 10 * 60_000 };
   return promise;
 }
 
@@ -39,6 +39,6 @@ export function invalidateSignatureCountCache(): void {
 export function setSignatureCountCache(payload: SignatureCounterPayload): void {
   _cachedCountEntry = {
     promise: Promise.resolve(payload),
-    expiresAt: Date.now() + 60_000
+    expiresAt: Date.now() + 10 * 60_000
   };
 }

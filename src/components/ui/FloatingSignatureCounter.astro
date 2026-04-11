@@ -65,5 +65,5 @@ const {
 
   refresh();
   window.addEventListener("signature:created", () => { invalidateSignatureCountCache(); refresh(); });
-  window.setInterval(() => { invalidateSignatureCountCache(); refresh(); }, 1000 * 60);
+  window.setInterval(() => { invalidateSignatureCountCache(); refresh(); }, 1000 * 60 * 10);
 </script>
