@@ -17,7 +17,7 @@ export const campaignConfig = {
     description:
       "Campaña ciudadana para apoyar la protección del pingüino de Humboldt desde la ciencia y la participación informada. Lee la carta, firma y comparte.",
     themeColor: "#05070B",
-    contactEmail: "esmasqueunpinguino@gmail.com",
+    contactEmail: "pinguinodehumboldtmn@gmail.com",
     author: "Equipo Es más que un pingüino"
   },
   theme: {
@@ -45,8 +45,8 @@ export const campaignConfig = {
   },
   links: externalLinks,
   dates: {
-    signatureDeadlineIso: "2026-04-25T23:59:59-04:00",
-    signatureDeadlineLabel: "25 de abril de 2026"
+    signatureDeadlineIso: "2026-04-20T23:59:59-04:00",
+    signatureDeadlineLabel: "20 de abril de 2026"
   },
   hero: {
     mode: "static-dark" as "static-dark" | "video",
@@ -89,7 +89,7 @@ export const campaignConfig = {
         detail: "El retiro del decreto dejó en pausa una protección decisiva."
       },
       {
-        value: "25 Abr",
+        value: "20 Abr",
         label: "Fecha clave",
         detail: "Es una oportunidad para sumar apoyo ciudadano informado antes de esa fecha."
       }
@@ -122,7 +122,7 @@ export const campaignConfig = {
   },
   conversion: {
     title: "Cada pingüino cuenta, cada firma cuenta.",
-    cardTitle: "Firma antes del 25 de abril",
+    cardTitle: "Firma antes del 20 de abril",
     cardText:
       "La carta abierta busca reunir apoyo ciudadano informado para acompañar la protección del pingüino de Humboldt como Monumento Natural.",
     shareTitle: "¿Ya firmaste? Ayuda a que más personas conozcan esta causa. Síguenos y comparte.",
@@ -141,7 +141,7 @@ export const campaignConfig = {
     submitLabel: "Firmar la carta",
     rutHelp: "Ingresa tu RUT con puntos o sin puntos. El dígito verificador puede ser número o K.",
     privacyNote:
-      "Tus datos se usan únicamente para gestionar tu firma, respaldar esta campaña y, si lo autorizas, enviarte actualizaciones del proceso. Para consultas sobre privacidad o tratamiento de datos, escríbenos a esmasqueunpinguino@gmail.com.",
+      "Tus datos se usan únicamente para gestionar tu firma, respaldar esta campaña y, si lo autorizas, enviarte actualizaciones del proceso. Para consultas sobre privacidad o tratamiento de datos, escríbenos a pinguinodehumboldtmn@gmail.com.",
     configuredNote:
       "El formulario está listo para conectarse a un endpoint o proveedor externo desde `src/content/campaign.ts`.",
     trustPoints: [
