@@ -41,7 +41,8 @@ export const campaignConfig = {
     logo: "/assets/logo-pinguino.png",
     ogImage: "/assets/og-cover.svg",
     favicon: "/favicon.svg",
-    publicLetterPdf: "/assets/carta-abierta-pinguino-humboldt.pdf"
+    publicLetterPdf: "/assets/carta-abierta-pinguino-humboldt.pdf",
+    publicLetterPdfEn: "/assets/open-letter-humboldt-penguin-en.pdf"
   },
   links: externalLinks,
   dates: {

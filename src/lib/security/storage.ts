@@ -163,24 +163,41 @@ function bumpSignatureCounterCache(country: string) {
   setSignatureCounterCache(nextValue);
 }
 
+export function bumpForeignSignatureCounterCache() {
+  if (!signatureCounterCache) return;
+  setSignatureCounterCache({
+    count: signatureCounterCache.value.count + 1,
+    chileanCount: signatureCounterCache.value.chileanCount,
+    foreignCount: signatureCounterCache.value.foreignCount + 1
+  });
+}
+
 async function getStoredPublicCounter(): Promise<PublicCounterDocument | null> {
   if (isPostgresAvailable) {
     try {
       await recordCounterReadEvent("db_read");
-      const rows = await withPostgres((sql) =>
-        sql`
-          select count, chilean_count, foreign_count
-          from signature_counter
-          where counter_key = 'public'
-          limit 1
-        `
+      const [counterRows, foreignRows] = await withPostgres((sql) =>
+        Promise.all([
+          sql`
+            select count, chilean_count, foreign_count
+            from signature_counter
+            where counter_key = 'public'
+            limit 1
+          `,
+          sql`
+            select count(*)::int as total
+            from foreign_signatures
+            where status = 'accepted'
+          `
+        ])
       );
-      const counter = rows[0];
+      const counter = counterRows[0];
       if (!counter) return null;
+      const foreignFormCount = Number(foreignRows[0]?.total ?? 0);
       return {
-        count: Number(counter.count ?? 0),
+        count: Number(counter.count ?? 0) + foreignFormCount,
         chileanCount: Number(counter.chilean_count ?? 0),
-        foreignCount: Number(counter.foreign_count ?? 0)
+        foreignCount: Number(counter.foreign_count ?? 0) + foreignFormCount
       };
     } catch (error) {
       console.error("stored-public-counter-postgres-read-failed", error);

@@ -196,6 +196,22 @@ async function createSchema(sql: Sql) {
       )
     `;
     await tx`create index if not exists news_items_created_idx on news_items (created_at_ms desc)`;
+
+    await tx`
+      create table if not exists foreign_signatures (
+        id uuid primary key,
+        name text not null,
+        country text not null,
+        reason text not null,
+        email text not null,
+        email_hash text not null unique,
+        status text not null default 'accepted',
+        source_ip_hash text not null,
+        created_at_ms bigint not null,
+        updated_at_ms bigint not null
+      )
+    `;
+    await tx`create index if not exists foreign_signatures_created_idx on foreign_signatures (created_at_ms desc)`;
   });
 }
 
