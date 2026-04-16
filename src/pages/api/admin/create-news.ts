@@ -22,7 +22,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const formData = await request.formData();
     const payload = parseNewsCreatePayload({
       title: formData.get("title"),
-      body: formData.get("body")
+      body: formData.get("body"),
+      link: formData.get("link") ?? "",
+      imageUrl: formData.get("image_url") ?? ""
     });
 
     await createNewsItem(payload);

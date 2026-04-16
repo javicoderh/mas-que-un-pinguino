@@ -7,10 +7,18 @@ const trimmedString = (max: number) =>
     .transform((value) => normalizeText(value))
     .refine((value) => value.length <= max, "El valor excede el largo permitido.");
 
+const optionalUrl = z
+  .string()
+  .transform((v) => v.trim())
+  .refine((v) => v === "" || /^https?:\/\/.{4,}/.test(v), "Ingresa una URL válida (debe comenzar con http:// o https://)")
+  .default("");
+
 export const newsCreateSchema = z
   .object({
     title: trimmedString(120),
-    body: trimmedString(2000)
+    body: trimmedString(2000),
+    link: optionalUrl,
+    imageUrl: optionalUrl
   })
   .superRefine((value, context) => {
     if (value.title.length < 4 || looksMeaningless(value.title)) {
@@ -33,7 +41,9 @@ export const newsCreateSchema = z
 export const newsUpdateSchema = z.object({
   title: trimmedString(120),
   body: trimmedString(2000),
-  preference: z.coerce.number().int().min(0).max(9999)
+  preference: z.coerce.number().int().min(0).max(9999),
+  link: optionalUrl,
+  imageUrl: optionalUrl
 });
 
 export type NewsCreateInput = z.infer<typeof newsCreateSchema>;
@@ -43,7 +53,9 @@ export function parseNewsCreatePayload(raw: Record<string, unknown>) {
   const parsed = newsCreateSchema.parse(raw);
   return {
     title: normalizeText(parsed.title),
-    body: normalizeText(parsed.body)
+    body: normalizeText(parsed.body),
+    link: parsed.link,
+    imageUrl: parsed.imageUrl
   };
 }
 
@@ -52,6 +64,8 @@ export function parseNewsUpdatePayload(raw: Record<string, unknown>) {
   return {
     title: normalizeText(parsed.title),
     body: normalizeText(parsed.body),
-    preference: parsed.preference
+    preference: parsed.preference,
+    link: parsed.link,
+    imageUrl: parsed.imageUrl
   };
 }

@@ -194,7 +194,7 @@ export const campaignConfig = {
   navigation: [
     { href: "/", label: "Inicio" },
     { href: "/ciencia", label: "Ciencia" },
-    { href: "/eventos", label: "Eventos" },
+    { href: "/eventos", label: "Pingüieventos" },
     { href: "/noticias", label: "Pingüinoticias" },
     { href: "/carta", label: "Carta" },
     { href: "/faq", label: "FAQ" },

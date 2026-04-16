@@ -32,6 +32,7 @@ export interface EventSubmissionRecord {
   title: string;
   description: string;
   imageUrl: string;
+  link: string;
   date: string;
   time: string;
   region: string;
@@ -68,6 +69,7 @@ function mapEventRow(row: Record<string, any>): EventSubmissionRecord {
     title: row.title,
     description: row.description,
     imageUrl: row.image_url,
+    link: row.link ?? "",
     date: row.date,
     time: row.time,
     region: row.region,
@@ -107,14 +109,14 @@ export async function storeEventSubmission(input: StoredEventSubmissionInput) {
     const now = input.source.submittedAtMs;
     await withPostgres((sql) => sql`
       insert into event_submissions (
-        id, title, description, image_url, date, time, region, region_key, venue, organizer_name,
+        id, title, description, image_url, link, date, time, region, region_key, venue, organizer_name,
         organizer_email, consent, status, risk_decision, risk_reasons, risk_score, dedupe_hash,
         source_ip_hash, source_user_agent_hash, source_fingerprint_hash, source_origin_host,
         source_submitted_at_ms, security_token_issued_at_ms, security_submit_time_ms,
         security_captcha_verified, security_high_protection_mode, created_at_ms, updated_at_ms
       ) values (
         ${eventId}, ${input.event.title}, ${input.event.description}, ${input.event.imageUrl},
-        ${input.event.date}, ${input.event.time}, ${input.event.region}, ${input.event.regionKey},
+        ${input.event.link}, ${input.event.date}, ${input.event.time}, ${input.event.region}, ${input.event.regionKey},
         ${input.event.venue}, ${input.event.organizerName}, ${input.event.organizerEmail},
         ${input.event.consent}, ${input.status}, ${input.riskDecision},
         ${JSON.stringify(input.riskReasons)}::jsonb, ${input.riskScore}, ${input.duplicateHash},
@@ -137,6 +139,7 @@ export async function storeEventSubmission(input: StoredEventSubmissionInput) {
         title: input.event.title,
         description: input.event.description,
         imageUrl: input.event.imageUrl,
+        link: input.event.link,
         date: input.event.date,
         time: input.event.time,
         region: input.event.region,

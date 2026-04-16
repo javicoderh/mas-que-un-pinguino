@@ -34,7 +34,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const payload = parseNewsUpdatePayload({
       title: formData.get("title"),
       body: formData.get("body"),
-      preference: formData.get("preference")
+      preference: formData.get("preference"),
+      link: formData.get("link") ?? "",
+      imageUrl: formData.get("image_url") ?? ""
     });
 
     await updateNewsItem({

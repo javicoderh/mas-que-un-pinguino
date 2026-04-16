@@ -6,6 +6,7 @@ interface EventMarker {
   title: string;
   description: string;
   imageUrl: string;
+  link: string;
   date: string;
   time: string;
   region: string;
@@ -76,10 +77,31 @@ const regionCounts = Object.fromEntries(
             <stop offset="0%" stop-color="rgba(255,255,255,0.2)" />
             <stop offset="100%" stop-color="rgba(56,182,255,0.8)" />
           </linearGradient>
+          <linearGradient id="chileBodyGrad" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(56,182,255,0.22)" />
+            <stop offset="55%" stop-color="rgba(255,162,209,0.16)" />
+            <stop offset="100%" stop-color="rgba(232,207,99,0.14)" />
+          </linearGradient>
         </defs>
-        <rect x="168" y="6" width="10" height="884" rx="999" fill="rgba(255,255,255,0.06)"></rect>
+        <path
+          d="M 222,10 C 210,32 198,56 190,78 C 182,100 172,124 164,150 C 156,172 148,192 140,218 C 133,234 130,248 124,266 C 118,280 114,294 108,318 C 102,340 98,364 92,392 C 86,418 90,446 82,468 C 74,490 72,510 78,528 C 84,545 76,558 68,580 C 62,598 58,618 54,640 C 48,660 44,678 40,702 C 34,724 28,748 28,774 C 26,798 28,820 36,844 C 44,862 54,882 68,900 L 88,910 C 115,904 140,895 165,882 C 180,869 194,854 200,836 C 204,818 207,798 208,778 C 210,758 210,738 210,718 C 211,698 212,676 213,652 C 214,628 215,606 216,584 C 217,562 219,540 220,518 C 221,496 222,474 222,452 C 223,430 225,408 228,386 C 230,364 233,343 237,322 C 241,301 245,280 250,260 C 256,240 263,220 270,200 C 277,180 282,160 286,138 C 290,118 293,96 296,74 C 298,54 300,34 308,10 Z"
+          fill="url(#chileBodyGrad)"
+          stroke="rgba(255,255,255,0.09)"
+          stroke-width="1.2"
+          opacity="0.35"
+          transform="rotate(-4, 184, 455) translate(15, 0)"
+        />
+        <g opacity="0.75">
         {chileRegions.map((region) => (
           <g data-region={region.id}>
+            <rect
+              x={region.x}
+              y={region.y}
+              width={region.width}
+              height={region.height}
+              rx="18"
+              fill="rgba(8,14,24,0.96)"
+            ></rect>
             <rect
               x={region.x}
               y={region.y}
@@ -101,6 +123,7 @@ const regionCounts = Object.fromEntries(
             </text>
           </g>
         ))}
+        </g>
       </svg>
 
       {eventsWithPosition.map((event, index) => (
@@ -167,6 +190,18 @@ const regionCounts = Object.fromEntries(
       <h3 class="mt-2 text-2xl font-black text-white" data-event-title></h3>
       <p class="mt-3 text-sm leading-6 text-campaign-text-muted" data-event-meta></p>
       <p class="mt-5 text-base leading-7 text-campaign-text-muted" data-event-description></p>
+      <a
+        href=""
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-5 hidden items-center gap-2 rounded-full border border-white/14 bg-white/6 px-4 py-2 text-sm font-semibold text-campaign-sky transition hover:bg-white/10"
+        data-event-link
+      >
+        Más información
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h4a.75.75 0 010 1.5h-4zm6.5-1a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V6.06l-6.22 6.22a.75.75 0 11-1.06-1.06L15.44 5H11a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+        </svg>
+      </a>
     </div>
   </div>
 </div>
@@ -179,6 +214,7 @@ const regionCounts = Object.fromEntries(
   const title = document.querySelector("[data-event-title]");
   const meta = document.querySelector("[data-event-meta]");
   const description = document.querySelector("[data-event-description]");
+  const linkEl = document.querySelector("[data-event-link]");
 
   const openEvent = (eventId) => {
     const event = events.find((item) => item.id === eventId);
@@ -192,6 +228,17 @@ const regionCounts = Object.fromEntries(
     if (title instanceof HTMLElement) title.textContent = event.title;
     if (meta instanceof HTMLElement) meta.textContent = `${event.date} · ${event.time} · ${event.venue}`;
     if (description instanceof HTMLElement) description.textContent = event.description;
+    if (linkEl instanceof HTMLAnchorElement) {
+      if (event.link) {
+        linkEl.href = event.link;
+        linkEl.classList.remove("hidden");
+        linkEl.classList.add("inline-flex");
+      } else {
+        linkEl.href = "";
+        linkEl.classList.add("hidden");
+        linkEl.classList.remove("inline-flex");
+      }
+    }
 
     modal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
@@ -201,6 +248,11 @@ const regionCounts = Object.fromEntries(
     if (!(modal instanceof HTMLElement)) return;
     modal.classList.add("hidden");
     document.body.style.overflow = "";
+    if (linkEl instanceof HTMLAnchorElement) {
+      linkEl.href = "";
+      linkEl.classList.add("hidden");
+      linkEl.classList.remove("inline-flex");
+    }
   };
 
   document.querySelectorAll("[data-event-open]").forEach((button) => {

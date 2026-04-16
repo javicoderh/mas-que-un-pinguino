@@ -129,15 +129,33 @@ img {
 
 .event-marker-dot {
   position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  inset: -8%;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   background:
-    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.28), transparent 45%),
-    linear-gradient(180deg, var(--campaign-warm), #f3d86f);
-  box-shadow:
-    0 18px 42px rgba(255, 232, 139, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    radial-gradient(circle at 38% 28%, rgba(255, 255, 255, 0.32), transparent 48%),
+    linear-gradient(160deg, var(--campaign-warm), #f3d86f);
+  animation: star-twinkle 2.8s ease-in-out infinite;
+}
+
+.event-marker:hover .event-marker-dot {
+  animation: none;
+  transform: scale(1.22) rotate(-12deg);
+  filter: drop-shadow(0 0 20px rgba(255, 232, 139, 1));
+}
+
+@keyframes star-twinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 5px rgba(255, 232, 139, 0.45));
+  }
+  40% {
+    transform: scale(1.13) rotate(8deg);
+    filter: drop-shadow(0 0 13px rgba(255, 232, 139, 0.85));
+  }
+  70% {
+    transform: scale(1.06) rotate(-4deg);
+    filter: drop-shadow(0 0 8px rgba(255, 232, 139, 0.6));
+  }
 }
 
 .event-marker-label {

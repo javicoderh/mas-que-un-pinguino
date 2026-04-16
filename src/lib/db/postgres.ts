@@ -196,6 +196,9 @@ async function createSchema(sql: Sql) {
       )
     `;
     await tx`create index if not exists news_items_created_idx on news_items (created_at_ms desc)`;
+    await tx`alter table news_items add column if not exists link text not null default ''`;
+    await tx`alter table news_items add column if not exists image_url text not null default ''`;
+    await tx`alter table event_submissions add column if not exists link text not null default ''`;
 
     await tx`
       create table if not exists foreign_signatures (

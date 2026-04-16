@@ -12,7 +12,7 @@ export const prerender = false;
 
 const breadcrumbItems = [
   { name: "Inicio", path: "/" },
-  { name: "Eventos", path: "/eventos" }
+  { name: "Pingüieventos", path: "/eventos" }
 ];
 
 type ApprovedEvent = Awaited<ReturnType<typeof listApprovedEvents>>;
@@ -43,7 +43,7 @@ Astro.response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-r
     <Breadcrumbs items={breadcrumbItems} />
     <div class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
       <SectionHeading
-        eyebrow="Eventos"
+        eyebrow="Pingüieventos"
         title="Un mapa ciudadano de actividades en torno al pingüino de Humboldt"
         body="Esta sección reúne eventos aprobados por el equipo y los sitúa en un mapa de Chile por regiones. La idea es facilitar la participación territorial sin sacrificar orden, contexto ni calidad de la información publicada."
         as="h1"

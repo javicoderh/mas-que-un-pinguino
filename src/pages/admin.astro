@@ -203,6 +203,24 @@ const formatAdminDateTime = (value: number) =>
                   class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
                 ></textarea>
               </label>
+              <label class="grid gap-2 text-sm font-medium text-white">
+                <span>Enlace <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                <input
+                  name="link"
+                  type="url"
+                  placeholder="https://..."
+                  class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+                />
+              </label>
+              <label class="grid gap-2 text-sm font-medium text-white">
+                <span>URL de imagen <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                <input
+                  name="image_url"
+                  type="url"
+                  placeholder="https://..."
+                  class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+                />
+              </label>
               <div>
                 <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
                   Crear Pingüinoticia
@@ -261,6 +279,26 @@ const formatAdminDateTime = (value: number) =>
                         required
                         class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
                       >{item.body}</textarea>
+                    </label>
+                    <label class="grid gap-2 text-sm font-medium text-white">
+                      <span>Enlace <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                      <input
+                        name="link"
+                        type="url"
+                        value={item.link}
+                        placeholder="https://..."
+                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+                      />
+                    </label>
+                    <label class="grid gap-2 text-sm font-medium text-white">
+                      <span>URL de imagen <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                      <input
+                        name="image_url"
+                        type="url"
+                        value={item.imageUrl}
+                        placeholder="https://..."
+                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+                      />
                     </label>
                     <div class="flex flex-wrap gap-3">
                       <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">

@@ -15,6 +15,12 @@ const optionalTrimmedString = (max: number) =>
     .transform((value) => normalizeText(value ?? ""))
     .refine((value) => value.length <= max, "El valor excede el largo permitido.");
 
+const optionalUrl = z
+  .string()
+  .optional()
+  .transform((v) => (v ?? "").trim())
+  .refine((v) => v === "" || /^https?:\/\/.{4,}/.test(v), "Ingresa una URL válida (debe comenzar con http:// o https://)");
+
 const eventImageSchema = z
   .string()
   .url("Debes ingresar una URL válida para la imagen.")
@@ -25,6 +31,7 @@ export const eventSubmissionSchema = z
     title: trimmedString(90),
     description: trimmedString(600),
     imageUrl: eventImageSchema.transform((value) => normalizeText(value)),
+    link: optionalUrl,
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Debes ingresar una fecha válida."),
     time: z.string().regex(/^\d{2}:\d{2}$/, "Debes ingresar una hora válida."),
     region: trimmedString(80),
@@ -102,6 +109,7 @@ export interface NormalizedEventSubmission {
   title: string;
   description: string;
   imageUrl: string;
+  link: string;
   date: string;
   time: string;
   region: string;
@@ -129,6 +137,7 @@ export function parseEventSubmissionPayload(raw: Record<string, unknown>): Norma
     title,
     description: normalizeText(parsed.description),
     imageUrl: normalizeText(parsed.imageUrl),
+    link: parsed.link ?? "",
     date: parsed.date,
     time: parsed.time,
     region,

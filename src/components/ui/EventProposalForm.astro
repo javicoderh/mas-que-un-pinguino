@@ -71,6 +71,18 @@ const formToken = isConfigured ? await createFormToken("event_submit") : null;
       </label>
 
       <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Enlace del evento <span class="font-normal text-campaign-text-muted">(opcional)</span></span>
+        <input
+          name="link"
+          type="url"
+          data-validate="link"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="https://..."
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="link"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
         <span>Región</span>
         <select
           name="region"
