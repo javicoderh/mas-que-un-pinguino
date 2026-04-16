@@ -4,22 +4,17 @@ import { securityMessages } from "../../../lib/security/messages";
 import { enforceRateLimit } from "../../../lib/security/rate-limit";
 import { hashWithSecret } from "../../../lib/security/hash";
 import { getClientIp } from "../../../lib/security/request";
-import { isAdminBootstrapConfigured, isSecurityConfigured, isServerStorageConfigured, securityConfig } from "../../../lib/security/config";
-import { ensureAdminUser, getAdminUserByUsername } from "../../../lib/security/events-storage";
-import { hashPassword, verifyPassword } from "../../../lib/security/password";
+import { isSecurityConfigured, isServerStorageConfigured, securityConfig } from "../../../lib/security/config";
+import { getAdminUserByUsername } from "../../../lib/security/events-storage";
+import { verifyPassword } from "../../../lib/security/password";
 
 export const prerender = false;
 
 const redirect = (location: string) =>
-  new Response(null, {
-    status: 302,
-    headers: {
-      location
-    }
-  });
+  new Response(null, { status: 302, headers: { location } });
 
 export const POST: APIRoute = async ({ request, cookies, url }) => {
-  if (!isSecurityConfigured || !isServerStorageConfigured || !isAdminBootstrapConfigured) {
+  if (!isSecurityConfigured || !isServerStorageConfigured) {
     return redirect("/admin?error=config");
   }
 
@@ -37,17 +32,6 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
   const formData = await request.formData();
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-
-  const defaultUsername = import.meta.env.ADMIN_USERNAME as string;
-  const defaultPassword = import.meta.env.ADMIN_PASSWORD as string;
-
-  const bootstrapHash = await hashPassword(defaultPassword);
-  await ensureAdminUser({
-    username: defaultUsername,
-    passwordHash: bootstrapHash.hash,
-    passwordSalt: bootstrapHash.salt,
-    passwordIterations: bootstrapHash.iterations
-  });
 
   const user = await getAdminUserByUsername(username);
   const valid =
