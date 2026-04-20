@@ -77,8 +77,11 @@ const formToken = isConfigured ? await createFormToken("event_submit") : null;
           type="url"
           data-validate="link"
           class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-          placeholder="https://..."
+          placeholder="https://www.instagram.com/tueventoejemplo"
         />
+        <span class="text-xs text-campaign-text-muted">
+          Pega aquí la dirección web del evento: puede ser una publicación de Instagram, un evento de Facebook, una página web, etc. Debe comenzar con <code class="rounded bg-white/8 px-1 py-0.5 font-mono text-white/70">https://</code>
+        </span>
         <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="link"></span>
       </label>
 

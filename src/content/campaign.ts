@@ -46,8 +46,8 @@ export const campaignConfig = {
   },
   links: externalLinks,
   dates: {
-    signatureDeadlineIso: "2026-04-20T23:59:59-04:00",
-    signatureDeadlineLabel: "20 de abril de 2026"
+    signatureDeadlineIso: "2026-04-25T23:59:59-04:00",
+    signatureDeadlineLabel: "25 de abril de 2026"
   },
   hero: {
     mode: "static-dark" as "static-dark" | "video",
@@ -90,7 +90,7 @@ export const campaignConfig = {
         detail: "El retiro del decreto dejó en pausa una protección decisiva."
       },
       {
-        value: "20 Abr",
+        value: "25 Abr",
         label: "Fecha clave",
         detail: "Es una oportunidad para sumar apoyo ciudadano informado antes de esa fecha."
       }
@@ -123,7 +123,7 @@ export const campaignConfig = {
   },
   conversion: {
     title: "Cada pingüino cuenta, cada firma cuenta.",
-    cardTitle: "Firma antes del 20 de abril",
+    cardTitle: "Firma antes del 25 de abril",
     cardText:
       "La carta abierta busca reunir apoyo ciudadano informado para acompañar la protección del pingüino de Humboldt como Monumento Natural.",
     shareTitle: "¿Ya firmaste? Ayuda a que más personas conozcan esta causa. Síguenos y comparte.",
@@ -138,7 +138,7 @@ export const campaignConfig = {
     intro:
       "Tu firma respalda una solicitud ciudadana para acompañar, desde la evidencia científica, la protección del pingüino de Humboldt.",
     helper:
-      "Completa tus datos y acepta el consentimiento. La integración definitiva del envío se conecta desde el config del proyecto sin rehacer esta interfaz.",
+      "Completa tus datos y acepta el consentimiento.",
     submitLabel: "Firmar la carta",
     rutHelp: "Ingresa tu RUT con puntos o sin puntos. El dígito verificador puede ser número o K.",
     privacyNote:

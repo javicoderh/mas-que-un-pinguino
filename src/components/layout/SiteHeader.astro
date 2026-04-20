@@ -37,15 +37,28 @@ const { navigation, site } = campaignConfig;
       </ul>
     </nav>
 
-    <a
-      href="/firma"
-      data-analytics-event="cta_click"
-      data-analytics-label="Firmar"
-      data-analytics-context="site_header_desktop"
-      class="focus-ring button-text-outline hidden rounded-full border border-black/55 bg-campaign-sky px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)] transition hover:border-black/65 hover:bg-[#63C6FF] md:inline-flex"
-    >
-      Firmar
-    </a>
+    <div class="hidden items-center gap-2 md:flex">
+      <!-- Donar: oculto hasta activar Flow
+      <a
+        href="/#donar"
+        data-analytics-event="cta_click"
+        data-analytics-label="Donar"
+        data-analytics-context="site_header_desktop"
+        class="focus-ring button-text-outline inline-flex rounded-full border border-black/40 bg-campaign-warm px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-black shadow-[0_12px_36px_rgba(255,162,0,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:brightness-110"
+      >
+        Donar
+      </a>
+      -->
+      <a
+        href="/firma"
+        data-analytics-event="cta_click"
+        data-analytics-label="Firmar"
+        data-analytics-context="site_header_desktop"
+        class="focus-ring button-text-outline inline-flex rounded-full border border-black/55 bg-campaign-sky px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)] transition hover:border-black/65 hover:bg-[#63C6FF]"
+      >
+        Firmar
+      </a>
+    </div>
 
     <details class="group relative md:hidden">
       <summary class="focus-ring flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-white/14 bg-white/6 text-white marker:hidden list-none transition hover:border-campaign-warm hover:text-campaign-warm">
@@ -76,15 +89,28 @@ const { navigation, site } = campaignConfig;
           </ul>
         </nav>
 
-        <a
-          href="/firma"
-          data-analytics-event="cta_click"
-          data-analytics-label="Firmar ahora"
-          data-analytics-context="site_header_mobile"
-          class="focus-ring button-text-outline mt-4 flex min-h-12 items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)]"
-        >
-          Firmar ahora
-        </a>
+        <div class="mt-4 grid gap-2">
+          <!-- Donar: oculto hasta activar Flow
+          <a
+            href="/#donar"
+            data-analytics-event="cta_click"
+            data-analytics-label="Donar"
+            data-analytics-context="site_header_mobile"
+            class="focus-ring button-text-outline flex min-h-12 items-center justify-center rounded-full border border-black/40 bg-campaign-warm px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-black shadow-[0_12px_36px_rgba(255,162,0,0.25),inset_0_1px_0_rgba(255,255,255,0.35)]"
+          >
+            Donar
+          </a>
+          -->
+          <a
+            href="/firma"
+            data-analytics-event="cta_click"
+            data-analytics-label="Firmar ahora"
+            data-analytics-context="site_header_mobile"
+            class="focus-ring button-text-outline flex min-h-12 items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-5 py-3 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)]"
+          >
+            Firmar ahora
+          </a>
+        </div>
       </div>
     </details>
   </div>

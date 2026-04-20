@@ -8,6 +8,8 @@ import { listApprovedEvents, listEventSubmissions } from "../lib/security/events
 import { listFlaggedSignatures } from "../lib/security/storage";
 import { listNews } from "../lib/security/news-storage";
 import { isSecurityConfigured, isServerStorageConfigured } from "../lib/security/config";
+import { listDonations } from "../lib/db/donations-queries";
+import { isPostgresAvailable } from "../lib/db/postgres";
 
 export const prerender = false;
 
@@ -19,6 +21,34 @@ const breadcrumbItems = [
 const session = await getAdminSessionFromCookies(Astro.cookies);
 const page = Math.max(1, Number(Astro.url.searchParams.get("page") ?? "1"));
 const pageSize = 20;
+
+// --- Donations filter params ---
+const dPeriod = Astro.url.searchParams.get("d_period") ?? "month";
+const dSearch = (Astro.url.searchParams.get("d_search") ?? "").trim();
+const dDateFrom = Astro.url.searchParams.get("d_from") ?? "";
+const dDateTo = Astro.url.searchParams.get("d_to") ?? "";
+const dPage = Math.max(1, Number(Astro.url.searchParams.get("d_page") ?? "1"));
+const dPageSize = 25;
+
+function periodToRange(period: string, customFrom: string, customTo: string): { fromMs?: number; toMs?: number } {
+  const now = Date.now();
+  if (period === "day")   return { fromMs: now - 86_400_000 };
+  if (period === "week")  return { fromMs: now - 7 * 86_400_000 };
+  if (period === "month") return { fromMs: now - 30 * 86_400_000 };
+  if (period === "year")  return { fromMs: now - 365 * 86_400_000 };
+  if (period === "custom") {
+    const from = customFrom ? new Date(customFrom).getTime() : undefined;
+    const to   = customTo   ? new Date(customTo).getTime() + 86_399_999 : undefined;
+    return { fromMs: from, toMs: to };
+  }
+  return {}; // "all"
+}
+
+const { fromMs: dFromMs, toMs: dToMs } = periodToRange(dPeriod, dDateFrom, dDateTo);
+
+const donationsResult = session && isPostgresAvailable
+  ? await listDonations({ fromMs: dFromMs, toMs: dToMs, search: dSearch || undefined, page: dPage, pageSize: dPageSize }).catch(() => null)
+  : null;
 
 const pendingEvents = session && isServerStorageConfigured ? await listEventSubmissions("pending", page, pageSize) : [];
 const flaggedEvents = session && isServerStorageConfigured ? await listEventSubmissions("flagged", page, pageSize) : [];
@@ -38,6 +68,22 @@ const formatAdminDateTime = (value: number) =>
     timeStyle: "short",
     timeZone: "America/Santiago"
   }).format(new Date(value));
+
+const fmtMoney = (amount: number, currency: string) =>
+  currency === "USD"
+    ? `US$${amount}`
+    : `$${new Intl.NumberFormat("es-CL").format(amount)} CLP`;
+
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  paid:      { label: "Pagado",    color: "text-green-400 bg-green-400/12 border-green-400/30" },
+  pending:   { label: "Pendiente", color: "text-campaign-warm bg-campaign-warm/10 border-campaign-warm/30" },
+  rejected:  { label: "Rechazado", color: "text-red-400 bg-red-400/10 border-red-400/30" },
+  cancelled: { label: "Cancelado", color: "text-white/45 bg-white/5 border-white/12" },
+};
+
+const PERIOD_LABELS: Record<string, string> = {
+  day: "Hoy", week: "7 días", month: "30 días", year: "365 días", custom: "Rango", all: "Todo"
+};
 ---
 
 <MainLayout
@@ -172,6 +218,200 @@ const formatAdminDateTime = (value: number) =>
             <a href={`/admin?page=${page + 1}`} class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
               Siguiente →
             </a>
+          )}
+        </div>
+
+        {/* ── Donaciones ── */}
+        <div class="surface-panel rounded-[1.75rem] p-6">
+          <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-warm">Donaciones</p>
+              <h2 class="mt-2 text-2xl font-black text-white">Registro de pagos</h2>
+            </div>
+            {donationsResult && (
+              <div class="flex flex-wrap gap-3">
+                <div class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-center">
+                  <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-campaign-sky">Pagados CLP</p>
+                  <p class="mt-1 text-lg font-black text-white">{fmtMoney(donationsResult.stats.total_clp, "CLP")}</p>
+                </div>
+                <div class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-center">
+                  <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-campaign-sky">Pagados USD</p>
+                  <p class="mt-1 text-lg font-black text-white">{fmtMoney(donationsResult.stats.total_usd, "USD")}</p>
+                </div>
+                <div class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-center">
+                  <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-campaign-sky">N° pagos</p>
+                  <p class="mt-1 text-lg font-black text-white">{donationsResult.stats.paid_count}</p>
+                </div>
+                {donationsResult.stats.missing_receipt_count > 0 && (
+                  <div class="rounded-2xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-center">
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-red-400">Sin comprobante</p>
+                    <p class="mt-1 text-lg font-black text-red-400">{donationsResult.stats.missing_receipt_count}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Filtros */}
+          <form method="get" action="/admin" class="mb-5 grid gap-3">
+            {/* Preservar otros params del admin que no son de donaciones */}
+            {page > 1 && <input type="hidden" name="page" value={page} />}
+
+            <div class="flex flex-wrap gap-2">
+              {(["day","week","month","year","all","custom"] as const).map((p) => (
+                <a
+                  href={`/admin?d_period=${p}${dSearch ? `&d_search=${encodeURIComponent(dSearch)}` : ""}`}
+                  class:list={[
+                    "rounded-full border px-4 py-2 text-xs font-semibold transition",
+                    dPeriod === p
+                      ? "border-campaign-sky/50 bg-campaign-sky/15 text-campaign-sky"
+                      : "border-white/12 bg-white/5 text-white/60 hover:text-white"
+                  ]}
+                >
+                  {PERIOD_LABELS[p]}
+                </a>
+              ))}
+            </div>
+
+            {dPeriod === "custom" && (
+              <div class="flex flex-wrap items-center gap-3">
+                <input
+                  type="date"
+                  name="d_from"
+                  value={dDateFrom}
+                  class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-2.5 text-sm text-white"
+                />
+                <span class="text-sm text-white/45">→</span>
+                <input
+                  type="date"
+                  name="d_to"
+                  value={dDateTo}
+                  class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-2.5 text-sm text-white"
+                />
+                <input type="hidden" name="d_period" value="custom" />
+                <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/12 px-4 py-2 text-xs font-semibold text-campaign-sky transition hover:bg-campaign-sky/20">
+                  Aplicar
+                </button>
+              </div>
+            )}
+
+            <div class="flex gap-2">
+              <input
+                type="text"
+                name="d_search"
+                value={dSearch}
+                placeholder="Buscar por nombre, email, comprobante o N° orden…"
+                class="focus-ring w-full max-w-sm rounded-2xl border border-white/14 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/35"
+              />
+              <input type="hidden" name="d_period" value={dPeriod} />
+              {dDateFrom && <input type="hidden" name="d_from" value={dDateFrom} />}
+              {dDateTo   && <input type="hidden" name="d_to"   value={dDateTo} />}
+              <button type="submit" class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10">
+                Buscar
+              </button>
+              {dSearch && (
+                <a href={`/admin?d_period=${dPeriod}`} class="focus-ring rounded-2xl border border-white/12 bg-white/4 px-4 py-2.5 text-sm text-white/50 transition hover:text-white">
+                  ✕
+                </a>
+              )}
+            </div>
+          </form>
+
+          {/* Tabla */}
+          {!donationsResult ? (
+            <p class="text-sm text-campaign-text-muted">Base de datos no disponible.</p>
+          ) : donationsResult.rows.length === 0 ? (
+            <p class="text-sm text-campaign-text-muted">No hay donaciones para este período{dSearch ? " con ese filtro" : ""}.</p>
+          ) : (
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead>
+                  <tr class="border-b border-white/10 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
+                    <th class="pb-3 pr-4 whitespace-nowrap">Fecha</th>
+                    <th class="pb-3 pr-4">Donante</th>
+                    <th class="pb-3 pr-4">Email</th>
+                    <th class="pb-3 pr-4">Monto</th>
+                    <th class="pb-3 pr-4">Estado</th>
+                    <th class="pb-3 pr-4">Comprobante</th>
+                    <th class="pb-3 pr-4 whitespace-nowrap">N° Orden Flow</th>
+                    <th class="pb-3">Idioma</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/6">
+                  {donationsResult.rows.map((don) => {
+                    const st = STATUS_LABELS[don.status] ?? { label: don.status, color: "text-white/45 bg-white/5 border-white/12" };
+                    const isPaidNoReceipt = don.status === "paid" && !don.receipt_number;
+                    return (
+                      <tr class={isPaidNoReceipt ? "bg-red-400/4" : ""}>
+                        <td class="py-3 pr-4 whitespace-nowrap text-xs text-white/55">
+                          {formatAdminDateTime(don.created_at_ms)}
+                        </td>
+                        <td class="py-3 pr-4 font-medium text-white max-w-[140px] truncate" title={don.donor_name}>
+                          {don.donor_name}
+                        </td>
+                        <td class="py-3 pr-4 text-xs text-white/70 max-w-[160px] truncate" title={don.email}>
+                          {don.email}
+                        </td>
+                        <td class="py-3 pr-4 font-black text-white whitespace-nowrap">
+                          {fmtMoney(don.amount, don.currency)}
+                        </td>
+                        <td class="py-3 pr-4">
+                          <span class={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${st.color}`}>
+                            {st.label}
+                          </span>
+                        </td>
+                        <td class="py-3 pr-4">
+                          {don.receipt_number ? (
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-green-400/30 bg-green-400/10 px-2.5 py-0.5 text-[11px] font-semibold text-green-400">
+                              <svg aria-hidden="true" viewBox="0 0 16 16" class="h-3 w-3 fill-current"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                              {don.receipt_number}
+                            </span>
+                          ) : don.status === "paid" ? (
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-red-400/30 bg-red-400/10 px-2.5 py-0.5 text-[11px] font-semibold text-red-400">
+                              <svg aria-hidden="true" viewBox="0 0 16 16" class="h-3 w-3 fill-current"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/></svg>
+                              Ausente
+                            </span>
+                          ) : (
+                            <span class="text-xs text-white/25">—</span>
+                          )}
+                        </td>
+                        <td class="py-3 pr-4 text-xs font-mono text-white/55">
+                          {don.flow_order ?? "—"}
+                        </td>
+                        <td class="py-3 text-xs text-white/45 uppercase tracking-wide">
+                          {don.language}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Paginación de donaciones */}
+          {donationsResult && donationsResult.total_rows > dPageSize && (
+            <div class="mt-5 flex items-center gap-4">
+              {dPage > 1 && (
+                <a
+                  href={`/admin?d_period=${dPeriod}&d_page=${dPage - 1}${dSearch ? `&d_search=${encodeURIComponent(dSearch)}` : ""}${dDateFrom ? `&d_from=${dDateFrom}` : ""}${dDateTo ? `&d_to=${dDateTo}` : ""}`}
+                  class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  ← Anterior
+                </a>
+              )}
+              <span class="text-sm text-campaign-text-muted">
+                Página {dPage} · {donationsResult.total_rows} resultado{donationsResult.total_rows !== 1 ? "s" : ""}
+              </span>
+              {dPage * dPageSize < donationsResult.total_rows && (
+                <a
+                  href={`/admin?d_period=${dPeriod}&d_page=${dPage + 1}${dSearch ? `&d_search=${encodeURIComponent(dSearch)}` : ""}${dDateFrom ? `&d_from=${dDateFrom}` : ""}${dDateTo ? `&d_to=${dDateTo}` : ""}`}
+                  class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Siguiente →
+                </a>
+              )}
+            </div>
           )}
         </div>
 

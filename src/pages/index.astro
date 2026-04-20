@@ -3,6 +3,7 @@ import MainLayout from "../layouts/MainLayout.astro";
 import HeroSection from "../components/sections/HeroSection.astro";
 import ProblemSection from "../components/sections/ProblemSection.astro";
 import ConversionSection from "../components/sections/ConversionSection.astro";
+import DonationSection from "../components/sections/DonationSection.astro";
 import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import { campaignConfig } from "../content/campaign";
@@ -35,5 +36,6 @@ const knowledgeHighlights = campaignConfig.knowledgeHub.slice(0, 4);
       </div>
     </div>
   </Section>
+  {/* <DonationSection /> */}
   <ConversionSection />
 </MainLayout>

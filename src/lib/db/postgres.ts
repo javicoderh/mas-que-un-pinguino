@@ -215,6 +215,27 @@ async function createSchema(sql: Sql) {
       )
     `;
     await tx`create index if not exists foreign_signatures_created_idx on foreign_signatures (created_at_ms desc)`;
+
+    await tx`
+      create table if not exists donations (
+        id uuid primary key,
+        flow_order text,
+        flow_token text unique,
+        donor_name text not null,
+        email text not null,
+        amount integer not null,
+        currency text not null default 'CLP',
+        language text not null default 'es',
+        status text not null default 'pending',
+        receipt_number text,
+        paid_at_ms bigint,
+        created_at_ms bigint not null,
+        updated_at_ms bigint not null
+      )
+    `;
+    await tx`create index if not exists donations_status_created_idx on donations (status, created_at_ms desc)`;
+    await tx`alter table donations add column if not exists currency text not null default 'CLP'`;
+    await tx`alter table donations add column if not exists language text not null default 'es'`;
   });
 }
 
