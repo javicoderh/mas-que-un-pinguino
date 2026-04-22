@@ -59,6 +59,9 @@ const formToken = isConfigured ? await createFormToken("event_submit") : null;
     <div class="grid gap-5 md:grid-cols-2">
       <label class="grid gap-2 text-sm font-medium text-white">
         <span>URL de la imagen</span>
+        <span class="text-xs font-normal text-campaign-text-muted">
+          Necesitamos el enlace directo de una imagen que ya esté publicada en internet. Puedes subirla a Imgur, Google Drive (con enlace público), Postimages, Facebook o Instagram. Luego haz clic derecho sobre la imagen publicada y elige «Copiar dirección de la imagen», y pega ese enlace aquí.
+        </span>
         <input
           name="image_url"
           type="url"
