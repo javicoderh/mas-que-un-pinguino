@@ -315,6 +315,47 @@ export async function reviewEventSubmission(params: {
   ]);
 }
 
+export async function updateEventMedia(params: {
+  eventId: string;
+  imageUrl: string;
+  link: string;
+}) {
+  const now = Date.now();
+
+  if (isPostgresAvailable) {
+    await recordPostgresReadEvent("event_media_update");
+    const rows = await withPostgres((sql) => sql`
+      update event_submissions
+      set image_url = ${params.imageUrl},
+          link = ${params.link},
+          updated_at_ms = ${now}
+      where id = ${params.eventId}
+      returning id
+    `);
+    if (!rows[0]) throw new Error("event-not-found");
+    return;
+  }
+
+  const current = await getEventSubmission(params.eventId);
+  if (!current) {
+    throw new Error("event-not-found");
+  }
+
+  const { id: _id, ...documentData } = current;
+  return commitWrites([
+    encodeWrite(
+      `${securityConfig.collections.eventSubmissions}/${params.eventId}`,
+      {
+        ...documentData,
+        imageUrl: params.imageUrl,
+        link: params.link,
+        updatedAtMs: now
+      },
+      true
+    )
+  ]);
+}
+
 export async function deleteEventSubmission(params: {
   eventId: string;
 }) {
