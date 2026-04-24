@@ -315,19 +315,37 @@ export async function reviewEventSubmission(params: {
   ]);
 }
 
-export async function updateEventMedia(params: {
+export async function updateEvent(params: {
   eventId: string;
+  title: string;
+  description: string;
   imageUrl: string;
   link: string;
+  date: string;
+  time: string;
+  region: string;
+  regionKey: string;
+  venue: string;
+  organizerName: string;
+  organizerEmail: string;
 }) {
   const now = Date.now();
 
   if (isPostgresAvailable) {
-    await recordPostgresReadEvent("event_media_update");
+    await recordPostgresReadEvent("event_update");
     const rows = await withPostgres((sql) => sql`
       update event_submissions
-      set image_url = ${params.imageUrl},
+      set title = ${params.title},
+          description = ${params.description},
+          image_url = ${params.imageUrl},
           link = ${params.link},
+          date = ${params.date},
+          time = ${params.time},
+          region = ${params.region},
+          region_key = ${params.regionKey},
+          venue = ${params.venue},
+          organizer_name = ${params.organizerName},
+          organizer_email = ${params.organizerEmail},
           updated_at_ms = ${now}
       where id = ${params.eventId}
       returning id
@@ -337,9 +355,7 @@ export async function updateEventMedia(params: {
   }
 
   const current = await getEventSubmission(params.eventId);
-  if (!current) {
-    throw new Error("event-not-found");
-  }
+  if (!current) throw new Error("event-not-found");
 
   const { id: _id, ...documentData } = current;
   return commitWrites([
@@ -347,8 +363,17 @@ export async function updateEventMedia(params: {
       `${securityConfig.collections.eventSubmissions}/${params.eventId}`,
       {
         ...documentData,
+        title: params.title,
+        description: params.description,
         imageUrl: params.imageUrl,
         link: params.link,
+        date: params.date,
+        time: params.time,
+        region: params.region,
+        regionKey: params.regionKey,
+        venue: params.venue,
+        organizerName: params.organizerName,
+        organizerEmail: params.organizerEmail,
         updatedAtMs: now
       },
       true

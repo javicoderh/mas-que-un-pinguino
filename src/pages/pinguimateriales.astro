@@ -1,0 +1,255 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import familyImg from "../assets/family.png";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Pingüimateriales", path: "/pinguimateriales" }
+];
+
+const categories = [
+  {
+    id: "manualidades",
+    eyebrow: "Manualidades",
+    title: "Crea con tus manos",
+    description:
+      "Recortables, máscaras y origami para armar en familia. Imprime, recorta y aprende jugando sobre el pingüino de Humboldt y su mundo.",
+    color: "sky",
+    icon: "✂",
+    materials: [
+      {
+        title: "Origami pingüino",
+        description: "Instrucciones para crear un pingüino de papel paso a paso.",
+        fileHref: "/assets/pinguimateriales/origami-pinguino.jpg",
+        fileLabel: "Ver instrucciones",
+        type: "imagen",
+        tag: "Origami"
+      },
+      {
+        title: "Máscara pingüino de Humboldt",
+        description: "Máscara para pintar, recortar y armar. Preparada por Oikonos.",
+        fileHref: "/assets/pinguimateriales/mascara-pinguino-humboldt-oikonos.pdf",
+        fileLabel: "Descargar PDF",
+        type: "pdf",
+        tag: "Recortable"
+      },
+      {
+        title: "Recortable pingüino",
+        description: "Figura recortable del pingüino de Humboldt, preparada por ProDelphinus y Oikonos.",
+        fileHref: "/assets/pinguimateriales/recortable-pinguino-prodelphinus-oikonos.pdf",
+        fileLabel: "Descargar PDF",
+        type: "pdf",
+        tag: "Recortable"
+      }
+    ]
+  },
+  {
+    id: "actividades",
+    eyebrow: "Actividades",
+    title: "Explora y aprende",
+    description:
+      "Guías de actividades educativas para conocer mejor la especie, su hábitat y las razones detrás de la campaña.",
+    color: "warm",
+    icon: "◎",
+    materials: [
+      {
+        title: "Guía de actividades del pingüino de Humboldt",
+        description:
+          "Guía completa con actividades educativas sobre la biología, el ecosistema y la conservación del pingüino de Humboldt.",
+        fileHref: "/assets/pinguimateriales/guia-actividades-pinguino-humboldt.pdf",
+        fileLabel: "Descargar PDF",
+        type: "pdf",
+        tag: "Guía"
+      }
+    ]
+  },
+  {
+    id: "cuentos",
+    eyebrow: "Cuentos",
+    title: "Historias para compartir",
+    description:
+      "Lecturas para niños y familias que explican el mundo del pingüino de Humboldt desde la narrativa y la imaginación.",
+    color: "pink",
+    icon: "✦",
+    materials: [
+      {
+        title: "Cuento PAR — Explora Los Lagos",
+        description: "Cuento educativo del programa de acercamiento a la realidad (PAR) Explora Los Lagos sobre el pingüino de Humboldt.",
+        fileHref: "/assets/pinguimateriales/cuento-par-explora-los-lagos.pdf",
+        fileLabel: "Descargar PDF",
+        type: "pdf",
+        tag: "Cuento"
+      }
+    ]
+  }
+];
+
+const colorMap: Record<string, string> = {
+  sky: "text-campaign-sky",
+  warm: "text-campaign-warm",
+  pink: "text-campaign-pink"
+};
+
+const borderMap: Record<string, string> = {
+  sky: "border-campaign-sky/30",
+  warm: "border-campaign-warm/30",
+  pink: "border-campaign-pink/30"
+};
+
+const tagBgMap: Record<string, string> = {
+  sky: "bg-campaign-sky/12 text-campaign-sky",
+  warm: "bg-campaign-warm/12 text-campaign-warm",
+  pink: "bg-campaign-pink/12 text-campaign-pink"
+};
+---
+
+<MainLayout
+  path="/pinguimateriales"
+  title="Pingüimateriales | Material educativo y actividades familiares"
+  description="Descarga manualidades, guías de actividades y cuentos sobre el pingüino de Humboldt. Recursos gratuitos para que familias y comunidades aprendan y participen."
+  keywords={["material educativo pingüino de Humboldt", "manualidades pingüino", "actividades familias", "cuento pingüino", "origami pingüino"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="CollectionPage"
+>
+  <Section size="compact" class="!pt-4 !pb-2">
+    <Breadcrumbs items={breadcrumbItems} />
+    <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+      <SectionHeading
+        eyebrow="Pingüimateriales"
+        title="Material educativo y actividades para la familia"
+        body="Recursos gratuitos para explorar, crear y aprender sobre el pingüino de Humboldt desde casa, el aula o la comunidad. Descarga, imprime y comparte."
+        as="h1"
+      />
+      <img
+        src={familyImg.src}
+        alt="Familia participando en actividades sobre el pingüino de Humboldt"
+        class="hidden w-56 xl:w-64 lg:block"
+        width={familyImg.width}
+        height={familyImg.height}
+        loading="eager"
+        style="mask-image: radial-gradient(ellipse 90% 80% at 55% 48%, black 15%, transparent 52%); -webkit-mask-image: radial-gradient(ellipse 90% 80% at 55% 48%, black 15%, transparent 52%);"
+      />
+    </div>
+  </Section>
+
+  {/* Manualidades — 3 tarjetas */}
+  {(() => {
+    const cat = categories[0];
+    return (
+      <Section class="pt-0" id={cat.id}>
+        <div class="mb-5 flex items-center gap-4">
+          <span class={`text-2xl ${colorMap[cat.color]}`} aria-hidden="true">{cat.icon}</span>
+          <div>
+            <p class={`text-xs font-semibold uppercase tracking-[0.2em] ${colorMap[cat.color]}`}>{cat.eyebrow}</p>
+            <h2 class="text-xl font-bold text-white">{cat.title}</h2>
+          </div>
+        </div>
+        <p class="mb-6 max-w-2xl text-sm leading-7 text-campaign-text-muted">{cat.description}</p>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {cat.materials.map((material) => (
+            <article class={`surface-panel flex flex-col justify-between rounded-[1.75rem] border p-6 ${borderMap[cat.color]}`}>
+              <div>
+                <span class={`inline-block rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${tagBgMap[cat.color]}`}>
+                  {material.tag}
+                </span>
+                <h3 class="mt-4 text-lg font-bold leading-snug text-white">{material.title}</h3>
+                <p class="mt-3 text-sm leading-6 text-campaign-text-muted">{material.description}</p>
+              </div>
+              <a
+                href={material.fileHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={material.type === "pdf"}
+                data-analytics-event="file_download"
+                data-analytics-label={material.title}
+                data-analytics-context="pinguimateriales"
+                class={`mt-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold transition ${borderMap[cat.color]} ${colorMap[cat.color]} hover:bg-white/6`}
+              >
+                <svg aria-hidden="true" viewBox="0 0 20 20" class="h-4 w-4 fill-current">
+                  <path d="M10 2a.75.75 0 0 1 .75.75v8.69l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0L5.72 10.03a.75.75 0 1 1 1.06-1.06L9.25 11.44V2.75A.75.75 0 0 1 10 2ZM3.5 15a.75.75 0 0 1 .75.75v.5h11.5v-.5a.75.75 0 0 1 1.5 0v.5A1.75 1.75 0 0 1 15.5 18h-11A1.75 1.75 0 0 1 2.75 16.25v-.5A.75.75 0 0 1 3.5 15Z"/>
+                </svg>
+                {material.fileLabel}
+              </a>
+            </article>
+          ))}
+        </div>
+      </Section>
+    );
+  })()}
+
+  {/* Actividades + Cuentos — en la misma fila */}
+  <Section class="pt-0 pb-10" id="actividades-y-cuentos">
+    <div class="grid gap-4 lg:grid-cols-2">
+      {[categories[1], categories[2]].map((cat) => (
+        <div>
+          <div class="mb-5 flex items-center gap-3">
+            <span class={`text-2xl ${colorMap[cat.color]}`} aria-hidden="true">{cat.icon}</span>
+            <div>
+              <p class={`text-xs font-semibold uppercase tracking-[0.2em] ${colorMap[cat.color]}`}>{cat.eyebrow}</p>
+              <h2 class="text-xl font-bold text-white">{cat.title}</h2>
+            </div>
+          </div>
+          {cat.materials.map((material) => (
+            <article class={`surface-panel flex flex-col justify-between rounded-[1.75rem] border p-6 ${borderMap[cat.color]}`}>
+              <div>
+                <span class={`inline-block rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${tagBgMap[cat.color]}`}>
+                  {material.tag}
+                </span>
+                <h3 class="mt-4 text-lg font-bold leading-snug text-white">{material.title}</h3>
+                <p class="mt-3 text-sm leading-6 text-campaign-text-muted">{material.description}</p>
+              </div>
+              <a
+                href={material.fileHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={material.type === "pdf"}
+                data-analytics-event="file_download"
+                data-analytics-label={material.title}
+                data-analytics-context="pinguimateriales"
+                class={`mt-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold transition ${borderMap[cat.color]} ${colorMap[cat.color]} hover:bg-white/6`}
+              >
+                <svg aria-hidden="true" viewBox="0 0 20 20" class="h-4 w-4 fill-current">
+                  <path d="M10 2a.75.75 0 0 1 .75.75v8.69l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0L5.72 10.03a.75.75 0 1 1 1.06-1.06L9.25 11.44V2.75A.75.75 0 0 1 10 2ZM3.5 15a.75.75 0 0 1 .75.75v.5h11.5v-.5a.75.75 0 0 1 1.5 0v.5A1.75 1.75 0 0 1 15.5 18h-11A1.75 1.75 0 0 1 2.75 16.25v-.5A.75.75 0 0 1 3.5 15Z"/>
+                </svg>
+                {material.fileLabel}
+              </a>
+            </article>
+          ))}
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Section class="pt-0">
+    <div class="surface-panel rounded-[2rem] p-8 text-center">
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-campaign-warm">¿Tienes material?</p>
+      <h2 class="mt-3 text-2xl font-bold text-white">¿Quieres aportar recursos educativos?</h2>
+      <p class="mx-auto mt-4 max-w-xl text-base leading-7 text-campaign-text-muted">
+        Si tienes materiales educativos, manualidades o actividades relacionadas con el pingüino de Humboldt que quieras compartir con la comunidad, escríbenos.
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <a
+          href="/contacto"
+          data-analytics-event="cta_click"
+          data-analytics-label="Aportar material educativo"
+          data-analytics-context="pinguimateriales_footer"
+          class="focus-ring button-text-outline inline-flex rounded-full border border-black/40 bg-campaign-warm px-6 py-3 text-sm font-black uppercase tracking-[0.08em] text-black shadow-[0_12px_36px_rgba(255,162,0,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:brightness-110"
+        >
+          Contactar
+        </a>
+        <a
+          href="/firma"
+          data-analytics-event="cta_click"
+          data-analytics-label="Firmar desde materiales"
+          data-analytics-context="pinguimateriales_footer"
+          class="focus-ring button-text-outline inline-flex rounded-full border border-black/55 bg-campaign-sky px-6 py-3 text-sm font-black uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)] transition hover:border-black/65 hover:bg-[#63C6FF]"
+        >
+          Firmar la carta
+        </a>
+      </div>
+    </div>
+  </Section>
+</MainLayout>

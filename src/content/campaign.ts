@@ -196,6 +196,7 @@ export const campaignConfig = {
     { href: "/ciencia", label: "Ciencia" },
     { href: "/eventos", label: "Pingüieventos" },
     { href: "/noticias", label: "Pingüinoticias" },
+    { href: "/pinguimateriales", label: "Pingüimateriales" },
     { href: "/carta", label: "Carta" },
     { href: "/faq", label: "FAQ" },
     { href: "/firma", label: "Firma" },

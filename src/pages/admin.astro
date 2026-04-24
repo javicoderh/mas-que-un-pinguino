@@ -5,6 +5,7 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { getAdminSessionFromCookies } from "../lib/security/admin-auth";
 import { listApprovedEvents, listEventSubmissions } from "../lib/security/events-storage";
+import { chileRegions } from "../lib/events/chile-regions";
 import { listFlaggedSignatures } from "../lib/security/storage";
 import { listNews } from "../lib/security/news-storage";
 import { isSecurityConfigured, isServerStorageConfigured } from "../lib/security/config";
@@ -183,7 +184,7 @@ const PERIOD_LABELS: Record<string, string> = {
         )}
         {eventUpdate === "ok" && (
           <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/10 px-4 py-3 text-sm text-white">
-            La imagen y/o el enlace del evento se actualizaron correctamente.
+            El evento se actualizó correctamente.
           </p>
         )}
         {passwordChanged === "ok" && (
@@ -683,29 +684,107 @@ const PERIOD_LABELS: Record<string, string> = {
                   </p>
                   <form method="post" action="/api/admin/update-event" class="mt-5 grid gap-3">
                     <input type="hidden" name="event_id" value={event.id} />
-                    <label class="grid gap-2 text-sm font-medium text-white">
-                      <span>URL de la imagen</span>
-                      <input
-                        name="image_url"
-                        type="url"
-                        required
-                        value={event.imageUrl}
-                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                      />
-                    </label>
-                    <label class="grid gap-2 text-sm font-medium text-white">
-                      <span>Link del evento <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                      <input
-                        name="link"
-                        type="url"
-                        value={event.link}
-                        placeholder="https://..."
-                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-                      />
-                    </label>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                        <span>Título</span>
+                        <input
+                          name="title"
+                          required
+                          value={event.title}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                        <span>Descripción</span>
+                        <textarea
+                          name="description"
+                          rows="3"
+                          required
+                          class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        >{event.description}</textarea>
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white">
+                        <span>Fecha</span>
+                        <input
+                          name="date"
+                          type="date"
+                          required
+                          value={event.date}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white">
+                        <span>Hora</span>
+                        <input
+                          name="time"
+                          type="time"
+                          required
+                          value={event.time}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white">
+                        <span>Región</span>
+                        <select
+                          name="region"
+                          required
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-[#0E1722] px-4 py-3 text-white"
+                        >
+                          {chileRegions.map((r) => (
+                            <option value={r.name} selected={r.name === event.region}>{r.name}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white">
+                        <span>Lugar</span>
+                        <input
+                          name="venue"
+                          required
+                          value={event.venue}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                        <span>URL de la imagen</span>
+                        <input
+                          name="image_url"
+                          type="url"
+                          required
+                          value={event.imageUrl}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                        <span>Link <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                        <input
+                          name="link"
+                          type="url"
+                          value={event.link}
+                          placeholder="https://..."
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white">
+                        <span>Organizador <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                        <input
+                          name="organizer_name"
+                          value={event.organizerName}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                      <label class="grid gap-2 text-sm font-medium text-white">
+                        <span>Email organizador <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                        <input
+                          name="organizer_email"
+                          type="email"
+                          value={event.organizerEmail}
+                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                        />
+                      </label>
+                    </div>
                     <div>
                       <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
-                        Guardar imagen/enlace
+                        Guardar cambios
                       </button>
                     </div>
                   </form>
