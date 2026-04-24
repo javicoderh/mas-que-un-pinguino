@@ -5,6 +5,7 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { isServerStorageConfigured } from "../lib/security/config";
 import { listNews, type NewsRecord } from "../lib/security/news-storage";
+import logoSrc from "../assets/logo_pinguino_humboldt_circulo.png";
 
 const breadcrumbItems = [
   { name: "Inicio", path: "/" },
@@ -57,15 +58,10 @@ const formatDateTime = (value: number) =>
       <div class="grid gap-4">
         {updates.map((item) => (
           <article class="surface-panel rounded-[1.75rem] p-6">
-            {item.imageUrl && (
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                class="mb-5 w-full rounded-2xl object-cover"
-                style="max-height: 320px;"
-                loading="lazy"
-              />
-            )}
+            <div class="news-logo-banner mb-5">
+              <img src={logoSrc.src} alt="Logo pingüino de Humboldt" class="news-logo-img" />
+              <span class="campaign-hashtag">#esmásqueunpingüino</span>
+            </div>
             <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-warm">
               {formatDateTime(item.createdAtMs)}
             </p>

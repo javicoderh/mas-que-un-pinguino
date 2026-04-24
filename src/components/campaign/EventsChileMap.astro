@@ -1,5 +1,6 @@
 ---
 import { chileRegions, chileRegionByKey, normalizeRegionKey } from "../../lib/events/chile-regions";
+import logoSrc from "../../assets/logo_pinguino_humboldt_circulo.png";
 
 interface EventMarker {
   id: string;
@@ -184,7 +185,10 @@ const regionCounts = Object.fromEntries(
   <div class="event-modal-backdrop" data-event-close></div>
   <div class="event-modal-card surface-panel">
     <button type="button" class="event-modal-close focus-ring" data-event-close aria-label="Cerrar detalle del evento">×</button>
-    <img src="" alt="" class="event-modal-image" data-event-image />
+    <div class="event-modal-image">
+      <img src={logoSrc.src} alt="Logo pingüino de Humboldt" class="event-modal-logo" />
+      <span class="campaign-hashtag">#esmásqueunpingüino</span>
+    </div>
     <div class="event-modal-body">
       <p class="text-xs font-semibold uppercase tracking-[0.18em] text-campaign-warm" data-event-region></p>
       <h3 class="mt-2 text-2xl font-black text-white" data-event-title></h3>
@@ -209,7 +213,6 @@ const regionCounts = Object.fromEntries(
 <script is:inline>
   const events = JSON.parse(document.querySelector("[data-events-json]")?.textContent || "[]");
   const modal = document.querySelector("[data-event-modal]");
-  const image = document.querySelector("[data-event-image]");
   const region = document.querySelector("[data-event-region]");
   const title = document.querySelector("[data-event-title]");
   const meta = document.querySelector("[data-event-meta]");
@@ -220,10 +223,6 @@ const regionCounts = Object.fromEntries(
     const event = events.find((item) => item.id === eventId);
     if (!event || !(modal instanceof HTMLElement)) return;
 
-    if (image instanceof HTMLImageElement) {
-      image.src = event.imageUrl;
-      image.alt = event.title;
-    }
     if (region instanceof HTMLElement) region.textContent = event.regionName;
     if (title instanceof HTMLElement) title.textContent = event.title;
     if (meta instanceof HTMLElement) meta.textContent = `${event.date} · ${event.time} · ${event.venue}`;
