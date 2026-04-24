@@ -188,6 +188,7 @@ const regionCounts = Object.fromEntries(
     <div class="event-modal-image">
       <img src={logoSrc.src} alt="Logo pingüino de Humboldt" class="event-modal-logo" />
       <span class="campaign-hashtag">#esmásqueunpingüino</span>
+      <img src="" alt="" class="event-modal-real-img" data-event-image />
     </div>
     <div class="event-modal-body">
       <p class="text-xs font-semibold uppercase tracking-[0.18em] text-campaign-warm" data-event-region></p>
@@ -218,6 +219,7 @@ const regionCounts = Object.fromEntries(
   const meta = document.querySelector("[data-event-meta]");
   const description = document.querySelector("[data-event-description]");
   const linkEl = document.querySelector("[data-event-link]");
+  const imageEl = document.querySelector("[data-event-image]");
 
   const openEvent = (eventId) => {
     const event = events.find((item) => item.id === eventId);
@@ -227,6 +229,21 @@ const regionCounts = Object.fromEntries(
     if (title instanceof HTMLElement) title.textContent = event.title;
     if (meta instanceof HTMLElement) meta.textContent = `${event.date} · ${event.time} · ${event.venue}`;
     if (description instanceof HTMLElement) description.textContent = event.description;
+
+    if (imageEl instanceof HTMLImageElement) {
+      imageEl.classList.remove("is-loaded");
+      imageEl.src = "";
+      if (event.imageUrl) {
+        imageEl.src = event.imageUrl;
+        imageEl.alt = event.title;
+        imageEl.onload = () => imageEl.classList.add("is-loaded");
+        imageEl.onerror = () => {
+          imageEl.classList.remove("is-loaded");
+          imageEl.src = "";
+        };
+      }
+    }
+
     if (linkEl instanceof HTMLAnchorElement) {
       if (event.link) {
         linkEl.href = event.link;
@@ -247,6 +264,10 @@ const regionCounts = Object.fromEntries(
     if (!(modal instanceof HTMLElement)) return;
     modal.classList.add("hidden");
     document.body.style.overflow = "";
+    if (imageEl instanceof HTMLImageElement) {
+      imageEl.classList.remove("is-loaded");
+      imageEl.src = "";
+    }
     if (linkEl instanceof HTMLAnchorElement) {
       linkEl.href = "";
       linkEl.classList.add("hidden");

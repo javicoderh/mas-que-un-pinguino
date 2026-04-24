@@ -11,6 +11,7 @@ import { listNews } from "../lib/security/news-storage";
 import { isSecurityConfigured, isServerStorageConfigured } from "../lib/security/config";
 import { listDonations } from "../lib/db/donations-queries";
 import { isPostgresAvailable } from "../lib/db/postgres";
+import ImageUploadField from "../components/ui/ImageUploadField.astro";
 
 export const prerender = false;
 
@@ -424,150 +425,179 @@ const PERIOD_LABELS: Record<string, string> = {
 
         {/* Pingüinoticias */}
         <div class="surface-panel rounded-[1.75rem] p-6">
-          <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Pingüinoticias</p>
-              <h2 class="mt-3 text-2xl font-black text-white">Crear nueva publicación</h2>
-              <p class="mt-4 text-sm leading-7 text-campaign-text-muted">
-                Cada noticia guarda automáticamente su fecha y hora de ingreso. La preferencia se inicializa en `0` y luego puede editarse desde la tabla.
-              </p>
+              <h2 class="mt-2 text-2xl font-black text-white">{newsItems.length} publicación{newsItems.length !== 1 ? "es" : ""}</h2>
+            </div>
+            <button
+              type="button"
+              class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]"
+              onclick="document.getElementById('news-modal-create').classList.remove('hidden')"
+            >
+              + Nueva Pingüinoticia
+            </button>
+          </div>
+
+          {newsItems.length > 0 ? (
+            <ul class="divide-y divide-white/8">
+              {newsItems.map((item) => (
+                <li>
+                  <button
+                    type="button"
+                    class="focus-ring flex w-full items-center justify-between gap-4 rounded-xl px-3 py-4 text-left transition hover:bg-white/5"
+                    onclick={`document.getElementById('news-modal-${item.id}').classList.remove('hidden')`}
+                  >
+                    <div class="min-w-0">
+                      <p class="truncate font-semibold text-white">{item.title}</p>
+                      <p class="mt-0.5 text-xs text-campaign-text-muted">{formatAdminDateTime(item.createdAtMs)}</p>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0 text-white/35" aria-hidden="true">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-sm text-campaign-text-muted">Todavía no hay Pingüinoticias registradas.</p>
+          )}
+        </div>
+
+        {/* Modal crear noticia */}
+        <div id="news-modal-create" class="hidden fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true">
+          <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="document.getElementById('news-modal-create').classList.add('hidden')"></div>
+          <div class="surface-panel relative z-10 w-full max-w-xl overflow-y-auto max-h-[90vh] rounded-[1.75rem] p-6">
+            <div class="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-sky">Nueva</p>
+                <h3 class="mt-1 text-lg font-black text-white">Crear Pingüinoticia</h3>
+              </div>
+              <button type="button" class="focus-ring shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-white/18 bg-white/8 text-white transition hover:bg-white/14" onclick="document.getElementById('news-modal-create').classList.add('hidden')" aria-label="Cerrar">×</button>
             </div>
             <form method="post" action="/api/admin/create-news" class="grid gap-4">
               <label class="grid gap-2 text-sm font-medium text-white">
                 <span>Título</span>
-                <input
-                  name="title"
-                  required
-                  class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                />
+                <input name="title" required class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
               </label>
               <label class="grid gap-2 text-sm font-medium text-white">
                 <span>Contenido</span>
-                <textarea
-                  name="body"
-                  rows="5"
-                  required
-                  class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                ></textarea>
+                <textarea name="body" rows="4" required class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"></textarea>
               </label>
               <label class="grid gap-2 text-sm font-medium text-white">
                 <span>Enlace <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                <input
-                  name="link"
-                  type="url"
-                  placeholder="https://..."
-                  class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-                />
+                <input name="link" type="url" placeholder="https://..." class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted" />
               </label>
-              <label class="grid gap-2 text-sm font-medium text-white">
-                <span>URL de imagen <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                <input
-                  name="image_url"
-                  type="url"
-                  placeholder="https://..."
-                  class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-                />
-              </label>
-              <div>
+              <ImageUploadField name="image_url" uploadEndpoint="/api/admin/upload-image" label="Imagen" />
+              <div class="flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
                 <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
                   Crear Pingüinoticia
+                </button>
+                <button type="button" class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10" onclick="document.getElementById('news-modal-create').classList.add('hidden')">
+                  Cancelar
                 </button>
               </div>
             </form>
           </div>
         </div>
 
-        <div class="surface-panel rounded-[1.75rem] p-6">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Tabla de noticias</p>
-              <h2 class="mt-2 text-2xl font-black text-white">CRUD de Pingüinoticias</h2>
-            </div>
-            <p class="max-w-xl text-sm leading-6 text-campaign-text-muted">
-              El orden público se mantiene por fecha y hora de ingreso. La columna `preferencia` es editable para gestión interna.
-            </p>
-          </div>
-
-          <div class="mt-6 grid gap-4">
-            {newsItems.length > 0 ? (
-              newsItems.map((item) => (
-                <article class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5">
-                  <form method="post" action="/api/admin/update-news" class="grid gap-4">
-                    <input type="hidden" name="news_id" value={item.id} />
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">
-                        Ingresada: {formatAdminDateTime(item.createdAtMs)}
-                      </p>
-                      <label class="flex items-center gap-3 text-sm font-medium text-white">
-                        <span>Preferencia</span>
-                        <input
-                          type="number"
-                          name="preference"
-                          min="0"
-                          value={item.preference}
-                          class="focus-ring w-24 rounded-2xl border border-white/14 bg-white/6 px-3 py-2 text-white"
-                        />
-                      </label>
-                    </div>
-                    <label class="grid gap-2 text-sm font-medium text-white">
-                      <span>Título</span>
-                      <input
-                        name="title"
-                        required
-                        value={item.title}
-                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                      />
-                    </label>
-                    <label class="grid gap-2 text-sm font-medium text-white">
-                      <span>Contenido</span>
-                      <textarea
-                        name="body"
-                        rows="5"
-                        required
-                        class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                      >{item.body}</textarea>
-                    </label>
-                    <label class="grid gap-2 text-sm font-medium text-white">
-                      <span>Enlace <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                      <input
-                        name="link"
-                        type="url"
-                        value={item.link}
-                        placeholder="https://..."
-                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-                      />
-                    </label>
-                    <label class="grid gap-2 text-sm font-medium text-white">
-                      <span>URL de imagen <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                      <input
-                        name="image_url"
-                        type="url"
-                        value={item.imageUrl}
-                        placeholder="https://..."
-                        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-                      />
-                    </label>
-                    <div class="flex flex-wrap gap-3">
-                      <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
-                        Guardar cambios
-                      </button>
-                    </div>
-                  </form>
-                  <form method="post" action="/api/admin/delete-news" class="mt-3">
-                    <input type="hidden" name="news_id" value={item.id} />
-                    <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
-                      Borrar Pingüinoticia
-                    </button>
-                  </form>
-                </article>
-              ))
-            ) : (
-              <div class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5">
-                <p class="text-base leading-7 text-campaign-text-muted">Todavía no hay Pingüinoticias registradas.</p>
+        {/* Modales de edición de noticias */}
+        {newsItems.map((item) => (
+          <div
+            id={`news-modal-${item.id}`}
+            class="hidden fixed inset-0 z-50 grid place-items-center p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              onclick={`document.getElementById('news-modal-${item.id}').classList.add('hidden')`}
+            ></div>
+            <div class="surface-panel relative z-10 w-full max-w-xl overflow-y-auto max-h-[90vh] rounded-[1.75rem] p-6">
+              <div class="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">
+                    {formatAdminDateTime(item.createdAtMs)}
+                  </p>
+                  <h3 class="mt-1 text-lg font-black text-white">{item.title}</h3>
+                </div>
+                <button
+                  type="button"
+                  class="focus-ring shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-white/18 bg-white/8 text-white transition hover:bg-white/14"
+                  onclick={`document.getElementById('news-modal-${item.id}').classList.add('hidden')`}
+                  aria-label="Cerrar"
+                >×</button>
               </div>
-            )}
+
+              <form method="post" action="/api/admin/update-news" class="grid gap-4">
+                <input type="hidden" name="news_id" value={item.id} />
+                <label class="flex items-center gap-3 text-sm font-medium text-white">
+                  <span>Preferencia</span>
+                  <input
+                    type="number"
+                    name="preference"
+                    min="0"
+                    value={item.preference}
+                    class="focus-ring w-24 rounded-2xl border border-white/14 bg-white/6 px-3 py-2 text-white"
+                  />
+                </label>
+                <label class="grid gap-2 text-sm font-medium text-white">
+                  <span>Título</span>
+                  <input
+                    name="title"
+                    required
+                    value={item.title}
+                    class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                  />
+                </label>
+                <label class="grid gap-2 text-sm font-medium text-white">
+                  <span>Contenido</span>
+                  <textarea
+                    name="body"
+                    rows="4"
+                    required
+                    class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+                  >{item.body}</textarea>
+                </label>
+                <label class="grid gap-2 text-sm font-medium text-white">
+                  <span>Enlace <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                  <input
+                    name="link"
+                    type="url"
+                    value={item.link}
+                    placeholder="https://..."
+                    class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+                  />
+                </label>
+                <ImageUploadField
+                  name="image_url"
+                  uploadEndpoint="/api/admin/upload-image"
+                  currentUrl={item.imageUrl}
+                  label="Imagen"
+                />
+                <div class="flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+                  <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
+                    Guardar cambios
+                  </button>
+                  <button
+                    type="button"
+                    class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    onclick={`document.getElementById('news-modal-${item.id}').classList.add('hidden')`}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+
+              <form method="post" action="/api/admin/delete-news" class="mt-3 border-t border-white/8 pt-3">
+                <input type="hidden" name="news_id" value={item.id} />
+                <button type="submit" class="focus-ring rounded-full border border-red-400/30 bg-red-400/10 px-5 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-400/18">
+                  Eliminar Pingüinoticia
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
+        ))}
 
         {/* Firmas pendientes de revisión */}
         {flaggedSignatures.length > 0 && (
@@ -621,188 +651,188 @@ const PERIOD_LABELS: Record<string, string> = {
           </div>
         )}
 
-        <div class="grid gap-8 xl:grid-cols-[1fr_1fr]">
-          <div class="space-y-4">
-            <h2 class="text-2xl font-black text-white">Pendientes y marcadas</h2>
-            {[...pendingEvents, ...flaggedEvents].length > 0 ? (
-              [...pendingEvents, ...flaggedEvents].map((event) => (
-                <article class="surface-panel rounded-[1.75rem] p-5">
-                  <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">
-                        {event.status === "flagged" ? "Revisión reforzada" : "Pendiente"}
-                      </p>
-                      <h3 class="mt-2 text-xl font-bold text-white">{event.title}</h3>
-                      <p class="mt-2 text-sm leading-6 text-campaign-text-muted">
-                        {event.region} · {event.date} · {event.time}
-                      </p>
-                      <p class="mt-1 text-sm leading-6 text-campaign-text-muted">{event.venue}</p>
-                    </div>
-                    <img src={event.imageUrl} alt={event.title} class="h-20 w-28 rounded-2xl object-cover" />
+        {/* Pendientes y marcadas */}
+        <div class="space-y-4">
+          <h2 class="text-2xl font-black text-white">Pendientes y marcadas</h2>
+          {[...pendingEvents, ...flaggedEvents].length > 0 ? (
+            [...pendingEvents, ...flaggedEvents].map((event) => (
+              <article class="surface-panel rounded-[1.75rem] p-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">
+                      {event.status === "flagged" ? "Revisión reforzada" : "Pendiente"}
+                    </p>
+                    <h3 class="mt-2 text-xl font-bold text-white">{event.title}</h3>
+                    <p class="mt-2 text-sm leading-6 text-campaign-text-muted">
+                      {event.region} · {event.date} · {event.time}
+                    </p>
+                    <p class="mt-1 text-sm leading-6 text-campaign-text-muted">{event.venue}</p>
                   </div>
-                  <p class="mt-4 text-sm leading-7 text-campaign-text-muted">{event.description}</p>
-                  <div class="mt-5 flex flex-wrap gap-3">
-                    <form method="post" action="/api/admin/review-event">
-                      <input type="hidden" name="event_id" value={event.id} />
-                      <input type="hidden" name="decision" value="approved" />
-                      <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
-                        Aprobar
-                      </button>
-                    </form>
-                    <form method="post" action="/api/admin/review-event">
-                      <input type="hidden" name="event_id" value={event.id} />
-                      <input type="hidden" name="decision" value="rejected" />
-                      <button type="submit" class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                        Rechazar
-                      </button>
-                    </form>
-                    <form method="post" action="/api/admin/delete-event">
-                      <input type="hidden" name="event_id" value={event.id} />
-                      <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
-                        Borrar
-                      </button>
-                    </form>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div class="surface-panel rounded-[1.75rem] p-6">
-                <p class="text-base leading-7 text-campaign-text-muted">No hay propuestas pendientes por ahora.</p>
-              </div>
-            )}
-          </div>
-
-          <div class="space-y-4">
-            <h2 class="text-2xl font-black text-white">Eventos aprobados</h2>
-            {approvedEvents.length > 0 ? (
-              approvedEvents.map((event) => (
-                <article class="surface-panel rounded-[1.75rem] p-5">
-                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-sky">{event.region}</p>
-                  <h3 class="mt-2 text-xl font-bold text-white">{event.title}</h3>
-                  <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
-                    {event.date} · {event.time} · {event.venue}
-                  </p>
-                  <form method="post" action="/api/admin/update-event" class="mt-5 grid gap-3">
+                  <img src={event.imageUrl} alt={event.title} class="h-20 w-28 rounded-2xl object-cover" />
+                </div>
+                <p class="mt-4 text-sm leading-7 text-campaign-text-muted">{event.description}</p>
+                <div class="mt-5 flex flex-wrap gap-3">
+                  <form method="post" action="/api/admin/review-event">
                     <input type="hidden" name="event_id" value={event.id} />
-                    <div class="grid gap-3 sm:grid-cols-2">
-                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
-                        <span>Título</span>
-                        <input
-                          name="title"
-                          required
-                          value={event.title}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
-                        <span>Descripción</span>
-                        <textarea
-                          name="description"
-                          rows="3"
-                          required
-                          class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        >{event.description}</textarea>
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white">
-                        <span>Fecha</span>
-                        <input
-                          name="date"
-                          type="date"
-                          required
-                          value={event.date}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white">
-                        <span>Hora</span>
-                        <input
-                          name="time"
-                          type="time"
-                          required
-                          value={event.time}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white">
-                        <span>Región</span>
-                        <select
-                          name="region"
-                          required
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-[#0E1722] px-4 py-3 text-white"
-                        >
-                          {chileRegions.map((r) => (
-                            <option value={r.name} selected={r.name === event.region}>{r.name}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white">
-                        <span>Lugar</span>
-                        <input
-                          name="venue"
-                          required
-                          value={event.venue}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
-                        <span>URL de la imagen</span>
-                        <input
-                          name="image_url"
-                          type="url"
-                          required
-                          value={event.imageUrl}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
-                        <span>Link <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                        <input
-                          name="link"
-                          type="url"
-                          value={event.link}
-                          placeholder="https://..."
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white">
-                        <span>Organizador <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                        <input
-                          name="organizer_name"
-                          value={event.organizerName}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                      <label class="grid gap-2 text-sm font-medium text-white">
-                        <span>Email organizador <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
-                        <input
-                          name="organizer_email"
-                          type="email"
-                          value={event.organizerEmail}
-                          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
-                        />
-                      </label>
-                    </div>
-                    <div>
-                      <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
-                        Guardar cambios
-                      </button>
-                    </div>
-                  </form>
-                  <form method="post" action="/api/admin/delete-event" class="mt-3">
-                    <input type="hidden" name="event_id" value={event.id} />
-                    <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
-                      Borrar evento
+                    <input type="hidden" name="decision" value="approved" />
+                    <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
+                      Aprobar
                     </button>
                   </form>
-                </article>
-              ))
-            ) : (
-              <div class="surface-panel rounded-[1.75rem] p-6">
-                <p class="text-base leading-7 text-campaign-text-muted">Todavía no hay eventos aprobados en el mapa.</p>
-              </div>
-            )}
-          </div>
+                  <form method="post" action="/api/admin/review-event">
+                    <input type="hidden" name="event_id" value={event.id} />
+                    <input type="hidden" name="decision" value="rejected" />
+                    <button type="submit" class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                      Rechazar
+                    </button>
+                  </form>
+                  <form method="post" action="/api/admin/delete-event">
+                    <input type="hidden" name="event_id" value={event.id} />
+                    <button type="submit" class="focus-ring rounded-full border border-campaign-sky/30 bg-campaign-sky/10 px-5 py-3 text-sm font-semibold text-campaign-sky transition hover:bg-campaign-sky/18">
+                      Borrar
+                    </button>
+                  </form>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div class="surface-panel rounded-[1.75rem] p-6">
+              <p class="text-base leading-7 text-campaign-text-muted">No hay propuestas pendientes por ahora.</p>
+            </div>
+          )}
         </div>
+
+        {/* Eventos aprobados - lista compacta */}
+        <div class="surface-panel rounded-[1.75rem] p-6">
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Eventos aprobados</p>
+              <h2 class="mt-2 text-2xl font-black text-white">{approvedEvents.length} evento{approvedEvents.length !== 1 ? "s" : ""} en el mapa</h2>
+            </div>
+            <p class="text-sm text-campaign-text-muted">Haz clic en uno para editarlo.</p>
+          </div>
+
+          {approvedEvents.length > 0 ? (
+            <ul class="divide-y divide-white/8">
+              {approvedEvents.map((event) => (
+                <li>
+                  <button
+                    type="button"
+                    class="focus-ring flex w-full items-center justify-between gap-4 rounded-xl px-3 py-4 text-left transition hover:bg-white/5"
+                    onclick={`document.getElementById('event-modal-${event.id}').classList.remove('hidden')`}
+                  >
+                    <div class="min-w-0">
+                      <p class="truncate font-semibold text-white">{event.title}</p>
+                      <p class="mt-0.5 text-xs text-campaign-text-muted">{event.region} · {event.date} · {event.venue}</p>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 shrink-0 text-white/35" aria-hidden="true">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-sm text-campaign-text-muted">Todavía no hay eventos aprobados en el mapa.</p>
+          )}
+        </div>
+
+        {/* Modales de edición de eventos aprobados */}
+        {approvedEvents.map((event) => (
+          <div
+            id={`event-modal-${event.id}`}
+            class="hidden fixed inset-0 z-50 grid place-items-center p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              onclick={`document.getElementById('event-modal-${event.id}').classList.add('hidden')`}
+            ></div>
+            <div class="surface-panel relative z-10 w-full max-w-2xl overflow-y-auto max-h-[90vh] rounded-[1.75rem] p-6">
+              <div class="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-sky">{event.region}</p>
+                  <h3 class="mt-1 text-lg font-black text-white">{event.title}</h3>
+                </div>
+                <button
+                  type="button"
+                  class="focus-ring shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-white/18 bg-white/8 text-white transition hover:bg-white/14"
+                  onclick={`document.getElementById('event-modal-${event.id}').classList.add('hidden')`}
+                  aria-label="Cerrar"
+                >×</button>
+              </div>
+
+              <form method="post" action="/api/admin/update-event" class="grid gap-4">
+                <input type="hidden" name="event_id" value={event.id} />
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                    <span>Título</span>
+                    <input name="title" required value={event.title} class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                    <span>Descripción</span>
+                    <textarea name="description" rows="3" required class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white">{event.description}</textarea>
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white">
+                    <span>Fecha</span>
+                    <input name="date" type="date" required value={event.date} class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white">
+                    <span>Hora</span>
+                    <input name="time" type="time" required value={event.time} class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white">
+                    <span>Región</span>
+                    <select name="region" required class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-[#0E1722] px-4 py-3 text-white">
+                      {chileRegions.map((r) => (
+                        <option value={r.name} selected={r.name === event.region}>{r.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white">
+                    <span>Lugar</span>
+                    <input name="venue" required value={event.venue} class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
+                  </label>
+                  <div class="sm:col-span-2">
+                    <ImageUploadField name="image_url" uploadEndpoint="/api/admin/upload-image" currentUrl={event.imageUrl} required={true} label="Imagen" />
+                  </div>
+                  <label class="grid gap-2 text-sm font-medium text-white sm:col-span-2">
+                    <span>Link <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                    <input name="link" type="url" value={event.link} placeholder="https://..." class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted" />
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white">
+                    <span>Organizador <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                    <input name="organizer_name" value={event.organizerName} class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
+                  </label>
+                  <label class="grid gap-2 text-sm font-medium text-white">
+                    <span>Email organizador <span class="text-campaign-text-muted font-normal">(opcional)</span></span>
+                    <input name="organizer_email" type="email" value={event.organizerEmail} class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white" />
+                  </label>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+                  <button type="submit" class="focus-ring rounded-full border border-black/45 bg-campaign-warm px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-black transition hover:bg-[#FFF1A8]">
+                    Guardar cambios
+                  </button>
+                  <button
+                    type="button"
+                    class="focus-ring rounded-full border border-white/16 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    onclick={`document.getElementById('event-modal-${event.id}').classList.add('hidden')`}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+
+              <form method="post" action="/api/admin/delete-event" class="mt-3 border-t border-white/8 pt-3">
+                <input type="hidden" name="event_id" value={event.id} />
+                <button type="submit" class="focus-ring rounded-full border border-red-400/30 bg-red-400/10 px-5 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-400/18">
+                  Eliminar evento
+                </button>
+              </form>
+            </div>
+          </div>
+        ))}
 
         {/* Cambiar contraseña */}
         <details class="surface-panel rounded-[1.75rem] p-6">
@@ -834,3 +864,12 @@ const PERIOD_LABELS: Record<string, string> = {
     )}
   </Section>
 </MainLayout>
+
+<script is:inline>
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll("[id^='news-modal-'], [id^='event-modal-']").forEach((modal) => {
+      modal.classList.add("hidden");
+    });
+  });
+</script>
