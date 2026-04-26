@@ -1,0 +1,72 @@
+---
+import { campaignConfig } from "../../content/campaign";
+
+const contactEmail = campaignConfig.site.contactEmail;
+---
+
+<div class="relative overflow-hidden border-y border-white/8 bg-[#0a1420]">
+  <!-- Gradiente de acento izquierdo -->
+  <div
+    class="pointer-events-none absolute inset-y-0 left-0 w-1 bg-campaign-warm"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Brillo ambiental sutil -->
+  <div
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_0%_50%,rgba(232,207,99,0.07),transparent_55%)]"
+    aria-hidden="true"
+  ></div>
+
+  <div class="relative mx-auto max-w-6xl px-6 py-8 sm:px-10 lg:px-12">
+    <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+
+      <!-- Contenido principal -->
+      <div>
+        <div class="flex items-center gap-3">
+          <span
+            class="inline-flex items-center rounded-full border border-campaign-warm/30 bg-campaign-warm/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-campaign-warm"
+          >
+            Actualización
+          </span>
+          <span class="hidden h-px flex-1 bg-white/8 sm:block" aria-hidden="true"></span>
+        </div>
+
+        <h2 class="mt-4 text-2xl font-bold leading-snug text-white sm:text-3xl">
+          La campaña se extiende hasta el&nbsp;<span class="text-campaign-warm">31 de mayo</span>
+        </h2>
+
+        <p class="mt-3 max-w-2xl text-base leading-7 text-campaign-text-muted">
+          Gracias a la respuesta de miles de personas, hemos decidido extender el plazo de
+          recolección de firmas para dar a más chilenas y chilenos la oportunidad de sumarse
+          y acompañar desde la ciudadanía la protección del pingüino de Humboldt.
+        </p>
+
+        <!-- Opt-out: presente pero visualmente neutro -->
+        <p class="mt-5 text-xs leading-5 text-white/30">
+          Si firmaste anteriormente y no deseas que tu firma se mantenga en esta extensión,
+          puedes solicitarlo escribiendo a
+          <a
+            href={`mailto:${contactEmail}?subject=Solicitud%20de%20retiro%20de%20firma`}
+            class="underline decoration-white/20 underline-offset-2 transition hover:text-white/50"
+          >{contactEmail}</a>
+          indicando tu nombre completo y RUT.
+        </p>
+      </div>
+
+      <!-- CTA -->
+      <div class="flex flex-col items-start gap-3 lg:items-end">
+        <a
+          href="/firma"
+          class="inline-flex items-center gap-2 rounded-full bg-campaign-warm px-6 py-3 text-sm font-bold text-black shadow-[0_0_24px_rgba(232,207,99,0.25)] transition hover:brightness-110 active:scale-95"
+        >
+          Firmar ahora
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <p class="text-xs text-white/30">Cierra el 31 de mayo de 2026</p>
+      </div>
+
+    </div>
+  </div>
+</div>
