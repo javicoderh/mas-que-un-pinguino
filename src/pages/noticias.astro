@@ -5,6 +5,7 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import { isServerStorageConfigured } from "../lib/security/config";
 import { listNews, type NewsRecord } from "../lib/security/news-storage";
+import { campaignConfig } from "../content/campaign";
 import logoSrc from "../assets/logo_pinguino_humboldt_circulo.png";
 
 const breadcrumbItems = [
@@ -27,6 +28,31 @@ if (isServerStorageConfigured) {
 // Cache at CDN/Edge for 5 minutes; revalidates in background
 Astro.response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=60");
 
+const noticiasSchema = updates.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Pingüinoticias — actualizaciones de la campaña Es más que un pingüino",
+  description: "Hitos y novedades de la campaña ciudadana por el pingüino de Humboldt.",
+  numberOfItems: updates.length,
+  itemListElement: updates.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "NewsArticle",
+      headline: item.title,
+      description: item.body,
+      datePublished: new Date(item.createdAtMs).toISOString(),
+      publisher: {
+        "@type": "Organization",
+        name: campaignConfig.site.name,
+        url: campaignConfig.site.siteUrl
+      },
+      ...(item.link ? { url: item.link } : {}),
+      ...(item.imageUrl ? { image: item.imageUrl } : {})
+    }
+  }))
+} : undefined;
+
 const formatDateTime = (value: number) =>
   new Intl.DateTimeFormat("es-CL", {
     dateStyle: "long",
@@ -42,6 +68,8 @@ const formatDateTime = (value: number) =>
   keywords={["noticias pingüino de Humboldt", "actualizaciones campaña", "novedades sitio", "conservación marina"]}
   breadcrumbItems={breadcrumbItems}
   pageType="CollectionPage"
+  schema={noticiasSchema}
+  socialImageAlt="Pingüinoticias — actualizaciones y hitos de la campaña ciudadana por el pingüino de Humboldt"
 >
   <Section size="compact">
     <Breadcrumbs items={breadcrumbItems} />

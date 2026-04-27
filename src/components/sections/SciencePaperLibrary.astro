@@ -351,6 +351,7 @@ const englishCount = sciencePapers.filter((paper) => paper.language === "Inglés
       if (!activePaper) return;
       trackPaperEvent(sciencePaperDocumentOpenEventName, activePaper, {
         interaction_surface: "science_page_modal",
+        link_context: "ciencia",
         link_url: activePaper.url,
         link_text: "Abrir PDF"
       });
@@ -362,6 +363,7 @@ const englishCount = sciencePapers.filter((paper) => paper.language === "Inglés
       if (!activePaper) return;
       trackPaperEvent(sciencePaperFileDownloadEventName, activePaper, {
         interaction_surface: "science_page_modal",
+        link_context: "ciencia",
         link_url: activePaper.url,
         link_text: "Descargar PDF"
       });

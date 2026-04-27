@@ -4,6 +4,7 @@ import Section from "../components/ui/Section.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
 import familyImg from "../assets/family.png";
+import { campaignConfig } from "../content/campaign";
 
 const breadcrumbItems = [
   { name: "Inicio", path: "/" },
@@ -87,6 +88,28 @@ const categories = [
   }
 ];
 
+const totalMaterials = categories.reduce((sum, cat) => sum + cat.materials.length, 0);
+
+const materialesSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Pingüimateriales — recursos educativos sobre el pingüino de Humboldt",
+  description: "Manualidades, guías de actividades y cuentos gratuitos sobre el pingüino de Humboldt para familias y comunidades.",
+  numberOfItems: totalMaterials,
+  itemListElement: categories.flatMap((cat, catIdx) =>
+    cat.materials.map((material, matIdx) => ({
+      "@type": "ListItem",
+      position: catIdx * 10 + matIdx + 1,
+      item: {
+        "@type": "DigitalDocument",
+        name: material.title,
+        description: material.description,
+        url: new URL(material.fileHref, campaignConfig.site.siteUrl).toString()
+      }
+    }))
+  )
+};
+
 const colorMap: Record<string, string> = {
   sky: "text-campaign-sky",
   warm: "text-campaign-warm",
@@ -113,6 +136,8 @@ const tagBgMap: Record<string, string> = {
   keywords={["material educativo pingüino de Humboldt", "manualidades pingüino", "actividades familias", "cuento pingüino", "origami pingüino"]}
   breadcrumbItems={breadcrumbItems}
   pageType="CollectionPage"
+  schema={materialesSchema}
+  socialImageAlt="Material educativo gratuito sobre el pingüino de Humboldt — manualidades, guías y cuentos"
 >
   <Section size="compact" class="!pt-4 !pb-2">
     <Breadcrumbs items={breadcrumbItems} />
@@ -163,7 +188,7 @@ const tagBgMap: Record<string, string> = {
                 target="_blank"
                 rel="noopener noreferrer"
                 download={material.type === "pdf"}
-                data-analytics-event="file_download"
+                data-analytics-event={material.type === "pdf" ? "file_download" : "document_open"}
                 data-analytics-label={material.title}
                 data-analytics-context="pinguimateriales"
                 class={`mt-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold transition ${borderMap[cat.color]} ${colorMap[cat.color]} hover:bg-white/6`}
@@ -206,7 +231,7 @@ const tagBgMap: Record<string, string> = {
                 target="_blank"
                 rel="noopener noreferrer"
                 download={material.type === "pdf"}
-                data-analytics-event="file_download"
+                data-analytics-event={material.type === "pdf" ? "file_download" : "document_open"}
                 data-analytics-label={material.title}
                 data-analytics-context="pinguimateriales"
                 class={`mt-6 inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold transition ${borderMap[cat.color]} ${colorMap[cat.color]} hover:bg-white/6`}

@@ -46,8 +46,8 @@ export const campaignConfig = {
   },
   links: externalLinks,
   dates: {
-    signatureDeadlineIso: "2026-05-31T23:59:59-04:00",
-    signatureDeadlineLabel: "31 de mayo de 2026"
+    signatureDeadlineIso: "2026-06-08T23:59:59-04:00",
+    signatureDeadlineLabel: "8 de junio de 2026"
   },
   hero: {
     mode: "static-dark" as "static-dark" | "video",
@@ -90,9 +90,9 @@ export const campaignConfig = {
         detail: "El retiro del decreto dejó en pausa una protección decisiva."
       },
       {
-        value: "31 May",
+        value: "8 Jun",
         label: "Fecha de cierre",
-        detail: "La campaña se extiende hasta el 31 de mayo para sumar más apoyo ciudadano informado."
+        detail: "La campaña se extiende hasta el 8 de junio, Día Mundial del Océano, para sumar más apoyo ciudadano informado."
       }
     ]
   },
@@ -123,7 +123,7 @@ export const campaignConfig = {
   },
   conversion: {
     title: "Cada pingüino cuenta, cada firma cuenta.",
-    cardTitle: "Firma antes del 31 de mayo",
+    cardTitle: "Firma antes del 8 de junio",
     cardText:
       "La carta abierta busca reunir apoyo ciudadano informado para acompañar la protección del pingüino de Humboldt como Monumento Natural.",
     shareTitle: "¿Ya firmaste? Ayuda a que más personas conozcan esta causa. Síguenos y comparte.",
