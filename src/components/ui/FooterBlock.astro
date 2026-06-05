@@ -1,0 +1,111 @@
+---
+import { campaignConfig } from "../../content/campaign";
+import logo from "../../assets/logo_pinguino_humboldt_circulo.png";
+import ButtonLink from "./ButtonLink.astro";
+
+const { transparency, socialLinks, site, knowledgeHub } = campaignConfig;
+const letterPdfUrl = new URL(campaignConfig.assets.publicLetterPdf, campaignConfig.site.siteUrl).toString();
+const publicSocialLinks = socialLinks.filter((item) => /^https?:\/\//.test(item.href));
+const socialIconPaths: Record<string, string> = {
+  Instagram:
+    "M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2.2A2.8 2.8 0 0 0 4.2 7v10A2.8 2.8 0 0 0 7 19.8h10a2.8 2.8 0 0 0 2.8-2.8V7A2.8 2.8 0 0 0 17 4.2H7Zm10.75 1.65a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2.2A2.8 2.8 0 1 0 12 14.8 2.8 2.8 0 0 0 12 9.2Z",
+  TikTok:
+    "M14 3c.26 2.08 1.42 3.78 3.6 4.07v2.77a6.3 6.3 0 0 1-3.57-1.17v5.14a5.81 5.81 0 1 1-5.02-5.75v2.86a2.94 2.94 0 1 0 2.17 2.84V3H14Z",
+  YouTube:
+    "M21.58 7.19a2.98 2.98 0 0 0-2.1-2.11C17.63 4.6 12 4.6 12 4.6s-5.63 0-7.48.48a2.98 2.98 0 0 0-2.1 2.11C2 9.04 2 12 2 12s0 2.96.42 4.81a2.98 2.98 0 0 0 2.1 2.11c1.85.48 7.48.48 7.48.48s5.63 0 7.48-.48a2.98 2.98 0 0 0 2.1-2.11C22 14.96 22 12 22 12s0-2.96-.42-4.81ZM10 15.5v-7l6 3.5-6 3.5Z"
+};
+---
+
+<footer class="border-t border-white/10 bg-black/40">
+  <div class="mx-auto grid max-w-7xl gap-10 px-5 pt-14 pb-32 sm:px-6 md:py-14 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+    <div class="space-y-6">
+      <div class="flex items-center gap-5">
+        <img
+          src={logo.src}
+          alt={`Logo de ${site.name}`}
+          class="h-20 w-20 rounded-full border border-white/16 bg-white/6 object-contain p-2 shadow-[0_16px_40px_rgba(0,0,0,0.28)]"
+        />
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Es más que un pingüino</p>
+          <p class="text-xl font-black text-white">Campaña ciudadana por el Monumento Natural</p>
+        </div>
+      </div>
+
+      <p class="max-w-2xl text-sm leading-7 text-campaign-text-muted">{transparency.body}</p>
+
+      <ul class="flex flex-wrap gap-2">
+        {transparency.principles.map((principle) => (
+          <li class="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-xs font-medium text-white">
+            {principle}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="space-y-6">
+      <div class="surface-panel rounded-3xl p-6">
+        <h2 class="text-xl font-semibold text-white">Carta y transparencia</h2>
+        <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
+          Revisa la carta abierta, consulta el bloque de transparencia y comparte la base científica de la campaña.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <ButtonLink href={letterPdfUrl} label="Abrir PDF" target="_blank" analyticsEvent="document_open" analyticsContext="footer_letter_panel" />
+          <ButtonLink href="/transparencia" label="Transparencia" variant="secondary" analyticsEvent="navigation_click" analyticsContext="footer_letter_panel" />
+          <ButtonLink href="/privacidad" label="Privacidad" variant="ghost" analyticsEvent="navigation_click" analyticsContext="footer_letter_panel" />
+        </div>
+      </div>
+
+      <div class="surface-panel rounded-3xl p-6">
+        <h2 class="text-xl font-semibold text-white">Centro de información</h2>
+        <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
+          Explora páginas pensadas para responder dudas frecuentes, ampliar contexto y reforzar la base científica del sitio.
+        </p>
+        <ul class="mt-5 grid gap-3">
+          {knowledgeHub.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="focus-ring block rounded-2xl border border-white/12 bg-white/5 px-4 py-3 transition hover:border-white/20 hover:bg-white/8"
+              >
+                <p class="text-sm font-semibold text-white">{item.label}</p>
+                <p class="mt-1 text-sm leading-6 text-campaign-text-muted">{item.description}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="surface-panel rounded-3xl p-6">
+        <h2 class="text-xl font-semibold text-white">Superficie pública del sitio</h2>
+        <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
+          El sitio expone rutas públicas mínimas para indexación, validación y acceso responsable por herramientas automáticas legítimas.
+        </p>
+        <div class="mt-5 flex flex-wrap gap-2">
+          <ButtonLink href="/robots.txt" label="robots.txt" variant="ghost" class="min-h-7 px-2.5 py-1 text-[0.68rem] md:min-h-10 md:px-4 md:py-2 md:text-[0.82rem]" analyticsEvent="navigation_click" analyticsContext="footer_public_surface" />
+          <ButtonLink href="/sitemap.xml" label="sitemap.xml" variant="ghost" class="min-h-7 px-2.5 py-1 text-[0.68rem] md:min-h-10 md:px-4 md:py-2 md:text-[0.82rem]" analyticsEvent="navigation_click" analyticsContext="footer_public_surface" />
+          <ButtonLink href="/.well-known/security.txt" label="security.txt" variant="ghost" class="min-h-7 px-2.5 py-1 text-[0.68rem] md:min-h-10 md:px-4 md:py-2 md:text-[0.82rem]" analyticsEvent="navigation_click" analyticsContext="footer_public_surface" />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4 text-sm text-campaign-text-muted md:justify-start">
+        {publicSocialLinks.filter((item) => item.label !== "Linktree" && item.label !== "YouTube").map((item) => (
+          <a
+            href={item.href}
+            target="_blank"
+            rel="noreferrer noopener"
+            data-analytics-event="social_click"
+            data-analytics-label={item.label}
+            data-analytics-context="footer_social_links"
+            aria-label={item.label}
+            title={item.label}
+            class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/5 text-campaign-text-muted transition hover:border-white/20 hover:text-white"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" class="h-4 w-4 fill-current">
+              <path d={socialIconPaths[item.label]}></path>
+            </svg>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</footer>

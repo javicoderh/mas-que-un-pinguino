@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /campaign_signatures/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /signature_dedupe_email/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /signature_dedupe_identity/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /signature_dedupe_rut/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /security_rate_limits/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /security_events/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /public_stats/signatures_counter {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

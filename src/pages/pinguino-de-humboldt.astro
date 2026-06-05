@@ -1,0 +1,72 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import { campaignConfig } from "../content/campaign";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Pingüino de Humboldt", path: "/pinguino-de-humboldt" }
+];
+const relatedLinks = campaignConfig.knowledgeHub.filter((item) =>
+  ["/ciencia", "/amenazas", "/monumento-natural-pinguino-de-humboldt", "/faq"].includes(item.href)
+);
+---
+
+<MainLayout
+  path="/pinguino-de-humboldt"
+  title="Pingüino de Humboldt | Importancia ecológica y contexto en Chile"
+  description="Conoce qué es el pingüino de Humboldt, por qué funciona como bioindicador del ecosistema marino y por qué su protección importa para comunidades costeras en Chile."
+  keywords={["pingüino de Humboldt", "bioindicador", "ecosistema marino de Chile", "corriente de Humboldt", "conservación"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="AboutPage"
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="Especie"
+      title="Qué representa el pingüino de Humboldt en este sitio"
+      body="Esta página resume, en lenguaje claro, por qué el pingüino de Humboldt es una especie clave para comprender la salud del mar y por qué su cuidado también importa para las personas."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    <div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <article class="surface-panel rounded-[2rem] p-8">
+        <h2 class="text-2xl font-bold text-white">Una especie que ayuda a leer el estado del océano</h2>
+        <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+          En la campaña usamos al pingüino de Humboldt como una puerta de entrada para hablar de la salud del ecosistema marino. Su presencia y su reproducción permiten observar cambios en el ambiente, en la disponibilidad de alimento y en el equilibrio de la cadena trófica.
+        </p>
+        <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+          Por eso, cuando el sitio habla del pingüino, no se refiere solo a una especie carismática. También habla del mar, de las comunidades costeras y de una relación ecológica que sostiene vida, trabajo y patrimonio natural.
+        </p>
+      </article>
+
+      <article class="surface-panel rounded-[2rem] p-8">
+        <h2 class="text-2xl font-bold text-white">Por qué importa para la ciudadanía</h2>
+        <ul class="mt-6 space-y-4 text-base leading-7 text-campaign-text-muted">
+          <li>Ayuda a comprender de manera concreta por qué la biodiversidad marina necesita protección oportuna.</li>
+          <li>Conecta la ciencia con una conversación pública más cercana y entendible.</li>
+          <li>Vincula conservación, pesca artesanal, turismo y futuro de los territorios costeros.</li>
+          <li>Permite transformar información técnica en participación ciudadana responsable.</li>
+        </ul>
+      </article>
+    </div>
+  </Section>
+
+  <Section class="pt-0">
+    <div class="surface-panel rounded-[2rem] p-8">
+      <h2 class="text-2xl font-bold text-white">Cómo seguir profundizando</h2>
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        {relatedLinks.map((item) => (
+          <a href={item.href} class="rounded-[1.5rem] border border-white/12 bg-white/5 p-5 transition hover:border-white/20">
+            <p class="text-lg font-semibold text-white">{item.label}</p>
+            <p class="mt-2 text-sm leading-6 text-campaign-text-muted">{item.description}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </Section>
+</MainLayout>

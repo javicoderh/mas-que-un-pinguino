@@ -1,0 +1,46 @@
+---
+import Section from "../ui/Section.astro";
+import DonationWidget from "../campaign/DonationWidget.vue";
+---
+
+<Section id="donar">
+  <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-warm">
+        Apoya la causa
+      </p>
+      <h2 class="mt-4 max-w-xl text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
+        La causa continúa.<br />
+        <span class="text-gradient">Apoya con una donación.</span>
+      </h2>
+      <p class="mt-5 max-w-md text-base leading-7 text-campaign-text-muted">
+        Cada peso va directo a la defensa legal y científica del pingüino de Humboldt. Tu aporte, sin importar el tamaño, hace la diferencia.
+      </p>
+
+      <ul class="mt-8 grid gap-3">
+        <li class="flex items-start gap-3 text-sm text-campaign-text-muted">
+          <span
+            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-campaign-sky/20 text-[11px] text-campaign-sky"
+          >✓</span>
+          Financiamos asesoría legal especializada
+        </li>
+        <li class="flex items-start gap-3 text-sm text-campaign-text-muted">
+          <span
+            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-campaign-sky/20 text-[11px] text-campaign-sky"
+          >✓</span>
+          Apoyamos equipos de monitoreo científico en terreno
+        </li>
+        <li class="flex items-start gap-3 text-sm text-campaign-text-muted">
+          <span
+            class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-campaign-sky/20 text-[11px] text-campaign-sky"
+          >✓</span>
+          Mantenemos la campaña ciudadana activa y visible
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <DonationWidget client:load />
+    </div>
+  </div>
+</Section>

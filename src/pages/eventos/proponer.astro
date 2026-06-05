@@ -1,0 +1,53 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import Section from "../../components/ui/Section.astro";
+import SectionHeading from "../../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../../components/ui/Breadcrumbs.astro";
+import EventProposalForm from "../../components/ui/EventProposalForm.astro";
+
+export const prerender = false;
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Pingüieventos", path: "/eventos" },
+  { name: "Proponer evento", path: "/eventos/proponer" }
+];
+---
+
+<MainLayout
+  path="/eventos/proponer"
+  title="Proponer un evento | Es más que un pingüino"
+  description="Envía una propuesta de actividad para que aparezca en el mapa ciudadano de eventos asociados al pingüino de Humboldt."
+  keywords={["proponer evento", "mapa ciudadano", "pingüino de Humboldt", "actividad regional"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="AboutPage"
+>
+  <Section size="hero">
+    <div class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <div class="space-y-6">
+        <div class="surface-panel rounded-[2rem] p-8 md:p-10">
+          <Breadcrumbs items={breadcrumbItems} />
+          <SectionHeading
+            eyebrow="Convocatoria"
+            title="Propón una actividad para el mapa de Chile"
+            body="Si estás organizando una jornada, encuentro, intervención, conversatorio o acción comunitaria relacionada con el pingüino de Humboldt, puedes enviarla aquí para revisión."
+            as="h1"
+          />
+        </div>
+
+        <div class="surface-panel rounded-[2rem] p-8">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Cómo funciona</p>
+          <ul class="mt-4 space-y-4 text-sm leading-7 text-campaign-text-muted">
+            <li>Completas el formulario con la información esencial del evento.</li>
+            <li>La propuesta entra a revisión por parte del equipo administrador.</li>
+            <li>Si se aprueba, aparece como marcador en la región correspondiente dentro del mapa público.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <EventProposalForm />
+      </div>
+    </div>
+  </Section>
+</MainLayout>

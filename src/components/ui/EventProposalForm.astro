@@ -1,0 +1,421 @@
+---
+import { createFormToken } from "../../lib/security/form-token";
+import { isSecurityConfigured, isServerStorageConfigured } from "../../lib/security/config";
+import { regionOptions } from "../../lib/events/chile-regions";
+import ImageUploadField from "./ImageUploadField.astro";
+
+const isConfigured = isSecurityConfigured && isServerStorageConfigured;
+const formToken = isConfigured ? await createFormToken("event_submit") : null;
+---
+
+<div class="surface-panel rounded-[2rem] p-7 md:p-8">
+  <div class="mb-8">
+    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Proponer evento</p>
+    <h2 class="mt-3 text-3xl font-black tracking-tight text-white">Comparte una actividad para el mapa</h2>
+    <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+      Tu propuesta quedará en revisión antes de publicarse. Así mantenemos el mapa ordenado, seguro y útil para la comunidad.
+    </p>
+  </div>
+
+  <form
+    class="grid gap-5"
+    method="post"
+    action="/api/events"
+    data-event-form
+    data-form-configured={String(isConfigured)}
+    novalidate
+  >
+    <div class="hidden" aria-hidden="true">
+      <label>
+        Empresa
+        <input name="company" type="text" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+
+    <label class="grid gap-2 text-sm font-medium text-white">
+      <span>Nombre del evento</span>
+      <input
+        name="title"
+        required
+        data-validate="title"
+        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+        placeholder="Ej. Limpieza costera por el pingüino de Humboldt"
+      />
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="title"></span>
+    </label>
+
+    <label class="grid gap-2 text-sm font-medium text-white">
+      <span>Descripción</span>
+      <textarea
+        name="description"
+        rows="5"
+        required
+        data-validate="description"
+        class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+        placeholder="Cuenta de qué trata la actividad, quiénes pueden asistir y por qué se realiza."
+      ></textarea>
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="description"></span>
+    </label>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <ImageUploadField
+        name="image_url"
+        uploadEndpoint="/api/events/upload-image"
+        required={true}
+        label="Imagen del evento"
+      />
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Enlace del evento <span class="font-normal text-campaign-text-muted">(opcional)</span></span>
+        <input
+          name="link"
+          type="url"
+          data-validate="link"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="https://www.instagram.com/tueventoejemplo"
+        />
+        <span class="text-xs text-campaign-text-muted">
+          Pega aquí la dirección web del evento: puede ser una publicación de Instagram, un evento de Facebook, una página web, etc. Debe comenzar con <code class="rounded bg-white/8 px-1 py-0.5 font-mono text-white/70">https://</code>
+        </span>
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="link"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Región</span>
+        <select
+          name="region"
+          required
+          data-validate="region"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-[#0f1822] px-4 py-3 text-white"
+        >
+          <option value="">Selecciona una región</option>
+          {regionOptions.map((region) => (
+            <option value={region}>{region}</option>
+          ))}
+        </select>
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="region"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Fecha</span>
+        <input
+          name="date"
+          type="date"
+          required
+          data-validate="date"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="date"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Horario</span>
+        <input
+          name="time"
+          type="time"
+          required
+          data-validate="time"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="time"></span>
+      </label>
+    </div>
+
+    <label class="grid gap-2 text-sm font-medium text-white">
+      <span>Ubicación del evento</span>
+      <input
+        name="venue"
+        required
+        data-validate="venue"
+        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+        placeholder="Ej. Plaza de Armas de La Serena"
+      />
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="venue"></span>
+    </label>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Nombre de contacto</span>
+        <input
+          name="organizer_name"
+          data-validate="organizer_name"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Opcional"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="organizer_name"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>Correo de contacto</span>
+        <input
+          name="organizer_email"
+          type="email"
+          data-validate="organizer_email"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Opcional"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="organizer_email"></span>
+      </label>
+    </div>
+
+    <label class="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/5 p-4 text-sm text-campaign-text-muted">
+      <input
+        type="checkbox"
+        name="consent"
+        required
+        data-validate="consent"
+        class="mt-1 h-4 w-4 rounded border-white/20 bg-black text-campaign-warm"
+      />
+      <span>
+        Acepto que esta propuesta sea revisada por el equipo del sitio y que los datos ingresados se usen para moderar y publicar el evento si corresponde.
+      </span>
+    </label>
+    <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="consent"></span>
+
+    <input type="hidden" name="issued_at_ms" value={formToken?.issuedAtMs ?? ""} />
+    <input type="hidden" name="form_nonce" value={formToken?.nonce ?? ""} />
+    <input type="hidden" name="form_token" value={formToken?.signature ?? ""} />
+    <input type="hidden" name="captcha_token" value="" data-captcha-token />
+
+    <div class="grid gap-4 border-t border-white/10 pt-5">
+      {!isConfigured && (
+        <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/8 px-4 py-3 text-sm text-campaign-sky">
+          Falta completar la configuración server-side para registrar propuestas de eventos.
+        </p>
+      )}
+      <button
+        type="submit"
+        data-event-submit
+        class="focus-ring button-text-outline inline-flex min-h-12 items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-6 py-3 text-[0.95rem] font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)] transition hover:bg-[#63C6FF]"
+      >
+        Enviar propuesta
+      </button>
+
+      <p class="text-sm text-campaign-text-muted" data-event-status>
+        {isConfigured
+          ? "La propuesta quedará pendiente de revisión antes de aparecer en el mapa."
+          : "La interfaz está lista, pero falta la configuración server-side para registrar eventos."}
+      </p>
+    </div>
+  </form>
+</div>
+
+<script>
+  const form = document.querySelector("[data-event-form]");
+  const status = document.querySelector("[data-event-status]");
+  const submitButton = document.querySelector("[data-event-submit]");
+  const errorTimers = new Map();
+
+  if (form instanceof HTMLFormElement && status instanceof HTMLElement) {
+    type FieldName =
+      | "title"
+      | "description"
+      | "image_url"
+      | "region"
+      | "date"
+      | "time"
+      | "venue"
+      | "organizer_name"
+      | "organizer_email"
+      | "consent";
+
+    interface ValidationRule {
+      required: boolean;
+      message: string;
+      regex?: RegExp;
+    }
+
+    const validators: Record<FieldName, ValidationRule> = {
+      title: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'".,()\-:/&\s]{4,90}$/u,
+        message: "Ingresa un nombre de evento válido."
+      },
+      description: {
+        required: true,
+        regex: /^[\s\S]{20,600}$/u,
+        message: "Describe el evento con al menos 20 caracteres."
+      },
+      image_url: {
+        required: true,
+        regex: /^https?:\/\/.+/i,
+        message: "Ingresa una URL de imagen válida."
+      },
+      region: {
+        required: true,
+        regex: /.+/,
+        message: "Selecciona una región."
+      },
+      date: {
+        required: true,
+        regex: /^\d{4}-\d{2}-\d{2}$/,
+        message: "Selecciona una fecha válida."
+      },
+      time: {
+        required: true,
+        regex: /^\d{2}:\d{2}$/,
+        message: "Selecciona una hora válida."
+      },
+      venue: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'".,()\-:/#&\s]{4,160}$/u,
+        message: "Ingresa una ubicación válida."
+      },
+      organizer_name: {
+        required: false,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'".,()\-:/#&\s]{0,80}$/u,
+        message: "El nombre de contacto contiene caracteres no permitidos."
+      },
+      organizer_email: {
+        required: false,
+        regex: /^(|[^\s@]+@[^\s@]+\.[^\s@]{2,})$/,
+        message: "Ingresa un correo de contacto válido."
+      },
+      consent: {
+        required: true,
+        message: "Debes aceptar el tratamiento de datos."
+      }
+    };
+
+    const getField = (name: string) => form.elements.namedItem(name);
+    const getValue = (name: string) => {
+      const field = getField(name);
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+        return field.value.trim();
+      }
+      return "";
+    };
+
+    const getChecked = (name: string) => {
+      const field = getField(name);
+      return field instanceof HTMLInputElement ? field.checked : false;
+    };
+
+    const showError = (name: string, message: string) => {
+      const node = form.querySelector(`[data-error-for="${name}"]`);
+      const field = getField(name);
+
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+        field.classList.add("border-red-400", "bg-red-950/20");
+        field.classList.remove("border-white/14");
+        field.setAttribute("aria-invalid", "true");
+      }
+
+      if (node instanceof HTMLElement) {
+        node.textContent = message;
+        node.classList.remove("opacity-0", "max-h-0");
+        node.classList.add("opacity-100", "max-h-16", "mt-1");
+
+        const previous = errorTimers.get(name);
+        if (previous) window.clearTimeout(previous);
+
+        const timer = window.setTimeout(() => {
+          node.classList.add("opacity-0", "max-h-0");
+          node.classList.remove("opacity-100", "max-h-16", "mt-1");
+        }, 5000);
+
+        errorTimers.set(name, timer);
+      }
+    };
+
+    const clearError = (name: string) => {
+      const node = form.querySelector(`[data-error-for="${name}"]`);
+      const field = getField(name);
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+        field.classList.remove("border-red-400", "bg-red-950/20");
+        field.classList.add("border-white/14");
+        field.removeAttribute("aria-invalid");
+      }
+      if (node instanceof HTMLElement) {
+        node.classList.add("opacity-0", "max-h-0");
+        node.classList.remove("opacity-100", "max-h-16", "mt-1");
+      }
+    };
+
+    const validateField = (name: FieldName) => {
+      const rule = validators[name];
+      if (!rule) return true;
+
+      if (name === "consent") {
+        if (!getChecked(name)) {
+          showError(name, rule.message);
+          return false;
+        }
+        clearError(name);
+        return true;
+      }
+
+      const value = getValue(name);
+      if (rule.required && !value) {
+        showError(name, "Este campo es obligatorio.");
+        return false;
+      }
+      if (!value) {
+        clearError(name);
+        return true;
+      }
+      if (rule.regex && !rule.regex.test(value)) {
+        showError(name, rule.message);
+        return false;
+      }
+      clearError(name);
+      return true;
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const isConfigured = form.dataset.formConfigured === "true";
+
+      if (!isConfigured) {
+        status.textContent = "Falta completar la configuración server-side para registrar eventos.";
+        return;
+      }
+
+      const fields = Object.keys(validators) as FieldName[];
+      const valid = fields.every((field) => validateField(field));
+      if (!valid) {
+        status.textContent = "Revisa los campos marcados antes de enviar la propuesta.";
+        return;
+      }
+
+      submitButton?.setAttribute("disabled", "true");
+      status.textContent = "Enviando propuesta...";
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            accept: "application/json"
+          }
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        status.textContent =
+          typeof payload.message === "string"
+            ? payload.message
+            : response.ok
+              ? "Tu propuesta fue enviada."
+              : "No pudimos procesar la propuesta.";
+
+        if (response.ok) {
+          form.reset();
+        }
+      } catch (error) {
+        console.error(error);
+        status.textContent = "No pudimos enviar la propuesta. Inténtalo nuevamente.";
+      } finally {
+        submitButton?.removeAttribute("disabled");
+      }
+    });
+
+    form.querySelectorAll("[data-validate]").forEach((field) => {
+      field.addEventListener("blur", () => {
+        const name = field.getAttribute("data-validate") as FieldName | null;
+        if (name) validateField(name);
+      });
+    });
+  }
+</script>

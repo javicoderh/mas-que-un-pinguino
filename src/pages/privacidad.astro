@@ -1,0 +1,159 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+
+const contactEmail = "pinguinodehumboldtmn@gmail.com";
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Privacidad", path: "/privacidad" }
+];
+---
+
+<MainLayout
+  path="/privacidad"
+  title="Política de privacidad | Es más que un pingüino"
+  description="Política de privacidad y tratamiento de datos de la campaña Es más que un pingüino."
+  hideFloatingCta={true}
+  keywords={["privacidad", "tratamiento de datos", "firma campaña", "datos personales"]}
+  breadcrumbItems={breadcrumbItems}
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="Privacidad"
+      title="Política de privacidad de la campaña"
+      body="Esta política explica qué datos recopilamos, para qué los usamos, cómo los resguardamos y cómo puedes contactarnos para ejercer tus derechos o resolver dudas."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    <div class="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <article class="surface-panel rounded-[2rem] p-8 md:p-10">
+        <div class="space-y-8 text-sm leading-7 text-campaign-text-muted md:text-base">
+          <section>
+            <h2 class="text-xl font-semibold text-white">1. Responsable del tratamiento</h2>
+            <p class="mt-3">
+              La campaña <span class="font-semibold text-white">Es más que un pingüino</span> trata los datos
+              personales que se ingresan en este sitio con el único fin de gestionar las firmas, respaldar la
+              campaña ciudadana y, cuando corresponda, mantener comunicación sobre su avance.
+            </p>
+            <p class="mt-3">
+              Correo de contacto:{" "}
+              <a href={`mailto:${contactEmail}`} class="font-semibold text-campaign-warm underline underline-offset-4">
+                {contactEmail}
+              </a>
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">2. Qué datos recopilamos</h2>
+            <p class="mt-3">Podemos recopilar los siguientes datos ingresados por la persona firmante:</p>
+            <ul class="mt-3 list-disc space-y-2 pl-5">
+              <li>Nombre y apellido.</li>
+              <li>RUT.</li>
+              <li>Correo electrónico.</li>
+              <li>Edad.</li>
+              <li>País, región y comuna.</li>
+              <li>Si firma como persona natural o jurídica.</li>
+              <li>Organización o vínculo con el territorio.</li>
+              <li>Mensaje opcional de apoyo.</li>
+              <li>Consentimientos y preferencias de actualización.</li>
+            </ul>
+            <p class="mt-3">
+              Además, para fines operativos y de seguridad, el sistema puede procesar metadatos técnicos mínimos
+              asociados al envío, como huellas hash, tiempos de envío y señales de prevención de abuso.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">3. Finalidad del tratamiento</h2>
+            <ul class="mt-3 list-disc space-y-2 pl-5">
+              <li>Registrar y gestionar firmas válidas de la campaña.</li>
+              <li>Evitar duplicados, fraude o abuso del formulario.</li>
+              <li>Consolidar respaldo ciudadano a la carta y a sus objetivos públicos.</li>
+              <li>Enviar actualizaciones solo a quienes lo autoricen expresamente.</li>
+              <li>Mantener trazabilidad operativa y resguardo básico del sistema.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">4. Base de uso</h2>
+            <p class="mt-3">
+              El tratamiento se realiza sobre la base del consentimiento explícito entregado al momento de firmar y de
+              la necesidad operativa de validar, resguardar y administrar el proceso de adhesión a la campaña.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">5. Conservación y resguardo</h2>
+            <p class="mt-3">
+              Actualmente las nuevas firmas y persistencias operativas del sitio se almacenan en
+              <span class="font-semibold text-white"> Neon Postgres</span>, dentro de la infraestructura técnica de
+              la campaña. Además, existe un repositorio histórico separado en
+              <span class="font-semibold text-white"> Firebase Firestore</span> que contiene firmas previas.
+            </p>
+            <p class="mt-3">
+              Por razones de privacidad y minimización de tratamiento, esas firmas históricas almacenadas en Firestore
+              no se migran a la nueva base de datos. El contador público puede considerar ambos conjuntos de datos,
+              pero la operación actual del formulario se realiza sobre Neon Postgres.
+            </p>
+            <p class="mt-3">
+              Se aplican controles razonables para reducir abuso, duplicación no autorizada y acceso indebido. No
+              obstante, ninguna plataforma conectada a internet puede garantizar seguridad absoluta. Por eso el
+              proyecto busca minimizar superficie de exposición, validar entradas y restringir los flujos de escritura.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">6. Compartición de datos</h2>
+            <p class="mt-3">
+              Los datos no se recopilan para comercialización ni se venden a terceros. Solo podrán usarse en el marco
+              de la campaña, su operación técnica, su respaldo organizativo y los fines públicos vinculados a la carta.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">7. Derechos y contacto</h2>
+            <p class="mt-3">
+              Si quieres consultar, rectificar o pedir revisión sobre el uso de tus datos en el contexto de esta
+              campaña, puedes escribir a{" "}
+              <a href={`mailto:${contactEmail}`} class="font-semibold text-campaign-warm underline underline-offset-4">
+                {contactEmail}
+              </a>
+              .
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-xl font-semibold text-white">8. Cambios a esta política</h2>
+            <p class="mt-3">
+              Esta política puede actualizarse si cambian los flujos de la campaña, la infraestructura técnica o los
+              mecanismos de participación. La versión publicada en este sitio será la vigente.
+            </p>
+          </section>
+        </div>
+      </article>
+
+      <aside class="surface-panel rounded-[2rem] p-8">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Resumen</p>
+        <ul class="mt-5 space-y-3 text-sm leading-6 text-campaign-text-muted">
+          <li class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3">
+            Tus datos se usan para gestionar la firma y la campaña.
+          </li>
+          <li class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3">
+            El formulario aplica validación y controles básicos contra abuso.
+          </li>
+          <li class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3">
+            Las actualizaciones solo se envían si las autorizas.
+          </li>
+          <li class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3">
+            Para dudas o solicitudes, escríbenos a <span class="font-semibold text-white">{contactEmail}</span>.
+          </li>
+        </ul>
+      </aside>
+    </div>
+  </Section>
+</MainLayout>

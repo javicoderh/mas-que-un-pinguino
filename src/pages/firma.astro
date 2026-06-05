@@ -1,0 +1,119 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ButtonLink from "../components/ui/ButtonLink.astro";
+import SignatureForm from "../components/ui/SignatureForm.astro";
+import ForeignSignatureForm from "../components/ui/ForeignSignatureForm.astro";
+import { campaignConfig } from "../content/campaign";
+
+export const prerender = false;
+
+const { dates, signatureForm } = campaignConfig;
+---
+
+<MainLayout
+  path="/firma"
+  title="Firma por el pingüino de Humboldt | Participación ciudadana informada"
+  description="Firma la carta ciudadana y apoya, desde una participación informada, la protección del pingüino de Humboldt y su ecosistema."
+  hideFloatingCta={true}
+  keywords={["firmar por el pingüino de Humboldt", "carta ciudadana", "participación informada", "protección marina"]}
+  breadcrumbItems={[{ name: "Inicio", path: "/" }, { name: "Firma", path: "/firma" }]}
+>
+  <Section size="hero">
+    <div class="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <div class="space-y-6">
+        <div class="surface-panel rounded-[2rem] p-8 md:p-10">
+          <SectionHeading
+            eyebrow="Firma"
+            title={signatureForm.title}
+            body={`La meta de esta fase es reunir respaldo antes del ${dates.signatureDeadlineLabel}. ${signatureForm.intro}`}
+            as="h1"
+          />
+
+          <div class="mt-8 grid gap-3">
+            {signatureForm.trustPoints.map((item) => (
+              <div class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-sm font-medium text-white">
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="surface-panel rounded-[2rem] p-8">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Apoyo informado</p>
+          <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+            Antes de firmar, puedes revisar nuevamente la carta abierta y su marco de transparencia.
+          </p>
+
+          <div class="mt-6 flex flex-wrap gap-4">
+            <ButtonLink href="/carta" label="Leer la carta" variant="secondary" />
+            <ButtonLink href="/transparencia" label="Ver transparencia" variant="ghost" />
+          </div>
+        </div>
+      </div>
+
+      <div id="formulario-firma">
+        <div class="mb-4 flex gap-3">
+          <button
+            id="tab-chilean"
+            class="focus-ring inline-flex min-h-10 items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-white/15"
+            aria-pressed="true"
+          >
+            Firmar (Chile)
+          </button>
+          <button
+            id="tab-foreign"
+            class="focus-ring inline-flex min-h-10 items-center justify-center rounded-full border border-campaign-sky/40 bg-transparent px-5 py-2 text-sm font-bold uppercase tracking-[0.08em] text-campaign-sky transition hover:bg-campaign-sky/10"
+            aria-pressed="false"
+          >
+            Extranjeros / Foreigners
+          </button>
+        </div>
+
+        <div id="form-chilean">
+          <SignatureForm />
+        </div>
+
+        <div id="form-foreign" class="hidden">
+          <ForeignSignatureForm />
+        </div>
+      </div>
+    </div>
+  </Section>
+</MainLayout>
+
+<script>
+  const tabChilean = document.getElementById("tab-chilean");
+  const tabForeign = document.getElementById("tab-foreign");
+  const formChilean = document.getElementById("form-chilean");
+  const formForeign = document.getElementById("form-foreign");
+
+  const activeClasses = ["bg-white/10", "border-white/20", "text-white"];
+  const inactiveClasses = ["bg-transparent", "border-campaign-sky/40", "text-campaign-sky"];
+
+  function showChilean() {
+    formChilean?.classList.remove("hidden");
+    formForeign?.classList.add("hidden");
+    tabChilean?.setAttribute("aria-pressed", "true");
+    tabForeign?.setAttribute("aria-pressed", "false");
+    activeClasses.forEach((c) => tabChilean?.classList.add(c));
+    inactiveClasses.forEach((c) => tabChilean?.classList.remove(c));
+    inactiveClasses.forEach((c) => tabForeign?.classList.add(c));
+    activeClasses.forEach((c) => tabForeign?.classList.remove(c));
+  }
+
+  function showForeign() {
+    formForeign?.classList.remove("hidden");
+    formChilean?.classList.add("hidden");
+    tabForeign?.setAttribute("aria-pressed", "true");
+    tabChilean?.setAttribute("aria-pressed", "false");
+    activeClasses.forEach((c) => tabForeign?.classList.add(c));
+    inactiveClasses.forEach((c) => tabForeign?.classList.remove(c));
+    inactiveClasses.forEach((c) => tabChilean?.classList.add(c));
+    activeClasses.forEach((c) => tabChilean?.classList.remove(c));
+  }
+
+  tabChilean?.addEventListener("click", showChilean);
+  tabForeign?.addEventListener("click", showForeign);
+</script>

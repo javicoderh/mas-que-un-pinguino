@@ -1,0 +1,35 @@
+---
+import { campaignConfig } from "../../content/campaign";
+import Section from "../ui/Section.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+const { ecosystem } = campaignConfig;
+---
+
+<Section id="ecosistema" class="relative">
+  <div class="absolute inset-x-0 top-10 -z-10 mx-auto h-72 max-w-5xl rounded-full bg-campaign-sky/10 blur-3xl"></div>
+
+  <SectionHeading eyebrow="Deseo" title={ecosystem.title} body={ecosystem.body} />
+
+  <div class="mt-12 grid gap-5 md:grid-cols-3">
+    {ecosystem.pillars.map((pillar) => (
+      <article class="surface-panel rounded-3xl p-6">
+        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-campaign-sky/14 text-3xl text-campaign-warm">
+          {pillar.icon}
+        </div>
+        <h3 class="mt-5 text-2xl font-semibold text-white">{pillar.title}</h3>
+        <p class="mt-4 text-sm leading-7 text-campaign-text-muted">{pillar.description}</p>
+      </article>
+    ))}
+  </div>
+
+  <div class="mt-10 flex flex-wrap items-center gap-3 text-sm font-medium text-campaign-text-muted">
+    <span class="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-white">Pingüino</span>
+    <span class="text-campaign-sky">→</span>
+    <span class="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-white">Océano</span>
+    <span class="text-campaign-sky">→</span>
+    <span class="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-white">Personas</span>
+    <span class="text-campaign-sky">→</span>
+    <span class="rounded-full border border-white/12 bg-white/5 px-4 py-2 text-white">Futuro</span>
+  </div>
+</Section>

@@ -1,0 +1,105 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import DataCard from "../components/ui/DataCard.astro";
+import SciencePaperLibrary from "../components/sections/SciencePaperLibrary.astro";
+import { sciencePapers } from "../content/science-papers";
+import { campaignConfig } from "../content/campaign";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Ciencia", path: "/ciencia" }
+];
+
+const articleCount = sciencePapers.filter((paper) => paper.kind === "Artículo científico").length;
+const newestYear = Math.max(...sciencePapers.map((paper) => paper.year));
+
+const scienceCollectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Biblioteca científica sobre el pingüino de Humboldt",
+  itemListOrder: "https://schema.org/ItemListOrderDescending",
+  numberOfItems: sciencePapers.length,
+  itemListElement: sciencePapers.map((paper, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type":
+        paper.kind === "Artículo científico"
+          ? "ScholarlyArticle"
+          : paper.kind === "Instrumento público"
+              ? "Legislation"
+              : "Report",
+      name: paper.title,
+      author: paper.authors,
+      datePublished: String(paper.year),
+      inLanguage: paper.language === "Español" ? "es" : "en",
+      isPartOf: {
+        "@type": "CollectionPage",
+        name: "Ciencia del pingüino de Humboldt"
+      },
+      url: new URL(paper.url, campaignConfig.site.siteUrl).toString(),
+      ...(paper.doi ? { sameAs: `https://doi.org/${paper.doi}` } : {}),
+      publisher: {
+        "@type": "Organization",
+        name: paper.source
+      }
+    }
+  }))
+};
+---
+
+<MainLayout
+  path="/ciencia"
+  title="Ciencia del pingüino de Humboldt | Biblioteca científica de la campaña"
+  description="Explora papers, informes técnicos, informes finales, manuales e instrumentos públicos sobre el pingüino de Humboldt. Cada entrada abre una ficha bibliográfica con acceso al PDF y descarga."
+  keywords={["ciencia pingüino de Humboldt", "papers pingüino de Humboldt", "bibliografía pingüino de Humboldt", "informes técnicos", "conservación marina"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="CollectionPage"
+  schema={scienceCollectionSchema}
+  publishedTime="2026-04-06T12:00:00-04:00"
+  modifiedTime="2026-04-08T13:00:00-04:00"
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="Biblioteca científica"
+      title="Papers, informes y documentos públicos para revisar la base técnica de la campaña"
+      body="Esta sección reúne los archivos que hoy sostienen la conversación científica del sitio. Cada entrada abre una ficha bibliográfica con datos básicos del documento y accesos separados para abrir o descargar su PDF."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    <div class="grid gap-4 md:grid-cols-3">
+      <DataCard
+        value={String(sciencePapers.length)}
+        label="Documentos disponibles"
+        detail="Incluye artículos científicos, informes técnicos, informes finales, manuales e instrumentos públicos."
+      />
+      <DataCard
+        value={String(articleCount)}
+        label="Artículos científicos"
+        detail="Trabajos publicados en revistas o repositorios académicos que ayudan a contextualizar ecología, amenazas y monitoreo."
+      />
+      <DataCard
+        value={String(newestYear)}
+        label="Año más reciente"
+        detail="La biblioteca mezcla documentos históricos y materiales recientes para mostrar continuidad y cambios en el tiempo."
+      />
+    </div>
+  </Section>
+
+  <Section class="pt-0">
+    <SectionHeading
+      eyebrow="Repositorio"
+      title="Explora la biblioteca"
+      body="Selecciona cualquier documento para abrir su ficha bibliográfica. Desde ahí podrás abrir el PDF en una pestaña nueva o descargarlo."
+    />
+    <div class="mt-8">
+      <SciencePaperLibrary />
+    </div>
+  </Section>
+</MainLayout>

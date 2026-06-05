@@ -1,0 +1,140 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import { isServerStorageConfigured } from "../lib/security/config";
+import { listNews, type NewsRecord } from "../lib/security/news-storage";
+import { campaignConfig } from "../content/campaign";
+import logoSrc from "../assets/logo_pinguino_humboldt_circulo.png";
+
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Pingüinoticias", path: "/noticias" }
+];
+
+let updates: NewsRecord[] = [];
+let newsFallbackActive = false;
+
+if (isServerStorageConfigured) {
+  try {
+    updates = await listNews();
+  } catch (error) {
+    console.error("news-page-fallback", error);
+    newsFallbackActive = true;
+  }
+}
+
+// Cache at CDN/Edge for 5 minutes; revalidates in background
+Astro.response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=60");
+
+const noticiasSchema = updates.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Pingüinoticias — actualizaciones de la campaña Es más que un pingüino",
+  description: "Hitos y novedades de la campaña ciudadana por el pingüino de Humboldt.",
+  numberOfItems: updates.length,
+  itemListElement: updates.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "NewsArticle",
+      headline: item.title,
+      description: item.body,
+      datePublished: new Date(item.createdAtMs).toISOString(),
+      publisher: {
+        "@type": "Organization",
+        name: campaignConfig.site.name,
+        url: campaignConfig.site.siteUrl
+      },
+      ...(item.link ? { url: item.link } : {}),
+      ...(item.imageUrl ? { image: item.imageUrl } : {})
+    }
+  }))
+} : undefined;
+
+const formatDateTime = (value: number) =>
+  new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "America/Santiago"
+  }).format(new Date(value));
+---
+
+<MainLayout
+  path="/noticias"
+  title="Pingüinoticias | Es más que un pingüino"
+  description="Revisa hitos y actualizaciones del sitio y de la campaña, publicados con fecha para mantener contexto editorial y frescura informativa."
+  keywords={["noticias pingüino de Humboldt", "actualizaciones campaña", "novedades sitio", "conservación marina"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="CollectionPage"
+  schema={noticiasSchema}
+  socialImageAlt="Pingüinoticias — actualizaciones y hitos de la campaña ciudadana por el pingüino de Humboldt"
+>
+  <Section size="compact">
+    <Breadcrumbs items={breadcrumbItems} />
+    <SectionHeading
+      eyebrow="Actualizaciones"
+      title="Pingüinoticias y avances publicados con fecha"
+      body="Esta página reúne hitos del sitio y de la campaña en un formato simple. Su objetivo es mantener una capa editorial viva que ayude tanto a usuarios como a buscadores a reconocer cambios reales en el proyecto."
+      as="h1"
+    />
+  </Section>
+
+  <Section class="pt-0">
+    {updates.length > 0 ? (
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {updates.map((item) => (
+          <article class="surface-panel flex flex-col overflow-hidden rounded-[1.75rem]">
+            <div class="news-img-container">
+              <img src={logoSrc.src} alt="Logo pingüino de Humboldt" class="news-logo-img" />
+              <span class="campaign-hashtag">#esmásqueunpingüino</span>
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  class="news-real-img"
+                  loading="lazy"
+                  onload="this.classList.add('is-loaded')"
+                  onerror="this.remove()"
+                />
+              )}
+            </div>
+            <div class="flex flex-1 flex-col p-5">
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">
+                {formatDateTime(item.createdAtMs)}
+              </p>
+              <h2 class="mt-2 text-lg font-bold leading-snug text-white">{item.title}</h2>
+              <p class="mt-3 flex-1 text-sm leading-6 text-campaign-text-muted">{item.body}</p>
+              {item.link && (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-4 inline-flex items-center gap-2 self-start rounded-full border border-white/14 bg-white/6 px-4 py-2 text-sm font-semibold text-campaign-sky transition hover:bg-white/10"
+                >
+                  Leer más
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h4a.75.75 0 010 1.5h-4zm6.5-1a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V6.06l-6.22 6.22a.75.75 0 11-1.06-1.06L15.44 5H11a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <div class="surface-panel rounded-[1.75rem] p-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-sky">
+          {newsFallbackActive ? "Pingüinoticias en pausa" : "Aún sin publicaciones"}
+        </p>
+        <h2 class="mt-3 text-2xl font-bold text-white">Pingüinoticias aparecerá aquí</h2>
+        <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+          {newsFallbackActive
+            ? "No pudimos cargar las publicaciones en este momento, pero la ruta sigue disponible. Cuando vuelva la lectura de base de datos, aquí aparecerán nuevamente las noticias publicadas."
+            : "Cuando el equipo publique nuevas entradas desde el panel admin, esta sección mostrará cada noticia con su fecha y hora de ingreso."}
+        </p>
+      </div>
+    )}
+  </Section>
+</MainLayout>

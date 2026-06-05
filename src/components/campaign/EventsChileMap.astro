@@ -1,0 +1,294 @@
+---
+import { chileRegions, chileRegionByKey, normalizeRegionKey } from "../../lib/events/chile-regions";
+import logoSrc from "../../assets/logo_pinguino_humboldt_circulo.png";
+
+interface EventMarker {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  link: string;
+  date: string;
+  time: string;
+  region: string;
+  regionKey: string;
+  venue: string;
+}
+
+interface Props {
+  events: EventMarker[];
+}
+
+const { events } = Astro.props;
+const markerOffsets = [
+  { x: 0, y: 0 },
+  { x: 18, y: -18 },
+  { x: -18, y: -18 },
+  { x: 18, y: 18 },
+  { x: -18, y: 18 },
+  { x: 28, y: 0 },
+  { x: -28, y: 0 }
+];
+
+const eventsWithPosition = events.map((event) => {
+  const region = chileRegionByKey[normalizeRegionKey(event.regionKey || event.region)] ?? chileRegions[0];
+  const sameRegionIndex = events
+    .filter((item) => normalizeRegionKey(item.regionKey || item.region) === region.id)
+    .findIndex((item) => item.id === event.id);
+  const offset = markerOffsets[sameRegionIndex % markerOffsets.length] ?? markerOffsets[0];
+
+  return {
+    ...event,
+    regionName: region.name,
+    leftPercent: ((region.markerX + offset.x) / 360) * 100,
+    topPercent: ((region.markerY + offset.y) / 900) * 100
+  };
+});
+
+const regionCounts = Object.fromEntries(
+  chileRegions.map((region) => [
+    region.id,
+    events.filter((event) => normalizeRegionKey(event.regionKey || event.region) === region.id).length
+  ])
+);
+---
+
+<div class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+  <div class="surface-panel overflow-hidden rounded-[2rem] p-4 md:p-6">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-warm">Mapa ciudadano</p>
+        <h3 class="mt-2 text-2xl font-black text-white md:text-3xl">Chile por regiones</h3>
+      </div>
+      <p class="max-w-sm text-sm leading-6 text-campaign-text-muted">
+        Cada marcador representa un evento aprobado por el equipo. Al hacer click verás la ficha completa con fecha, lugar e imagen.
+      </p>
+    </div>
+
+    <div class="event-map-shell">
+      <svg
+        viewBox="0 0 360 900"
+        class="event-map-svg"
+        aria-labelledby="event-map-title"
+        role="img"
+      >
+        <title id="event-map-title">Mapa de Chile por regiones con eventos aprobados</title>
+        <defs>
+          <linearGradient id="regionStroke" x1="0" x2="1">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.2)" />
+            <stop offset="100%" stop-color="rgba(56,182,255,0.8)" />
+          </linearGradient>
+          <linearGradient id="chileBodyGrad" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(56,182,255,0.22)" />
+            <stop offset="55%" stop-color="rgba(255,162,209,0.16)" />
+            <stop offset="100%" stop-color="rgba(232,207,99,0.14)" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 222,10 C 210,32 198,56 190,78 C 182,100 172,124 164,150 C 156,172 148,192 140,218 C 133,234 130,248 124,266 C 118,280 114,294 108,318 C 102,340 98,364 92,392 C 86,418 90,446 82,468 C 74,490 72,510 78,528 C 84,545 76,558 68,580 C 62,598 58,618 54,640 C 48,660 44,678 40,702 C 34,724 28,748 28,774 C 26,798 28,820 36,844 C 44,862 54,882 68,900 L 88,910 C 115,904 140,895 165,882 C 180,869 194,854 200,836 C 204,818 207,798 208,778 C 210,758 210,738 210,718 C 211,698 212,676 213,652 C 214,628 215,606 216,584 C 217,562 219,540 220,518 C 221,496 222,474 222,452 C 223,430 225,408 228,386 C 230,364 233,343 237,322 C 241,301 245,280 250,260 C 256,240 263,220 270,200 C 277,180 282,160 286,138 C 290,118 293,96 296,74 C 298,54 300,34 308,10 Z"
+          fill="url(#chileBodyGrad)"
+          stroke="rgba(255,255,255,0.09)"
+          stroke-width="1.2"
+          opacity="0.35"
+          transform="rotate(-4, 184, 455) translate(15, 0)"
+        />
+        <g opacity="0.75">
+        {chileRegions.map((region) => (
+          <g data-region={region.id}>
+            <rect
+              x={region.x}
+              y={region.y}
+              width={region.width}
+              height={region.height}
+              rx="18"
+              fill="rgba(8,14,24,0.96)"
+            ></rect>
+            <rect
+              x={region.x}
+              y={region.y}
+              width={region.width}
+              height={region.height}
+              rx="18"
+              fill={region.tone}
+              stroke="url(#regionStroke)"
+              stroke-width="1.4"
+            ></rect>
+            <text
+              x={region.x + 12}
+              y={region.y + region.height / 2 + 5}
+              fill="white"
+              font-size="11"
+              font-weight="700"
+            >
+              {region.shortName}
+            </text>
+          </g>
+        ))}
+        </g>
+      </svg>
+
+      {eventsWithPosition.map((event, index) => (
+        <button
+          type="button"
+          class="event-marker focus-ring"
+          style={`left:${event.leftPercent}%;top:${event.topPercent}%;`}
+          data-event-open={event.id}
+          data-event-index={String(index)}
+          aria-label={`Abrir ${event.title}`}
+        >
+          <span class="event-marker-dot"></span>
+          <span class="event-marker-label">{index + 1}</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="mt-6 flex flex-wrap gap-2">
+      {chileRegions.filter((region) => regionCounts[region.id] > 0).map((region) => (
+        <span class="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white">
+          {region.shortName}: {regionCounts[region.id]}
+        </span>
+      ))}
+    </div>
+  </div>
+
+  <div class="grid gap-4">
+    {events.length > 0 ? (
+      events.slice(0, 6).map((event, index) => (
+        <button
+          type="button"
+          class="surface-panel focus-ring rounded-[1.75rem] p-5 text-left transition hover:-translate-y-0.5"
+          data-event-open={event.id}
+          data-event-index={String(index)}
+        >
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm">{event.region}</p>
+          <h3 class="mt-2 text-xl font-bold text-white">{event.title}</h3>
+          <p class="mt-3 text-sm leading-6 text-campaign-text-muted">
+            {event.date} · {event.time} · {event.venue}
+          </p>
+        </button>
+      ))
+    ) : (
+      <div class="surface-panel rounded-[1.75rem] p-6">
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-campaign-sky">Próximamente</p>
+        <h3 class="mt-3 text-2xl font-bold text-white">Aún no hay eventos publicados</h3>
+        <p class="mt-4 text-base leading-7 text-campaign-text-muted">
+          El mapa se actualizará cuando existan actividades aprobadas por el equipo. Puedes ser de las primeras personas en proponer una.
+        </p>
+      </div>
+    )}
+  </div>
+</div>
+
+<script is:inline type="application/json" data-events-json set:html={JSON.stringify(eventsWithPosition)}></script>
+
+<div class="event-modal hidden" data-event-modal>
+  <div class="event-modal-backdrop" data-event-close></div>
+  <div class="event-modal-card surface-panel">
+    <button type="button" class="event-modal-close focus-ring" data-event-close aria-label="Cerrar detalle del evento">×</button>
+    <div class="event-modal-image">
+      <img src={logoSrc.src} alt="Logo pingüino de Humboldt" class="event-modal-logo" />
+      <span class="campaign-hashtag">#esmásqueunpingüino</span>
+      <img src="" alt="" class="event-modal-real-img" data-event-image />
+    </div>
+    <div class="event-modal-body">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-campaign-warm" data-event-region></p>
+      <h3 class="mt-2 text-2xl font-black text-white" data-event-title></h3>
+      <p class="mt-3 text-sm leading-6 text-campaign-text-muted" data-event-meta></p>
+      <p class="mt-5 text-base leading-7 text-campaign-text-muted" data-event-description></p>
+      <a
+        href=""
+        target="_blank"
+        rel="noopener noreferrer"
+        class="mt-5 hidden items-center gap-2 rounded-full border border-white/14 bg-white/6 px-4 py-2 text-sm font-semibold text-campaign-sky transition hover:bg-white/10"
+        data-event-link
+      >
+        Más información
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h4a.75.75 0 010 1.5h-4zm6.5-1a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V6.06l-6.22 6.22a.75.75 0 11-1.06-1.06L15.44 5H11a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  const events = JSON.parse(document.querySelector("[data-events-json]")?.textContent || "[]");
+  const modal = document.querySelector("[data-event-modal]");
+  const region = document.querySelector("[data-event-region]");
+  const title = document.querySelector("[data-event-title]");
+  const meta = document.querySelector("[data-event-meta]");
+  const description = document.querySelector("[data-event-description]");
+  const linkEl = document.querySelector("[data-event-link]");
+  const imageEl = document.querySelector("[data-event-image]");
+
+  const openEvent = (eventId) => {
+    const event = events.find((item) => item.id === eventId);
+    if (!event || !(modal instanceof HTMLElement)) return;
+
+    if (region instanceof HTMLElement) region.textContent = event.regionName;
+    if (title instanceof HTMLElement) title.textContent = event.title;
+    if (meta instanceof HTMLElement) meta.textContent = `${event.date} · ${event.time} · ${event.venue}`;
+    if (description instanceof HTMLElement) description.textContent = event.description;
+
+    if (imageEl instanceof HTMLImageElement) {
+      imageEl.classList.remove("is-loaded");
+      imageEl.src = "";
+      if (event.imageUrl) {
+        imageEl.src = event.imageUrl;
+        imageEl.alt = event.title;
+        imageEl.onload = () => imageEl.classList.add("is-loaded");
+        imageEl.onerror = () => {
+          imageEl.classList.remove("is-loaded");
+          imageEl.src = "";
+        };
+      }
+    }
+
+    if (linkEl instanceof HTMLAnchorElement) {
+      if (event.link) {
+        linkEl.href = event.link;
+        linkEl.classList.remove("hidden");
+        linkEl.classList.add("inline-flex");
+      } else {
+        linkEl.href = "";
+        linkEl.classList.add("hidden");
+        linkEl.classList.remove("inline-flex");
+      }
+    }
+
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeModal = () => {
+    if (!(modal instanceof HTMLElement)) return;
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
+    if (imageEl instanceof HTMLImageElement) {
+      imageEl.classList.remove("is-loaded");
+      imageEl.src = "";
+    }
+    if (linkEl instanceof HTMLAnchorElement) {
+      linkEl.href = "";
+      linkEl.classList.add("hidden");
+      linkEl.classList.remove("inline-flex");
+    }
+  };
+
+  document.querySelectorAll("[data-event-open]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const eventId = button.getAttribute("data-event-open");
+      if (eventId) openEvent(eventId);
+    });
+  });
+
+  document.querySelectorAll("[data-event-close]").forEach((node) => {
+    node.addEventListener("click", closeModal);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeModal();
+    }
+  });
+</script>

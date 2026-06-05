@@ -1,0 +1,627 @@
+---
+import { campaignConfig } from "../../content/campaign";
+import { createFormToken } from "../../lib/security/form-token";
+import { isSecurityConfigured, isServerStorageConfigured, securityConfig } from "../../lib/security/config";
+
+const { signatureForm } = campaignConfig;
+const isConfigured = isSecurityConfigured && isServerStorageConfigured;
+const formToken = isConfigured ? await createFormToken("signature_submit") : null;
+---
+
+<div class="surface-panel rounded-[2rem] p-7 md:p-8">
+  <div class="mb-8">
+    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-sky">Firma</p>
+    <h2 class="mt-3 text-3xl font-black tracking-tight text-white">{signatureForm.title}</h2>
+    <p class="mt-4 text-base leading-7 text-campaign-text-muted">{signatureForm.helper}</p>
+  </div>
+
+  <form
+    class="grid gap-5"
+    method="post"
+    action="/api/signatures"
+    data-signature-form
+    data-form-configured={String(isConfigured)}
+    novalidate
+  >
+    <div class="hidden" aria-hidden="true">
+      <label>
+        Empresa
+        <input name="company" type="text" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.firstName}</span>
+        <input
+          name="first_name"
+          autocomplete="given-name"
+          required
+          data-validate="first_name"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Tu nombre"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="first_name"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.lastName}</span>
+        <input
+          name="last_name"
+          autocomplete="family-name"
+          required
+          data-validate="last_name"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Tu apellido"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="last_name"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.rut}</span>
+        <input
+          name="rut"
+          inputmode="text"
+          autocomplete="off"
+          required
+          data-validate="rut"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="12.345.678-5"
+        />
+        <span class="text-xs leading-5 text-campaign-text-muted">{signatureForm.rutHelp}</span>
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="rut"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.email}</span>
+        <input
+          type="email"
+          name="email"
+          autocomplete="email"
+          required
+          data-validate="email"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="nombre@correo.cl"
+        />
+        <span class="text-xs leading-5 text-transparent select-none" aria-hidden="true">
+          {signatureForm.rutHelp}
+        </span>
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="email"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.age}</span>
+        <input
+          type="number"
+          name="age"
+          inputmode="numeric"
+          min="18"
+          max="120"
+          required
+          data-validate="age"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Ej. 34"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="age"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.country}</span>
+        <input
+          name="country"
+          autocomplete="country-name"
+          required
+          data-validate="country"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Ej. Chile"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="country"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.legalNature}</span>
+        <select
+          name="legal_nature"
+          required
+          data-validate="legal_nature"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-[#0f1822] px-4 py-3 text-white"
+        >
+          <option value="">Selecciona una opción</option>
+          <option value="Persona natural">Persona natural</option>
+          <option value="Persona jurídica">Persona jurídica</option>
+        </select>
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="legal_nature"></span>
+      </label>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.region}</span>
+        <input
+          name="region"
+          autocomplete="address-level1"
+          required
+          data-validate="region"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Ej. Coquimbo"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="region"></span>
+      </label>
+
+      <label class="grid gap-2 text-sm font-medium text-white">
+        <span>{signatureForm.fields.commune}</span>
+        <input
+          name="commune"
+          autocomplete="address-level2"
+          required
+          data-validate="commune"
+          class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+          placeholder="Ej. La Higuera"
+        />
+        <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="commune"></span>
+      </label>
+    </div>
+
+    <label class="grid gap-2 text-sm font-medium text-white">
+      <span>{signatureForm.fields.affiliation}</span>
+      <input
+        name="affiliation"
+        data-validate="affiliation"
+        class="focus-ring min-h-12 rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+        placeholder="Opcional"
+      />
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="affiliation"></span>
+    </label>
+
+    <label class="grid gap-2 text-sm font-medium text-white">
+      <span>{signatureForm.fields.message}</span>
+      <textarea
+        name="message"
+        rows="4"
+        data-validate="message"
+        class="focus-ring rounded-2xl border border-white/14 bg-white/6 px-4 py-3 text-white placeholder:text-campaign-text-muted"
+        placeholder="Opcional"
+      ></textarea>
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="message"></span>
+    </label>
+
+    <div class="grid gap-3">
+      <label class="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/5 p-4 text-sm text-campaign-text-muted">
+        <input
+          type="checkbox"
+          name="adult_declaration"
+          required
+          data-validate="adult_declaration"
+          class="mt-1 h-4 w-4 rounded border-white/20 bg-black text-campaign-warm"
+        />
+        <span>{signatureForm.fields.adultDeclaration}</span>
+      </label>
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="adult_declaration"></span>
+
+      <label class="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/5 p-4 text-sm text-campaign-text-muted">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          data-validate="consent"
+          class="mt-1 h-4 w-4 rounded border-white/20 bg-black text-campaign-warm"
+        />
+        <span>
+          {signatureForm.fields.consent}{" "}
+          <a href="/privacidad" class="font-semibold text-campaign-warm underline underline-offset-4 hover:text-[#FFF1A8]">
+            política de privacidad
+          </a>
+          .
+        </span>
+      </label>
+      <span class="max-h-0 overflow-hidden text-sm text-red-300 opacity-0 transition-all duration-500" data-error-for="consent"></span>
+
+      <label class="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/5 p-4 text-sm text-campaign-text-muted">
+        <input
+          type="checkbox"
+          name="updates"
+          class="mt-1 h-4 w-4 rounded border-white/20 bg-black text-campaign-warm"
+        />
+        <span>{signatureForm.fields.updates}</span>
+      </label>
+    </div>
+
+    <input type="hidden" name="issued_at_ms" value={formToken?.issuedAtMs ?? ""} />
+    <input type="hidden" name="form_nonce" value={formToken?.nonce ?? ""} />
+    <input type="hidden" name="form_token" value={formToken?.signature ?? ""} />
+    <input type="hidden" name="captcha_token" value="" data-captcha-token />
+
+    <div class="grid gap-4 border-t border-white/10 pt-5">
+      <p class="text-sm leading-6 text-campaign-text-muted">{signatureForm.privacyNote}</p>
+      <noscript>
+        <p class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-sm text-campaign-text-muted">
+          JavaScript está desactivado. El formulario seguirá enviándose por POST estándar al endpoint seguro del sitio.
+        </p>
+      </noscript>
+      {!isConfigured && (
+        <p class="rounded-2xl border border-campaign-sky/25 bg-campaign-sky/8 px-4 py-3 text-sm text-campaign-sky">
+          Configura `SECURITY_HASH_SECRET` y las credenciales server-side de Firestore para habilitar el registro seguro de firmas.
+        </p>
+      )}
+      {securityConfig.captcha.enabled && securityConfig.captcha.siteKey && (
+        <p class="rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-sm text-campaign-text-muted">
+          La protección reforzada está activa. Si aparece un desafío adicional, será solo para confirmar que eres una persona.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        data-signature-submit
+        class="focus-ring button-text-outline inline-flex min-h-12 items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-6 py-3 text-[0.95rem] font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_18px_60px_rgba(56,182,255,0.3),inset_0_1px_0_rgba(255,255,255,0.24)] transition hover:bg-[#63C6FF]"
+      >
+        {signatureForm.submitLabel}
+      </button>
+
+      <p class="text-sm text-campaign-text-muted" data-signature-status>
+        {isConfigured
+          ? "Tus datos se validarán y protegerán antes de registrar la firma."
+          : "Falta configurar la capa server-side para habilitar la firma efectiva."}
+      </p>
+    </div>
+  </form>
+</div>
+
+<script>
+  const form = document.querySelector("[data-signature-form]");
+  const status = document.querySelector("[data-signature-status]");
+  const submitButton = document.querySelector("[data-signature-submit]");
+  const errorTimers = new Map();
+
+  if (form instanceof HTMLFormElement && status instanceof HTMLElement) {
+    const normalizeRut = (value: string) => value.replace(/\./g, "").replace(/-/g, "").trim().toUpperCase();
+
+    const formatRut = (value: string) => {
+      const clean = normalizeRut(value);
+      if (clean.length < 2) return clean;
+      const body = clean.slice(0, -1);
+      const dv = clean.slice(-1);
+      const reversed = body.split("").reverse();
+      const withDots = [];
+
+      for (let i = 0; i < reversed.length; i += 3) {
+        withDots.push(reversed.slice(i, i + 3).reverse().join(""));
+      }
+
+      return `${withDots.reverse().join(".")}-${dv}`;
+    };
+
+    const isValidRut = (value: string) => {
+      const clean = normalizeRut(value);
+      if (!/^\d{7,8}[0-9K]$/.test(clean)) return false;
+
+      const body = clean.slice(0, -1);
+      const dv = clean.slice(-1);
+      let sum = 0;
+      let multiplier = 2;
+
+      for (let i = body.length - 1; i >= 0; i -= 1) {
+        sum += Number(body[i]) * multiplier;
+        multiplier = multiplier === 7 ? 2 : multiplier + 1;
+      }
+
+      const remainder = 11 - (sum % 11);
+      const expectedDv =
+        remainder === 11 ? "0" : remainder === 10 ? "K" : String(remainder);
+
+      return dv === expectedDv;
+    };
+
+    interface ValidationRule {
+      required: boolean;
+      message: string;
+      regex?: RegExp;
+    }
+
+    const validators: Record<string, ValidationRule> = {
+      first_name: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'\-\s]{2,60}$/,
+        message: "Ingresa un nombre válido."
+      },
+      last_name: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'\-\s]{2,80}$/,
+        message: "Ingresa un apellido válido."
+      },
+      rut: {
+        required: true,
+        message: "Ingresa un RUT chileno válido."
+      },
+      email: {
+        required: true,
+        regex: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+        message: "Ingresa un correo electrónico válido."
+      },
+      age: {
+        required: true,
+        regex: /^(?:1[89]|[2-9][0-9]|1[01][0-9]|120)$/,
+        message: "Debes tener 18 años o más para firmar."
+      },
+      country: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'().,\-\s]{2,80}$/,
+        message: "Ingresa un país válido."
+      },
+      legal_nature: {
+        required: true,
+        regex: /^(Persona natural|Persona jurídica)$/,
+        message: "Selecciona si firmas como persona natural o jurídica."
+      },
+      adult_declaration: {
+        required: true,
+        message: "Debes declarar que eres mayor de 18 años."
+      },
+      region: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'().,\-\s]{2,80}$/,
+        message: "Ingresa una región válida."
+      },
+      commune: {
+        required: true,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9'().,\-\s]{2,80}$/,
+        message: "Ingresa una comuna válida."
+      },
+      affiliation: {
+        required: false,
+        regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9.,'()\-\/\s]{0,120}$/,
+        message: "La organización o vínculo contiene caracteres no permitidos."
+      },
+      message: {
+        required: false,
+        regex: /^[\s\S]{0,500}$/,
+        message: "El mensaje no puede superar los 500 caracteres."
+      },
+      consent: {
+        required: true,
+        message: "Debes aceptar el consentimiento para firmar."
+      }
+    };
+
+    type FieldName = keyof typeof validators & string;
+
+    const getField = (name: string) => form.elements.namedItem(name);
+    const getValue = (name: string) => {
+      const field = form.elements.namedItem(name);
+      return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
+        ? field.value.trim()
+        : field instanceof HTMLSelectElement
+          ? field.value.trim()
+        : "";
+    };
+
+    const getChecked = (name: string) => {
+      const field = form.elements.namedItem(name);
+      return field instanceof HTMLInputElement ? field.checked : false;
+    };
+
+    const showError = (name: string, message: string) => {
+      const node = form.querySelector(`[data-error-for="${name}"]`);
+      const field = getField(name);
+
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+        field.classList.add("border-red-400", "bg-red-950/20");
+        field.classList.remove("border-white/14");
+        field.setAttribute("aria-invalid", "true");
+      }
+
+      if (node instanceof HTMLElement) {
+        node.textContent = message;
+        node.classList.remove("opacity-0", "max-h-0");
+        node.classList.add("opacity-100", "max-h-16", "mt-1");
+
+        const previous = errorTimers.get(name);
+        if (previous) window.clearTimeout(previous);
+
+        const timer = window.setTimeout(() => {
+          node.classList.add("opacity-0", "max-h-0");
+          node.classList.remove("opacity-100", "max-h-16", "mt-1");
+        }, 5000);
+
+        errorTimers.set(name, timer);
+      }
+    };
+
+    const clearError = (name: string) => {
+      const node = form.querySelector(`[data-error-for="${name}"]`);
+      const field = getField(name);
+
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+        field.classList.remove("border-red-400", "bg-red-950/20");
+        field.classList.add("border-white/14");
+        field.removeAttribute("aria-invalid");
+      }
+
+      if (node instanceof HTMLElement) {
+        node.classList.add("opacity-0", "max-h-0");
+        node.classList.remove("opacity-100", "max-h-16", "mt-1");
+      }
+
+      const previous = errorTimers.get(name);
+      if (previous) window.clearTimeout(previous);
+    };
+
+    const validateField = (name: FieldName) => {
+      const rule = validators[name];
+      if (!rule) return true;
+
+      const field = getField(name);
+
+      if (name === "consent" || name === "adult_declaration") {
+        const checked = getChecked(name);
+        if (rule.required && !checked) {
+          showError(name, rule.message);
+          return false;
+        }
+        clearError(name);
+        return true;
+      }
+
+      const value = getValue(name);
+
+      if (rule.required && !value) {
+        showError(name, "Este campo es obligatorio.");
+        return false;
+      }
+
+      if (!value) {
+        clearError(name);
+        return true;
+      }
+
+      if (name === "rut") {
+        if (!isValidRut(value)) {
+          showError(name, rule.message);
+          return false;
+        }
+
+        if (field instanceof HTMLInputElement) {
+          field.value = formatRut(value);
+        }
+
+        clearError(name);
+        return true;
+      }
+
+      if (rule.regex && !rule.regex.test(value)) {
+        showError(name, rule.message);
+        return false;
+      }
+
+      clearError(name);
+      return true;
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const isConfigured = form.dataset.formConfigured === "true";
+
+      if (!isConfigured) {
+        status.textContent =
+          "El formulario está listo, pero falta completar la configuración server-side para registrar firmas.";
+        window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "not_configured" } }));
+        return;
+      }
+
+      const fieldsToValidate = Object.keys(validators) as FieldName[];
+      const validationResults = fieldsToValidate.map((name) => ({
+        name,
+        valid: validateField(name)
+      }));
+      const firstInvalid = validationResults.find((item) => !item.valid);
+      const hasErrors = Boolean(firstInvalid);
+
+      if (hasErrors) {
+        status.textContent = "Revisa los campos marcados en rojo antes de enviar.";
+        window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "validation" } }));
+        const field = firstInvalid ? getField(firstInvalid.name) : null;
+
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+          field.focus({ preventScroll: true });
+          field.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        return;
+      }
+
+      if (submitButton instanceof HTMLButtonElement) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Enviando...";
+      }
+
+      status.textContent = "Guardando tu firma...";
+
+      try {
+        const response = await fetch("/api/signatures", {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            accept: "application/json"
+          }
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          if (payload.fieldErrors && typeof payload.fieldErrors === "object") {
+            Object.entries(payload.fieldErrors).forEach(([name, messages]) => {
+              const message = Array.isArray(messages) ? messages[0] : "";
+              if (message) showError(name.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`), message);
+            });
+          }
+
+          status.textContent =
+            typeof payload.message === "string"
+              ? payload.message
+              : "No pudimos procesar tu firma. Inténtalo nuevamente en un momento.";
+          window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "response_error" } }));
+          return;
+        }
+
+        form.reset();
+        status.textContent =
+          typeof payload.message === "string"
+            ? payload.message
+            : "Tu firma fue registrada. Gracias por sumarte.";
+        window.dispatchEvent(
+          new CustomEvent("signature:created", {
+            detail: {
+              status: typeof payload.status === "string" ? payload.status : "accepted",
+              uiSurface: window.location.pathname === "/firma" ? "signature_page" : "embedded_signature_form",
+              sourceContext: "campaign_site"
+            }
+          })
+        );
+      } catch (error) {
+        console.error(error);
+        status.textContent =
+          "No se pudo registrar tu firma. Inténtalo nuevamente en un momento.";
+        window.dispatchEvent(new CustomEvent("signature:error", { detail: { errorType: "network" } }));
+      } finally {
+        if (submitButton instanceof HTMLButtonElement) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Firmar la carta";
+        }
+      }
+    });
+
+    (["first_name", "last_name", "rut", "email", "age", "country", "legal_nature", "region", "commune", "affiliation", "message"] as FieldName[]).forEach(
+      (name) => {
+        const field = getField(name);
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+          field.addEventListener("input", () => {
+          if (name === "rut" && field instanceof HTMLInputElement) {
+            const clean = normalizeRut(field.value).slice(0, 9);
+            field.value = formatRut(clean);
+          }
+
+            validateField(name);
+          });
+          field.addEventListener("blur", () => validateField(name));
+          if (field instanceof HTMLSelectElement) {
+            field.addEventListener("change", () => validateField(name));
+          }
+        }
+      }
+    );
+
+    const consentField = getField("consent");
+    if (consentField instanceof HTMLInputElement) {
+      consentField.addEventListener("change", () => validateField("consent"));
+    }
+
+    const adultDeclarationField = getField("adult_declaration");
+    if (adultDeclarationField instanceof HTMLInputElement) {
+      adultDeclarationField.addEventListener("change", () => validateField("adult_declaration"));
+    }
+  }
+</script>

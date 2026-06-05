@@ -1,0 +1,276 @@
+---
+import { campaignConfig } from "../../content/campaign";
+import logo from "../../assets/logo_pinguino_humboldt_circulo.png";
+import pinguinosVideo from "../../assets/pinguinos.mp4";
+import pinguinosVideoMobile from "../../assets/pinguinos-mobile.mp4";
+import ButtonLink from "../ui/ButtonLink.astro";
+import PenguinSmartGallery from "../campaign/PenguinSmartGallery.vue";
+import Countdown from "../ui/Countdown.astro";
+import Section from "../ui/Section.astro";
+
+interface Props {
+  initialCount?: number;
+  initialChileanCount?: number;
+  initialForeignCount?: number;
+}
+
+const { hero, dates, ecosystem } = campaignConfig;
+const formatCount = (value: number) => new Intl.NumberFormat("es-CL").format(value);
+const {
+  initialCount = 0,
+  initialChileanCount = 0,
+  initialForeignCount = 0
+} = Astro.props;
+---
+
+<Section size="hero" class="overflow-visible" id="inicio">
+  {hero.mode === "video" && hero.videoSrc ? (
+    <video
+      class="absolute inset-0 h-full w-full object-cover opacity-30"
+      autoplay
+      muted
+      loop
+      playsinline
+      aria-hidden="true"
+    >
+      <source src={hero.videoSrc} />
+    </video>
+  ) : (
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,182,255,0.18),transparent_32%),radial-gradient(circle_at_80%_10%,rgba(255,162,209,0.18),transparent_22%),linear-gradient(180deg,rgba(0,151,178,0.06),transparent_55%)]"></div>
+  )}
+  <div data-hero-sentinel class="absolute inset-x-0 top-0 h-full" aria-hidden="true"></div>
+  <div class="noise-overlay"></div>
+  <div class="relative z-10 overflow-visible rounded-[2rem] border border-white/12 bg-black/20">
+    <video
+      data-hero-video
+      class="absolute inset-0 h-full w-full object-cover opacity-75 md:opacity-44"
+      autoplay
+      muted
+      playsinline
+      aria-hidden="true"
+    >
+      <source src={pinguinosVideoMobile} type="video/mp4" media="(max-width: 767px)" />
+      <source src={pinguinosVideo} type="video/mp4" />
+    </video>
+    <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,11,0.9)_0%,rgba(5,7,11,0.76)_42%,rgba(5,7,11,0.84)_100%)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_28%,rgba(255,255,255,0.08),transparent_18%),radial-gradient(circle_at_80%_20%,rgba(56,182,255,0.12),transparent_22%)]"></div>
+    <button
+      type="button"
+      data-hero-video-play
+      aria-label="Reproducir video con sonido"
+      class="focus-ring absolute right-4 top-4 z-20 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/24 bg-black/45 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_12px_30px_rgba(0,0,0,0.32)] backdrop-blur-md transition duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-campaign-warm hover:bg-black/70 hover:text-campaign-warm md:right-6 md:top-6"
+    >
+      <span class="absolute inset-0 rounded-full animate-ping bg-white/8 [animation-duration:2.4s]"></span>
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="relative z-10 h-6 w-6 fill-current">
+        <path d="M8 6.5v11l9-5.5-9-5.5Z"></path>
+      </svg>
+    </button>
+
+    <div class="relative grid items-start gap-4 p-3 pt-3 sm:gap-8 sm:p-6 sm:pt-14 md:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 lg:p-10">
+      <div>
+        <div class="mb-2 flex flex-col items-start gap-3 sm:mb-4 sm:flex-row sm:items-center sm:gap-4 md:mb-10 md:gap-5">
+          <div class="relative isolate flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white/16 bg-white/7 shadow-[0_28px_90px_rgba(0,0,0,0.45)] sm:h-32 sm:w-32 md:h-44 md:w-44">
+            <div class="absolute inset-0 bg-[radial-gradient(circle,transparent_48%,rgba(5,7,11,0.18)_74%,rgba(5,7,11,0.55)_100%)]"></div>
+            <img
+              src={logo.src}
+              alt="Logo circular de la campaña del pingüino de Humboldt"
+              class="relative z-10 h-24 w-24 object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] sm:h-28 sm:w-28 md:h-36 md:w-36"
+            />
+          </div>
+          <p class="max-w-xs text-xs font-semibold uppercase tracking-[0.16em] text-campaign-warm sm:text-sm md:max-w-sm md:tracking-[0.18em]">
+            {hero.eyebrow}
+          </p>
+        </div>
+
+        <div class="mb-3 rounded-[1.6rem] bg-transparent p-0 md:hidden">
+          <PenguinSmartGallery client:media="(max-width: 767px)" />
+        </div>
+
+        <div class="inline-flex rounded-full border border-campaign-sky/30 bg-campaign-sky/12 px-4 py-2 text-sm font-medium text-campaign-sky">
+          {hero.rotatingLines[0]}
+        </div>
+
+        <h1 class="mt-3 max-w-4xl text-[2.8rem] font-black leading-none tracking-tight text-white sm:mt-5 sm:text-6xl lg:text-8xl">
+          <span class="text-gradient">{hero.title}</span>
+        </h1>
+
+        <p class="mt-3 max-w-3xl text-base leading-7 text-campaign-text-muted sm:mt-5 md:text-xl md:leading-8">
+          {hero.subtitle}
+        </p>
+
+        <div class="mt-4 flex gap-3 sm:mt-6 md:mt-8 md:gap-4">
+          <ButtonLink href="/carta" label={hero.buttons.readLetter} variant="secondary" class="flex-1 px-4 text-[0.82rem] text-center md:flex-none md:px-6 md:text-[0.95rem]" />
+          <ButtonLink href="/firma" label={hero.buttons.signNow} class="flex-1 px-4 text-[0.82rem] text-center md:flex-none md:px-6 md:text-[0.95rem]" />
+        </div>
+
+        <div class="mt-4 md:hidden">
+          <Countdown
+            targetIso={dates.signatureDeadlineIso}
+            expiredMessage="El 20 de abril ya llegó. Seguimos compartiendo información y apoyo ciudadano."
+          />
+        </div>
+
+        <!-- Mobile: static signature counter + CTA -->
+        <div class="mt-4 md:hidden">
+          <div class="rounded-[1.4rem] border border-white/14 bg-[#070b15] px-4 py-4 shadow-[0_12px_40px_rgba(0,0,0,0.38)]">
+            <div class="flex items-center gap-3">
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/6 text-campaign-sky">
+                <svg aria-hidden="true" viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-current">
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 5v4.59l3.3 3.3-1.42 1.41L11 12.41V7Z"></path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-campaign-sky">{hero.signaturesCounter.label}</p>
+                <p class="mt-0.5 text-2xl font-black leading-none text-white" data-mobile-counter-value>{formatCount(initialCount)}</p>
+              </div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="rounded-2xl border border-white/10 bg-white/6 px-2 py-2 text-center">
+                <p class="text-[8px] font-semibold uppercase tracking-[0.06em] text-campaign-sky/90">Chilenas</p>
+                <p class="mt-1 text-sm font-black leading-none text-white" data-mobile-counter-chile>{formatCount(initialChileanCount)}</p>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/6 px-2 py-2 text-center">
+                <p class="text-[8px] font-semibold uppercase tracking-[0.06em] text-campaign-sky/90">Extranjeras</p>
+                <p class="mt-1 text-sm font-black leading-none text-white" data-mobile-counter-foreign>{formatCount(initialForeignCount)}</p>
+              </div>
+            </div>
+            <a
+              href="/firma#formulario-firma"
+              data-analytics-event="cta_click"
+              data-analytics-label={hero.buttons.signNow}
+              data-analytics-context="hero_mobile_static_cta"
+              class="focus-ring mt-4 flex min-h-12 w-full items-center justify-center rounded-full border border-black/55 bg-campaign-sky px-6 text-sm font-extrabold uppercase tracking-[0.16em] text-white shadow-[0_8px_30px_rgba(56,182,255,0.3)]"
+            >
+              {hero.buttons.signNow}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden space-y-6 md:block">
+        <Countdown
+          targetIso={dates.signatureDeadlineIso}
+          expiredMessage="El 20 de abril ya llegó. Seguimos compartiendo información y apoyo ciudadano."
+        />
+
+        <div class="rounded-[2rem] bg-transparent p-4 md:p-5">
+          <PenguinSmartGallery client:media="(min-width: 768px)" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative z-10 mt-10 surface-panel rounded-[2rem] p-6 md:p-8">
+    <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-campaign-warm">Deseo</p>
+        <h2 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight text-white md:text-4xl">
+          {ecosystem.title}
+        </h2>
+        <p class="mt-5 max-w-2xl text-base leading-7 text-campaign-text-muted md:text-lg">
+          {ecosystem.body}
+        </p>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        {ecosystem.pillars.map((pillar) => (
+          <article class="rounded-3xl border border-white/12 bg-black/18 p-5">
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-campaign-sky/14 text-2xl text-campaign-warm">
+                {pillar.icon}
+              </div>
+              <h3 class="text-xl font-semibold text-white">{pillar.title}</h3>
+            </div>
+            <p class="mt-3 text-sm leading-6 text-campaign-text-muted">{pillar.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div class="flex w-full flex-nowrap items-center justify-center gap-1 font-medium text-campaign-text-muted sm:justify-start sm:gap-3">
+        <span class="rounded-full border border-white/12 bg-white/5 px-1.5 py-0.5 text-[10px] text-white sm:px-4 sm:py-2 sm:text-base">Pingüino</span>
+        <span class="shrink-0 text-[10px] text-campaign-sky sm:text-lg">→</span>
+        <span class="rounded-full border border-white/12 bg-white/5 px-1.5 py-0.5 text-[10px] text-white sm:px-4 sm:py-2 sm:text-base">Océano</span>
+        <span class="shrink-0 text-[10px] text-campaign-sky sm:text-lg">→</span>
+        <span class="rounded-full border border-white/12 bg-white/5 px-1.5 py-0.5 text-[10px] text-white sm:px-4 sm:py-2 sm:text-base">Personas</span>
+        <span class="shrink-0 text-[10px] text-campaign-sky sm:text-lg">→</span>
+        <span class="rounded-full border border-white/12 bg-white/5 px-1.5 py-0.5 text-[10px] text-white sm:px-4 sm:py-2 sm:text-base">Futuro</span>
+      </div>
+
+      <div class="rounded-[1.6rem] border border-white/12 bg-black/18 px-5 py-4">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-campaign-warm">
+          Ventana ciudadana
+        </p>
+        <p class="mt-3 text-lg font-semibold text-white">Antes del <span class="whitespace-nowrap">{dates.signatureDeadlineLabel}</span></p>
+        <p class="mt-3 max-w-md text-sm leading-6 text-campaign-text-muted">
+          Leer, firmar y compartir son las tres acciones clave de esta fase.
+        </p>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<script>
+  import { getSignatureCount, invalidateSignatureCountCache } from "../../lib/signatures";
+
+  const mobileValueNode = document.querySelector("[data-mobile-counter-value]");
+  const mobileChileNode = document.querySelector("[data-mobile-counter-chile]");
+  const mobileForeignNode = document.querySelector("[data-mobile-counter-foreign]");
+  const fmt = (n: number) => new Intl.NumberFormat("es-CL").format(n);
+
+  const refreshMobile = async () => {
+    if (!(mobileValueNode instanceof HTMLElement)) return;
+    try {
+      const c = await getSignatureCount();
+      mobileValueNode.textContent = fmt(c.count);
+      if (mobileChileNode instanceof HTMLElement) mobileChileNode.textContent = fmt(c.chileanCount);
+      if (mobileForeignNode instanceof HTMLElement) mobileForeignNode.textContent = fmt(c.foreignCount);
+    } catch { /* keep displayed value */ }
+  };
+
+  refreshMobile();
+  window.addEventListener("signature:created", () => { invalidateSignatureCountCache(); refreshMobile(); });
+  window.setInterval(() => { invalidateSignatureCountCache(); refreshMobile(); }, 1000 * 60 * 10);
+</script>
+
+<script>
+  const heroVideo = document.querySelector("[data-hero-video]");
+  const playButton = document.querySelector("[data-hero-video-play]");
+
+  if (heroVideo instanceof HTMLVideoElement) {
+    const fallbackToMuted = async () => {
+      heroVideo.muted = true;
+      try {
+        await heroVideo.play();
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const playWithSoundOnce = async () => {
+      heroVideo.pause();
+      heroVideo.currentTime = 0;
+      heroVideo.muted = false;
+
+      try {
+        await heroVideo.play();
+      } catch (error) {
+        console.error(error);
+        await fallbackToMuted();
+      }
+    };
+
+    heroVideo.addEventListener("ended", () => {
+      heroVideo.muted = true;
+    });
+
+    if (playButton instanceof HTMLButtonElement) {
+      playButton.addEventListener("click", () => {
+        playWithSoundOnce();
+      });
+    }
+
+    playWithSoundOnce();
+  }
+</script>

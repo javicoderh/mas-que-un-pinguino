@@ -1,0 +1,29 @@
+---
+interface SocialLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  links: readonly SocialLink[];
+}
+
+const { links } = Astro.props;
+const publicLinks = links.filter((link) => /^https?:\/\//.test(link.href) && link.label !== "YouTube");
+---
+
+<div class="flex flex-wrap gap-3">
+  {publicLinks.map((link) => (
+    <a
+      href={link.href}
+      target="_blank"
+      rel="noreferrer noopener"
+      data-analytics-event="social_click"
+      data-analytics-label={link.label}
+      data-analytics-context="social_links_row"
+      class="focus-ring inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/6 px-3 py-1.5 text-xs font-medium text-white transition hover:-translate-y-0.5 hover:border-campaign-sky hover:bg-white/10 md:min-h-12 md:px-5 md:py-3 md:text-sm"
+    >
+      {link.label}
+    </a>
+  ))}
+</div>

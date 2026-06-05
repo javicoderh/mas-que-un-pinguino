@@ -1,0 +1,12 @@
+node_modules
+.astro
+.vercel
+dist
+generated
+.env
+.claude/
+
+# Exportaciones con datos personales (RUTs, emails)
+*.xlsx
+.~lock.*
+.env*

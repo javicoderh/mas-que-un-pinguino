@@ -1,0 +1,71 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Section from "../components/ui/Section.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ButtonLink from "../components/ui/ButtonLink.astro";
+import Breadcrumbs from "../components/ui/Breadcrumbs.astro";
+import { campaignConfig } from "../content/campaign";
+
+const letterPdfUrl = new URL(campaignConfig.assets.publicLetterPdf, campaignConfig.site.siteUrl).toString();
+const breadcrumbItems = [
+  { name: "Inicio", path: "/" },
+  { name: "Carta abierta", path: "/carta" }
+];
+---
+
+<MainLayout
+  path="/carta"
+  title="Carta abierta por el pingüino de Humboldt | Base pública de la campaña"
+  description="Lee la carta abierta de la campaña y revisa la invitación ciudadana a apoyar, desde la ciencia, la protección del pingüino de Humboldt."
+  keywords={["carta abierta pingüino de Humboldt", "protección del pingüino de Humboldt", "documento público", "ciencia y participación"]}
+  breadcrumbItems={breadcrumbItems}
+  pageType="Article"
+  publishedTime="2026-04-06T12:00:00-04:00"
+  modifiedTime="2026-04-06T12:00:00-04:00"
+>
+  <Section size="hero">
+    <div class="mx-auto max-w-4xl">
+      <div class="surface-panel rounded-[2rem] p-8 md:p-12">
+        <Breadcrumbs items={breadcrumbItems} />
+        <SectionHeading
+          eyebrow="Carta abierta"
+          title="Lee la carta y compártela"
+          body="Este documento resume la información ecológica, científica y ciudadana detrás de la campaña. Úsalo para informarte, compartirlo y apoyar esta causa desde una participación responsable."
+          as="h1"
+        />
+
+        <p class="mt-6 text-sm leading-6 text-campaign-text-muted">
+          Esta versión pública usa una URL estable para facilitar enlaces directos, archivado web y consumo por agentes automáticos legítimos.
+        </p>
+
+        <div class="mt-8 grid gap-4 md:flex md:flex-wrap md:items-start">
+          <ButtonLink
+            href={letterPdfUrl}
+            label="Abrir PDF en nueva pestaña"
+            target="_blank"
+            analyticsEvent="document_open"
+            analyticsContext="letter_page"
+            class="w-full justify-center text-center md:w-auto"
+          />
+          <ButtonLink
+            href={letterPdfUrl}
+            label="Descargar PDF"
+            download={true}
+            analyticsEvent="file_download"
+            analyticsContext="letter_page"
+            variant="ghost"
+            class="w-full justify-center md:w-auto"
+          />
+          <ButtonLink
+            href="/firma#formulario-firma"
+            label="Ir a firmar"
+            analyticsEvent="cta_click"
+            analyticsContext="letter_page"
+            variant="secondary"
+            class="w-full justify-center md:w-auto"
+          />
+        </div>
+      </div>
+    </div>
+  </Section>
+</MainLayout>
