@@ -1,0 +1,11 @@
+.git
+.vercel
+.astro
+dist
+node_modules
+generated
+.env
+.env*
+*.xlsx
+.~lock.*
+variables desde vercel.md
