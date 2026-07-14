@@ -1,0 +1,127 @@
+---
+interface Props {
+  name: string;
+  uploadEndpoint: string;
+  currentUrl?: string;
+  required?: boolean;
+  label?: string;
+}
+
+const {
+  name,
+  uploadEndpoint,
+  currentUrl = "",
+  required = false,
+  label = "Archivo"
+} = Astro.props;
+const currentIsVideo = /\.(mp4|webm)(?:\?|#|$)/i.test(currentUrl);
+---
+
+<div class="media-upload-field grid gap-2" data-media-upload-field data-endpoint={uploadEndpoint}>
+  <span class="text-sm font-medium text-white">
+    {label}{!required && <span class="ml-1 font-normal text-campaign-text-muted">(opcional)</span>}
+  </span>
+
+  <input type="hidden" name={name} value={currentUrl} data-media-upload-url />
+
+  <div class:list={["relative overflow-hidden rounded-2xl bg-black/30", !currentUrl && "hidden"]} data-media-upload-preview-wrap>
+    <img
+      src={currentUrl}
+      alt="Vista previa"
+      class:list={["h-40 w-full object-contain", currentIsVideo && "hidden"]}
+      data-media-upload-image
+    />
+    <video
+      src={currentUrl}
+      class:list={["h-40 w-full object-contain", !currentIsVideo && "hidden"]}
+      muted
+      playsinline
+      controls
+      data-media-upload-video
+    ></video>
+  </div>
+
+  <label class="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/20 bg-white/4 px-4 py-6 text-center transition hover:border-campaign-sky/50 hover:bg-white/6">
+    <svg aria-hidden="true" viewBox="0 0 24 24" class="h-8 w-8 text-campaign-sky fill-none stroke-current stroke-2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+    </svg>
+    <span class="text-sm font-medium text-white" data-media-upload-label-text>
+      {currentUrl ? "Cambiar archivo" : "Seleccionar archivo"}
+    </span>
+    <span class="text-xs text-campaign-text-muted">JPG, PNG, WebP, GIF, MP4 o WebM</span>
+    <input
+      type="file"
+      accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+      class="sr-only"
+      data-media-upload-input
+    />
+  </label>
+
+  <p class="hidden text-sm text-red-300" data-media-upload-error></p>
+</div>
+
+<script>
+  document.querySelectorAll("[data-media-upload-field]").forEach((field) => {
+    const endpoint = field.getAttribute("data-endpoint") ?? "";
+    const fileInput = field.querySelector("[data-media-upload-input]") as HTMLInputElement | null;
+    const urlInput = field.querySelector("[data-media-upload-url]") as HTMLInputElement | null;
+    const previewWrap = field.querySelector("[data-media-upload-preview-wrap]") as HTMLElement | null;
+    const previewImg = field.querySelector("[data-media-upload-image]") as HTMLImageElement | null;
+    const previewVideo = field.querySelector("[data-media-upload-video]") as HTMLVideoElement | null;
+    const labelText = field.querySelector("[data-media-upload-label-text]") as HTMLElement | null;
+    const errorEl = field.querySelector("[data-media-upload-error]") as HTMLElement | null;
+
+    const showPreview = (url: string, type: string) => {
+      previewWrap?.classList.remove("hidden");
+      if (type.startsWith("video/")) {
+        if (previewImg) previewImg.classList.add("hidden");
+        if (previewVideo) {
+          previewVideo.classList.remove("hidden");
+          previewVideo.src = url;
+        }
+      } else {
+        if (previewVideo) {
+          previewVideo.classList.add("hidden");
+          previewVideo.src = "";
+        }
+        if (previewImg) {
+          previewImg.classList.remove("hidden");
+          previewImg.src = url;
+        }
+      }
+    };
+
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      if (labelText) labelText.textContent = "Subiendo...";
+      if (errorEl) {
+        errorEl.textContent = "";
+        errorEl.classList.add("hidden");
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch(endpoint, { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (!res.ok || !data.url) {
+          throw new Error(data.error ?? "Error al subir el archivo.");
+        }
+
+        if (urlInput) urlInput.value = data.url;
+        showPreview(data.url, data.contentType || file.type);
+        if (labelText) labelText.textContent = "Cambiar archivo";
+      } catch (err: any) {
+        if (errorEl) {
+          errorEl.textContent = err.message ?? "Error al subir.";
+          errorEl.classList.remove("hidden");
+        }
+        if (labelText) labelText.textContent = "Reintentar";
+      }
+    });
+  });
+</script>

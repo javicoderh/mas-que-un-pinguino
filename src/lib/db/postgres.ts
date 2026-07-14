@@ -230,6 +230,23 @@ async function createSchema(sql: Sql) {
     await tx`alter table event_submissions add column if not exists link text not null default ''`;
 
     await tx`
+      create table if not exists carousel_items (
+        id uuid primary key,
+        type text not null check (type in ('image', 'video', 'event')),
+        title text not null,
+        description text not null default '',
+        media_url text not null default '',
+        event_id text not null default '',
+        sort_order integer not null default 0,
+        is_active boolean not null default true,
+        created_at_ms bigint not null,
+        updated_at_ms bigint not null
+      )
+    `;
+    await tx`create index if not exists carousel_items_active_order_idx on carousel_items (is_active, sort_order asc, created_at_ms desc)`;
+    await tx`create index if not exists carousel_items_order_idx on carousel_items (sort_order asc, created_at_ms desc)`;
+
+    await tx`
       create table if not exists foreign_signatures (
         id uuid primary key,
         name text not null,

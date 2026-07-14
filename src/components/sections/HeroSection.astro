@@ -9,6 +9,7 @@ import PenguinSmartGallery from "../campaign/PenguinSmartGallery.vue";
 import Countdown from "../ui/Countdown.astro";
 import MultiModalCarousel, { type MultiModalCarouselItem } from "../ui/MultiModalCarousel.astro";
 import Section from "../ui/Section.astro";
+import { listPublicCarouselSlides } from "../../lib/security/carousel-storage";
 
 interface Props {
   initialCount?: number;
@@ -45,6 +46,11 @@ const heroCarouselItems: MultiModalCarouselItem[] = [
     description: "Actividad territorial para informar, compartir materiales y sumar apoyo ciudadano."
   }
 ];
+const configuredCarouselItems = await listPublicCarouselSlides().catch((error) => {
+  console.error("hero-carousel-load-failed", error);
+  return [];
+});
+const carouselItems = configuredCarouselItems.length > 0 ? configuredCarouselItems : heroCarouselItems;
 ---
 
 <Section size="hero" class="overflow-visible" id="inicio">
@@ -127,7 +133,7 @@ const heroCarouselItems: MultiModalCarouselItem[] = [
           <ButtonLink href="/firma" label={hero.buttons.signNow} class="flex-1 px-4 text-[0.82rem] text-center md:flex-none md:px-6 md:text-[0.95rem]" />
         </div>
 
-        <MultiModalCarousel items={heroCarouselItems} />
+        <MultiModalCarousel items={carouselItems} />
 
         <div class="mt-4 md:hidden" style="display: none;">
           <Countdown
