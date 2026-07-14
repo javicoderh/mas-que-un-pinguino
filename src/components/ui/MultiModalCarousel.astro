@@ -1,0 +1,352 @@
+---
+export type MultiModalCarouselItem = {
+  source: string;
+  type: "image" | "video" | "event";
+  name: string;
+  date?: string;
+  address?: string;
+  description?: string;
+};
+
+interface Props {
+  items: MultiModalCarouselItem[];
+}
+
+const { items } = Astro.props;
+const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
+---
+
+{items.length > 0 && (
+  <section class="multimodal-carousel mt-5 w-full" id={carouselId} aria-label="Contenido destacado de la campaña">
+    <div class="multimodal-carousel__viewport">
+      <div class="multimodal-carousel__track" data-carousel-track>
+        {items.map((item, index) => (
+          <article
+            class:list={[
+              "multimodal-carousel__slide",
+              index === 0 && "is-active"
+            ]}
+            data-carousel-slide
+            aria-hidden={index === 0 ? "false" : "true"}
+          >
+            <div class="multimodal-carousel__media">
+              {item.type === "video" ? (
+                <video src={item.source} muted playsinline loop preload="metadata"></video>
+              ) : (
+                <img src={item.source} alt={item.name} loading={index === 0 ? "eager" : "lazy"} />
+              )}
+            </div>
+
+            {item.type === "event" ? (
+              <div class="multimodal-carousel__event">
+                <p class="multimodal-carousel__kicker">Evento</p>
+                <h3>{item.name}</h3>
+                <div class="multimodal-carousel__meta">
+                  {item.date && <span>{item.date}</span>}
+                  {item.address && <span>{item.address}</span>}
+                </div>
+                {item.description && <p>{item.description}</p>}
+              </div>
+            ) : (
+              <div class="multimodal-carousel__caption">
+                <p>{item.type === "video" ? "Video" : "Imagen"}</p>
+                <h3>{item.name}</h3>
+                {item.description && <span>{item.description}</span>}
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+
+      {items.length > 1 && (
+        <>
+          <button type="button" class="multimodal-carousel__nav is-prev focus-ring" data-carousel-prev aria-label="Ver contenido anterior">
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button type="button" class="multimodal-carousel__nav is-next focus-ring" data-carousel-next aria-label="Ver contenido siguiente">
+            <span aria-hidden="true">›</span>
+          </button>
+        </>
+      )}
+    </div>
+
+    {items.length > 1 && (
+      <div class="multimodal-carousel__dots" aria-label="Seleccionar contenido">
+        {items.map((item, index) => (
+          <button
+            type="button"
+            class:list={[
+              "multimodal-carousel__dot",
+              index === 0 && "is-active"
+            ]}
+            data-carousel-dot={String(index)}
+            aria-label={`Mostrar ${item.name}`}
+            aria-current={index === 0 ? "true" : "false"}
+          ></button>
+        ))}
+      </div>
+    )}
+  </section>
+)}
+
+<script is:inline define:vars={{ carouselId }}>
+  (() => {
+    const root = document.getElementById(carouselId);
+    if (!(root instanceof HTMLElement)) return;
+
+    const slides = Array.from(root.querySelectorAll("[data-carousel-slide]"));
+    const dots = Array.from(root.querySelectorAll("[data-carousel-dot]"));
+    const prev = root.querySelector("[data-carousel-prev]");
+    const next = root.querySelector("[data-carousel-next]");
+    let activeIndex = 0;
+    let timer = 0;
+
+    const pauseInactiveVideos = () => {
+      slides.forEach((slide, index) => {
+        const video = slide.querySelector("video");
+        if (!(video instanceof HTMLVideoElement)) return;
+        if (index === activeIndex) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    };
+
+    const setActive = (nextIndex) => {
+      if (slides.length === 0) return;
+      activeIndex = (nextIndex + slides.length) % slides.length;
+
+      slides.forEach((slide, index) => {
+        const isActive = index === activeIndex;
+        slide.classList.toggle("is-active", isActive);
+        slide.setAttribute("aria-hidden", isActive ? "false" : "true");
+      });
+
+      dots.forEach((dot, index) => {
+        const isActive = index === activeIndex;
+        dot.classList.toggle("is-active", isActive);
+        dot.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+
+      pauseInactiveVideos();
+    };
+
+    const restart = () => {
+      window.clearInterval(timer);
+      if (slides.length > 1) {
+        timer = window.setInterval(() => setActive(activeIndex + 1), 7000);
+      }
+    };
+
+    prev?.addEventListener("click", () => {
+      setActive(activeIndex - 1);
+      restart();
+    });
+
+    next?.addEventListener("click", () => {
+      setActive(activeIndex + 1);
+      restart();
+    });
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        setActive(Number(dot.getAttribute("data-carousel-dot") || "0"));
+        restart();
+      });
+    });
+
+    root.addEventListener("mouseenter", () => window.clearInterval(timer));
+    root.addEventListener("mouseleave", restart);
+
+    setActive(0);
+    restart();
+  })();
+</script>
+
+<style define:vars={{ carouselId }}>
+  .multimodal-carousel {
+    position: relative;
+  }
+
+  .multimodal-carousel__viewport {
+    position: relative;
+    min-height: clamp(12rem, 34vw, 22rem);
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.28);
+  }
+
+  .multimodal-carousel__track,
+  .multimodal-carousel__slide {
+    position: absolute;
+    inset: 0;
+  }
+
+  .multimodal-carousel__slide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 420ms ease;
+  }
+
+  .multimodal-carousel__slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .multimodal-carousel__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .multimodal-carousel__media img,
+  .multimodal-carousel__media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .multimodal-carousel__slide::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background: linear-gradient(180deg, rgba(5, 7, 11, 0.1), rgba(5, 7, 11, 0.72));
+    pointer-events: none;
+  }
+
+  .multimodal-carousel__caption,
+  .multimodal-carousel__event {
+    position: absolute;
+    inset-inline: 1rem;
+    bottom: 1rem;
+    z-index: 2;
+    max-width: min(34rem, calc(100% - 2rem));
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(5, 7, 11, 0.66);
+    padding: 0.9rem 1rem;
+    backdrop-filter: blur(12px);
+  }
+
+  .multimodal-carousel__caption p,
+  .multimodal-carousel__kicker {
+    margin: 0;
+    color: var(--campaign-warm);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .multimodal-carousel__caption h3,
+  .multimodal-carousel__event h3 {
+    margin: 0.25rem 0 0;
+    color: white;
+    font-size: clamp(1rem, 2.2vw, 1.45rem);
+    line-height: 1.05;
+  }
+
+  .multimodal-carousel__caption span,
+  .multimodal-carousel__event p {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--campaign-text-muted);
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .multimodal-carousel__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .multimodal-carousel__meta span {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.25rem 0.55rem;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .multimodal-carousel__nav {
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(5, 7, 11, 0.68);
+    color: white;
+    cursor: pointer;
+    transition: background 180ms ease, transform 180ms ease;
+  }
+
+  .multimodal-carousel__nav:hover {
+    background: rgba(56, 182, 255, 0.28);
+    transform: translateY(-50%) scale(1.04);
+  }
+
+  .multimodal-carousel__nav span {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  .multimodal-carousel__nav.is-prev {
+    left: 0.8rem;
+  }
+
+  .multimodal-carousel__nav.is-next {
+    right: 0.8rem;
+  }
+
+  .multimodal-carousel__dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+  }
+
+  .multimodal-carousel__dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+    cursor: pointer;
+  }
+
+  .multimodal-carousel__dot.is-active {
+    width: 1.6rem;
+    background: var(--campaign-sky);
+  }
+
+  @media (max-width: 640px) {
+    .multimodal-carousel__viewport {
+      min-height: 13.5rem;
+      border-radius: 1.15rem;
+    }
+
+    .multimodal-carousel__caption,
+    .multimodal-carousel__event {
+      inset-inline: 0.7rem;
+      bottom: 0.7rem;
+      max-width: calc(100% - 1.4rem);
+      padding: 0.75rem;
+    }
+
+    .multimodal-carousel__nav {
+      width: 2.1rem;
+      height: 2.1rem;
+    }
+  }
+</style>
