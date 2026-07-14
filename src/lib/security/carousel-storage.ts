@@ -29,6 +29,31 @@ export interface CarouselUpsertInput {
   isActive: boolean;
 }
 
+const postgresUnavailable = Symbol("postgres-carousel-unavailable");
+
+function isMissingCarouselTable(error: unknown) {
+  return Boolean(
+    error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: string }).code === "42P01"
+  );
+}
+
+async function tryPostgresCarousel<T>(operation: () => Promise<T>): Promise<T | typeof postgresUnavailable> {
+  if (!isPostgresAvailable) return postgresUnavailable;
+
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isMissingCarouselTable(error)) throw error;
+
+    // Existing deployments can use Firestore until their managed Postgres schema includes this table.
+    console.warn("carousel-postgres-table-missing; using-firestore", error);
+    return postgresUnavailable;
+  }
+}
+
 function mapCarouselRow(row: Record<string, any>): CarouselRecord {
   return {
     id: row.id,
@@ -84,9 +109,9 @@ export function validateCarouselInput(input: CarouselUpsertInput) {
 }
 
 export async function listCarouselItems({ activeOnly = false } = {}) {
-  if (isPostgresAvailable) {
+  const postgresRows = await tryPostgresCarousel(async () => {
     await recordPostgresReadEvent(activeOnly ? "carousel_public_list" : "carousel_admin_list");
-    const rows = activeOnly
+    return activeOnly
       ? await withPostgres((sql) => sql`
           select *
           from carousel_items
@@ -100,7 +125,10 @@ export async function listCarouselItems({ activeOnly = false } = {}) {
           order by sort_order asc, created_at_ms desc
           limit 120
         `);
-    return rows.map(mapCarouselRow);
+  });
+
+  if (postgresRows !== postgresUnavailable) {
+    return postgresRows.map(mapCarouselRow);
   }
 
   const rows = await queryCollection<CarouselRecord>({
@@ -116,15 +144,18 @@ export async function listCarouselItems({ activeOnly = false } = {}) {
 }
 
 export async function getCarouselItem(id: string) {
-  if (isPostgresAvailable) {
+  const postgresRows = await tryPostgresCarousel(async () => {
     await recordPostgresReadEvent("carousel_item");
-    const rows = await withPostgres((sql) => sql`
+    return withPostgres((sql) => sql`
       select *
       from carousel_items
       where id = ${id}
       limit 1
     `);
-    return rows[0] ? mapCarouselRow(rows[0]) : null;
+  });
+
+  if (postgresRows !== postgresUnavailable) {
+    return postgresRows[0] ? mapCarouselRow(postgresRows[0]) : null;
   }
 
   const record = await getDocument<CarouselRecord>(`${securityConfig.collections.carousel}/${id}`);
@@ -136,7 +167,7 @@ export async function createCarouselItem(rawInput: CarouselUpsertInput) {
   const id = crypto.randomUUID();
   const now = Date.now();
 
-  if (isPostgresAvailable) {
+  const postgresCreated = await tryPostgresCarousel(async () => {
     await withPostgres((sql) => sql`
       insert into carousel_items (
         id, type, title, description, media_url, event_id, sort_order, is_active, created_at_ms, updated_at_ms
@@ -145,6 +176,10 @@ export async function createCarouselItem(rawInput: CarouselUpsertInput) {
         ${input.sortOrder}, ${input.isActive}, ${now}, ${now}
       )
     `);
+    return true;
+  });
+
+  if (postgresCreated !== postgresUnavailable) {
     return { id, ...input, createdAtMs: now, updatedAtMs: now } satisfies CarouselRecord;
   }
 
@@ -164,7 +199,7 @@ export async function updateCarouselItem(id: string, rawInput: CarouselUpsertInp
   const input = validateCarouselInput(rawInput);
   const updatedAtMs = Date.now();
 
-  if (isPostgresAvailable) {
+  const postgresUpdated = await tryPostgresCarousel(async () => {
     await withPostgres((sql) => sql`
       update carousel_items
       set type = ${input.type},
@@ -177,6 +212,10 @@ export async function updateCarouselItem(id: string, rawInput: CarouselUpsertInp
           updated_at_ms = ${updatedAtMs}
       where id = ${id}
     `);
+    return true;
+  });
+
+  if (postgresUpdated !== postgresUnavailable) {
     return;
   }
 
@@ -197,11 +236,15 @@ export async function deleteCarouselItem(id: string) {
   const current = await getCarouselItem(id);
   if (!current) throw new Error("carousel-not-found");
 
-  if (isPostgresAvailable) {
+  const postgresDeleted = await tryPostgresCarousel(async () => {
     await withPostgres((sql) => sql`
       delete from carousel_items
       where id = ${id}
     `);
+    return true;
+  });
+
+  if (postgresDeleted !== postgresUnavailable) {
     return;
   }
 

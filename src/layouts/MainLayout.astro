@@ -240,7 +240,7 @@ const structuredData = [
     </main>
     <FooterBlock />
     {!hideFloatingCta && <FloatingCTA href="/firma" label={campaignConfig.hero.buttons.floating} />}
-    <div style="display: none;">
+    <div hidden aria-hidden="true" style="display: none !important;">
       <FloatingSignatureCounter />
     </div>
   </body>

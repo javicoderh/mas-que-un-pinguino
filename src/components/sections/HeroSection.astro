@@ -133,9 +133,7 @@ const carouselItems = configuredCarouselItems.length > 0 ? configuredCarouselIte
           <ButtonLink href="/firma" label={hero.buttons.signNow} class="flex-1 px-4 text-[0.82rem] text-center md:flex-none md:px-6 md:text-[0.95rem]" />
         </div>
 
-        <MultiModalCarousel items={carouselItems} />
-
-        <div class="mt-4 md:hidden" style="display: none;">
+        <div hidden aria-hidden="true" class="mt-4 md:hidden" style="display: none !important;">
           <Countdown
             targetIso={dates.signatureDeadlineIso}
             expiredMessage="El 20 de abril ya llegó. Seguimos compartiendo información y apoyo ciudadano."
@@ -143,7 +141,7 @@ const carouselItems = configuredCarouselItems.length > 0 ? configuredCarouselIte
         </div>
 
         <!-- Mobile: static signature counter + CTA -->
-        <div class="mt-4 md:hidden" style="display: none;">
+        <div hidden aria-hidden="true" class="mt-4 md:hidden" style="display: none !important;">
           <div class="rounded-[1.4rem] border border-white/14 bg-[#070b15] px-4 py-4 shadow-[0_12px_40px_rgba(0,0,0,0.38)]">
             <div class="flex items-center gap-3">
               <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/6 text-campaign-sky">
@@ -180,7 +178,7 @@ const carouselItems = configuredCarouselItems.length > 0 ? configuredCarouselIte
       </div>
 
       <div class="hidden space-y-6 md:block">
-        <div style="display: none;">
+        <div hidden aria-hidden="true" style="display: none !important;">
         <Countdown
           targetIso={dates.signatureDeadlineIso}
           expiredMessage="El 20 de abril ya llegó. Seguimos compartiendo información y apoyo ciudadano."
@@ -190,6 +188,10 @@ const carouselItems = configuredCarouselItems.length > 0 ? configuredCarouselIte
         <div class="rounded-[2rem] bg-transparent p-4 md:p-5">
           <PenguinSmartGallery client:media="(min-width: 768px)" />
         </div>
+      </div>
+
+      <div class="lg:col-span-2">
+        <MultiModalCarousel items={carouselItems} />
       </div>
     </div>
   </div>
