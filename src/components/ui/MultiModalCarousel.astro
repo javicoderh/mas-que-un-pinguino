@@ -27,7 +27,16 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
               index === 0 && "is-active"
             ]}
             data-carousel-slide
+            data-carousel-type={item.type}
+            data-carousel-source={item.source}
+            data-carousel-name={item.name}
+            data-carousel-date={item.date ?? ""}
+            data-carousel-address={item.address ?? ""}
+            data-carousel-description={item.description ?? ""}
             aria-hidden={index === 0 ? "false" : "true"}
+            role="button"
+            tabindex={index === 0 ? 0 : -1}
+            aria-label={`Abrir ${item.name}`}
           >
             <div class="multimodal-carousel__media">
               {item.type === "video" ? (
@@ -86,6 +95,25 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
         ))}
       </div>
     )}
+
+    <dialog class="multimodal-carousel__lightbox" data-carousel-lightbox aria-label="Contenido destacado ampliado">
+      <div class="multimodal-carousel__lightbox-backdrop" data-carousel-lightbox-close></div>
+      <section class="multimodal-carousel__lightbox-panel">
+        <button type="button" class="multimodal-carousel__lightbox-close focus-ring" data-carousel-lightbox-close aria-label="Cerrar">×</button>
+        <button type="button" class="multimodal-carousel__lightbox-nav is-prev focus-ring" data-carousel-lightbox-prev aria-label="Ver contenido anterior">‹</button>
+        <div class="multimodal-carousel__lightbox-media">
+          <img data-carousel-lightbox-image alt="" />
+          <video data-carousel-lightbox-video controls playsinline></video>
+        </div>
+        <button type="button" class="multimodal-carousel__lightbox-nav is-next focus-ring" data-carousel-lightbox-next aria-label="Ver contenido siguiente">›</button>
+        <div class="multimodal-carousel__lightbox-content">
+          <p data-carousel-lightbox-kicker></p>
+          <h3 data-carousel-lightbox-title></h3>
+          <div class="multimodal-carousel__lightbox-meta" data-carousel-lightbox-meta></div>
+          <p data-carousel-lightbox-description></p>
+        </div>
+      </section>
+    </dialog>
   </section>
 )}
 
@@ -98,8 +126,28 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
     const dots = Array.from(root.querySelectorAll("[data-carousel-dot]"));
     const prev = root.querySelector("[data-carousel-prev]");
     const next = root.querySelector("[data-carousel-next]");
+    const lightbox = root.querySelector("[data-carousel-lightbox]");
+    const lightboxImage = root.querySelector("[data-carousel-lightbox-image]");
+    const lightboxVideo = root.querySelector("[data-carousel-lightbox-video]");
+    const lightboxKicker = root.querySelector("[data-carousel-lightbox-kicker]");
+    const lightboxTitle = root.querySelector("[data-carousel-lightbox-title]");
+    const lightboxMeta = root.querySelector("[data-carousel-lightbox-meta]");
+    const lightboxDescription = root.querySelector("[data-carousel-lightbox-description]");
+    const lightboxPrev = root.querySelector("[data-carousel-lightbox-prev]");
+    const lightboxNext = root.querySelector("[data-carousel-lightbox-next]");
     let activeIndex = 0;
     let timer = 0;
+    let lightboxItems = [];
+    let lightboxIndex = 0;
+
+    const getSlideData = (slide) => ({
+      type: slide.getAttribute("data-carousel-type") || "image",
+      source: slide.getAttribute("data-carousel-source") || "",
+      name: slide.getAttribute("data-carousel-name") || "",
+      date: slide.getAttribute("data-carousel-date") || "",
+      address: slide.getAttribute("data-carousel-address") || "",
+      description: slide.getAttribute("data-carousel-description") || ""
+    });
 
     const pauseInactiveVideos = () => {
       slides.forEach((slide, index) => {
@@ -121,6 +169,7 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
         const isActive = index === activeIndex;
         slide.classList.toggle("is-active", isActive);
         slide.setAttribute("aria-hidden", isActive ? "false" : "true");
+        slide.setAttribute("tabindex", isActive ? "0" : "-1");
       });
 
       dots.forEach((dot, index) => {
@@ -130,6 +179,68 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
       });
 
       pauseInactiveVideos();
+    };
+
+    const renderLightbox = () => {
+      const item = lightboxItems[lightboxIndex];
+      if (!item || !(lightbox instanceof HTMLDialogElement)) return;
+
+      const isVideo = item.type === "video";
+      const isEvent = item.type === "event";
+
+      if (lightboxImage instanceof HTMLImageElement) {
+        lightboxImage.hidden = isVideo;
+        lightboxImage.src = isVideo ? "" : item.source;
+        lightboxImage.alt = item.name;
+      }
+      if (lightboxVideo instanceof HTMLVideoElement) {
+        lightboxVideo.hidden = !isVideo;
+        lightboxVideo.pause();
+        lightboxVideo.src = isVideo ? item.source : "";
+        if (isVideo) lightboxVideo.play().catch(() => {});
+      }
+      if (lightboxKicker instanceof HTMLElement) lightboxKicker.textContent = isEvent ? "Evento" : isVideo ? "Video" : "Imagen";
+      if (lightboxTitle instanceof HTMLElement) lightboxTitle.textContent = item.name;
+      if (lightboxDescription instanceof HTMLElement) {
+        lightboxDescription.textContent = item.description;
+        lightboxDescription.hidden = !item.description;
+      }
+      if (lightboxMeta instanceof HTMLElement) {
+        lightboxMeta.replaceChildren();
+        [item.date, item.address].filter(Boolean).forEach((value) => {
+          const chip = document.createElement("span");
+          chip.textContent = value;
+          lightboxMeta.append(chip);
+        });
+        lightboxMeta.hidden = lightboxMeta.childElementCount === 0;
+      }
+      [lightboxPrev, lightboxNext].forEach((button) => {
+        if (button instanceof HTMLButtonElement) button.hidden = lightboxItems.length < 2;
+      });
+    };
+
+    const openLightbox = (slide) => {
+      if (!(lightbox instanceof HTMLDialogElement)) return;
+      const selected = getSlideData(slide);
+      lightboxItems = slides.map(getSlideData).filter((item) => item.type === selected.type);
+      lightboxIndex = lightboxItems.findIndex((item) => item.source === selected.source && item.name === selected.name);
+      if (lightboxIndex < 0) lightboxIndex = 0;
+      renderLightbox();
+      window.clearInterval(timer);
+      lightbox.showModal();
+    };
+
+    const moveLightbox = (direction) => {
+      if (lightboxItems.length < 2) return;
+      lightboxIndex = (lightboxIndex + direction + lightboxItems.length) % lightboxItems.length;
+      renderLightbox();
+    };
+
+    const closeLightbox = () => {
+      if (!(lightbox instanceof HTMLDialogElement)) return;
+      if (lightboxVideo instanceof HTMLVideoElement) lightboxVideo.pause();
+      if (lightbox.open) lightbox.close();
+      restart();
     };
 
     const restart = () => {
@@ -154,6 +265,35 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
         setActive(Number(dot.getAttribute("data-carousel-dot") || "0"));
         restart();
       });
+    });
+
+    slides.forEach((slide) => {
+      slide.addEventListener("click", () => {
+        if (slide.classList.contains("is-active")) openLightbox(slide);
+      });
+      slide.addEventListener("keydown", (event) => {
+        if ((event.key === "Enter" || event.key === " ") && slide.classList.contains("is-active")) {
+          event.preventDefault();
+          openLightbox(slide);
+        }
+      });
+    });
+
+    lightboxPrev?.addEventListener("click", () => moveLightbox(-1));
+    lightboxNext?.addEventListener("click", () => moveLightbox(1));
+    root.querySelectorAll("[data-carousel-lightbox-close]").forEach((button) => {
+      button.addEventListener("click", closeLightbox);
+    });
+    lightbox?.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") moveLightbox(-1);
+      if (event.key === "ArrowRight") moveLightbox(1);
+    });
+    lightbox?.addEventListener("click", (event) => {
+      if (event.target === lightbox) closeLightbox();
+    });
+    lightbox?.addEventListener("close", () => {
+      if (lightboxVideo instanceof HTMLVideoElement) lightboxVideo.pause();
+      restart();
     });
 
     root.addEventListener("mouseenter", () => window.clearInterval(timer));
@@ -212,7 +352,7 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
     position: absolute;
     inset: 0;
     content: "";
-    background: linear-gradient(180deg, rgba(5, 7, 11, 0.1), rgba(5, 7, 11, 0.72));
+    background: linear-gradient(180deg, rgba(5, 7, 11, 0) 38%, rgba(5, 7, 11, 0.82) 100%);
     pointer-events: none;
   }
 
@@ -223,11 +363,8 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
     bottom: 1rem;
     z-index: 2;
     max-width: min(34rem, calc(100% - 2rem));
-    border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(5, 7, 11, 0.66);
-    padding: 0.9rem 1rem;
-    backdrop-filter: blur(12px);
+    padding: 0.25rem 0;
+    text-shadow: 0 0.15rem 0.75rem rgba(0, 0, 0, 0.9);
   }
 
   .multimodal-carousel__caption p,
@@ -260,17 +397,20 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
   .multimodal-carousel__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.65rem;
     margin-top: 0.5rem;
   }
 
   .multimodal-carousel__meta span {
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 0.25rem 0.55rem;
-    color: white;
-    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.78rem;
     font-weight: 700;
+  }
+
+  .multimodal-carousel__meta span + span::before {
+    content: "·";
+    margin-right: 0.65rem;
+    color: var(--campaign-warm);
   }
 
   .multimodal-carousel__nav {
@@ -331,6 +471,142 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
     background: var(--campaign-sky);
   }
 
+  .multimodal-carousel__lightbox {
+    width: min(72rem, calc(100vw - 2rem));
+    max-width: none;
+    max-height: min(54rem, calc(100vh - 2rem));
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: white;
+  }
+
+  .multimodal-carousel__lightbox::backdrop {
+    background: rgba(2, 4, 8, 0.84);
+    backdrop-filter: blur(10px);
+  }
+
+  .multimodal-carousel__lightbox[open] {
+    animation: multimodal-lightbox-in 180ms ease-out;
+  }
+
+  .multimodal-carousel__lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .multimodal-carousel__lightbox-panel {
+    position: relative;
+    display: grid;
+    max-height: min(54rem, calc(100vh - 2rem));
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 1rem;
+    background: #05070b;
+    box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, 0.5);
+  }
+
+  .multimodal-carousel__lightbox-media {
+    display: grid;
+    min-height: min(32rem, calc(100vh - 14rem));
+    place-items: center;
+    background: #000;
+  }
+
+  .multimodal-carousel__lightbox-media img,
+  .multimodal-carousel__lightbox-media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: min(42rem, calc(100vh - 14rem));
+    object-fit: contain;
+  }
+
+  .multimodal-carousel__lightbox-content {
+    padding: 1rem 4.25rem 1.15rem;
+    background: rgba(5, 7, 11, 0.98);
+  }
+
+  .multimodal-carousel__lightbox-content h3 {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1.2rem, 2.8vw, 2rem);
+    line-height: 1.15;
+  }
+
+  .multimodal-carousel__lightbox-content p {
+    margin: 0;
+  }
+
+  .multimodal-carousel__lightbox-content > p:last-child {
+    margin-top: 0.55rem;
+    color: var(--campaign-text-muted);
+    line-height: 1.5;
+  }
+
+  .multimodal-carousel__lightbox-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+  }
+
+  .multimodal-carousel__lightbox-meta span {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .multimodal-carousel__lightbox-close,
+  .multimodal-carousel__lightbox-nav {
+    position: absolute;
+    z-index: 2;
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    background: rgba(5, 7, 11, 0.78);
+    color: white;
+    cursor: pointer;
+    font-size: 1.9rem;
+    line-height: 1;
+  }
+
+  .multimodal-carousel__lightbox-close {
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+
+  .multimodal-carousel__lightbox-nav {
+    top: 45%;
+    transform: translateY(-50%);
+  }
+
+  .multimodal-carousel__lightbox-nav.is-prev {
+    left: 0.8rem;
+  }
+
+  .multimodal-carousel__lightbox-nav.is-next {
+    right: 0.8rem;
+  }
+
+  .multimodal-carousel__lightbox-close:hover,
+  .multimodal-carousel__lightbox-nav:hover {
+    background: rgba(56, 182, 255, 0.3);
+  }
+
+  @keyframes multimodal-lightbox-in {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
   @media (max-width: 640px) {
     .multimodal-carousel__viewport {
       min-height: 25rem;
@@ -342,12 +618,54 @@ const carouselId = `multimodal-carousel-${Math.random().toString(36).slice(2)}`;
       inset-inline: 0.7rem;
       bottom: 0.7rem;
       max-width: calc(100% - 1.4rem);
-      padding: 0.9rem;
+      padding: 0.2rem 0;
     }
 
     .multimodal-carousel__nav {
       width: 2.1rem;
       height: 2.1rem;
+    }
+
+    .multimodal-carousel__lightbox {
+      width: calc(100vw - 1rem);
+      max-height: calc(100vh - 1rem);
+    }
+
+    .multimodal-carousel__lightbox-panel {
+      max-height: calc(100vh - 1rem);
+    }
+
+    .multimodal-carousel__lightbox-media {
+      min-height: min(20rem, calc(100vh - 15rem));
+    }
+
+    .multimodal-carousel__lightbox-media img,
+    .multimodal-carousel__lightbox-media video {
+      max-height: min(29rem, calc(100vh - 15rem));
+    }
+
+    .multimodal-carousel__lightbox-content {
+      padding: 0.85rem 1rem 1rem;
+    }
+
+    .multimodal-carousel__lightbox-nav {
+      top: auto;
+      bottom: 0.95rem;
+      transform: none;
+    }
+
+    .multimodal-carousel__lightbox-nav.is-prev {
+      left: auto;
+      right: 4.25rem;
+    }
+
+    .multimodal-carousel__lightbox-nav.is-next {
+      right: 0.85rem;
+    }
+
+    .multimodal-carousel__lightbox-close {
+      top: 0.5rem;
+      right: 0.5rem;
     }
   }
 </style>
